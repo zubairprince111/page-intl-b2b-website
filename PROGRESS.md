@@ -11,8 +11,8 @@
 | ----------- | -------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------- |
 | **Phase 0** | Safety, Baseline & Repo Hygiene                    | **DONE**        | Secrets audited; .env.example, .gitignore, .dockerignore hardened; baseline recorded         |
 | **Phase 1** | Build, Docker & Code Formatting                    | **DONE**        | Dynamic Nitro preset, Docker multi-stage non-root, Caddyfile, .gitattributes & lint fix      |
-| **Phase 2** | PostgreSQL Database & Drizzle Migrations           | **IN PROGRESS** | Schema extension, migrations, seed with admin bootstrap, backup/restore scripts              |
-| **Phase 3** | Authentication & Security Hardening                | **PENDING**     | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization |
+| **Phase 2** | PostgreSQL Database & Drizzle Migrations           | **DONE**        | Schema extension, migrations, seed with admin bootstrap, backup/restore scripts              |
+| **Phase 3** | Authentication & Security Hardening                | **IN PROGRESS** | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization |
 | **Phase 4** | Real Data Flows (Zero LocalStorage)                | **PENDING**     | Server functions for RFQs, orders, bookings, catalog, admin CRUD, CSV exports                |
 | **Phase 5** | Transactional Email & Persistent Storage           | **PENDING**     | Async email queuing (SMTP/Resend), S3/R2 storage driver                                      |
 | **Phase 6** | Performance & "Smooth Like Butter" UX              | **PENDING**     | Skeletons, code splitting, chunk < 500kB, image optimization, slow 4G check                  |
@@ -63,8 +63,12 @@
 
 ### Phase 2: PostgreSQL Database & Drizzle Migrations
 
-- [ ] Extend `src/db/schema.ts` with missing tables (`orders`, `order_items`, `settings`, `updates`, `password_reset_tokens`, `email_verification_tokens`, `email_log`, `audit_log`).
-- [ ] Add indexes on all join and filter columns.
-- [ ] Generate Drizzle migrations and ensure automated migration runner on boot.
-- [ ] Make seed script idempotent with secure admin bootstrap from env.
-- [ ] Create backup and restore scripts and test round-trip.
+- [x] Extended `src/db/schema.ts` with all required tables: `orders`, `orderItems`, `settings`, `updates`, `passwordResetTokens`, `emailVerificationTokens`, `emailLog`, `auditLog`.
+- [x] Added composite and single-column indexes on all join and filter columns across all 16 tables.
+- [x] Generated initial Drizzle migration `drizzle/0000_motionless_ben_urich.sql`.
+- [x] Built cross-platform migration runner `src/db/migrate.ts` supporting both external PostgreSQL and embedded PGlite.
+- [x] Hardened `src/db/seed.ts` to be fully idempotent with bcrypt cost 12 hashing and secure admin account bootstrap.
+- [x] Created `scripts/db-backup.ts` and `scripts/db-restore.ts` and verified end-to-end backup and restore round trip.
+- [x] Updated `src/db/status.ts` and `npm run db:status` to report health and record counts across all tables.
+
+### Phase 3: Authentication & Security Hardening

@@ -1,5 +1,6 @@
 # Local Database & Environment
 .data/
+backups/*.json
 .env
 .env.*
 !.env.example
