@@ -160,7 +160,7 @@ export async function initAndSeedDatabase() {
       .onConflictDoNothing();
   }
 
-  // 4. Seed Homepage Machinery Banners
+  // 4. Seed Homepage Machinery Banners (2100x654 High-Resolution Showcases)
   const initialBanners = [
     {
       id: "banner-launch-durga-puja",
@@ -175,18 +175,42 @@ export async function initAndSeedDatabase() {
       sortOrder: 0,
     },
     {
-      id: "banner-corghi-wheel-alignment",
-      title: "Corghi High-Precision 3D Wheel Aligner System",
-      subtitle: "High Definition Camera Optical Alignment for Commercial Cars, SUVs & Light Trucks",
-      imageUrl:
-        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=1800&q=80",
-      badge: "New Arrival",
+      id: "banner-fuel-efficiency",
+      title: "4-Wheeler Mobility Showcase — Fuel Efficiency",
+      subtitle: "Commercial fleet lubricants, synthetic oils & hybrid engine parts",
+      imageUrl: "/Fuel%20Efficiency%20Highway%20Showcase.png",
+      badge: "4-Wheeler",
       category: "Commercial Machinery",
-      link: "/shop?cat=Garage+Equipment",
+      link: "/shop?mobility=4-Wheeler",
       isActive: true,
       sortOrder: 1,
     },
+    {
+      id: "banner-diagnostics",
+      title: "2-Wheeler Mobility Showcase — Automotive Diagnostics",
+      subtitle: "Computerized motorcycle scanning, EFI tools & rapid scissor lifts",
+      imageUrl: "/Futuristic%20Automotive%20Diagnostics%20Showcase.png",
+      badge: "2-Wheeler",
+      category: "Commercial Machinery",
+      link: "/shop?mobility=2-Wheeler",
+      isActive: true,
+      sortOrder: 2,
+    },
+    {
+      id: "banner-lift",
+      title: "3-Wheeler Commercial Mobility — Two-Post Lift 4.0 Ton",
+      subtitle: "Heavy-duty electro-hydraulic vehicle lifts & garage machinery",
+      imageUrl: "/Page%20Two-Post%20Lift%204.0%20Ton.png",
+      badge: "3-Wheeler",
+      category: "Commercial Machinery",
+      link: "/shop?mobility=3-Wheeler",
+      isActive: true,
+      sortOrder: 3,
+    },
   ];
+
+  // Remove legacy test banner if present
+  await db.delete(banners).where(eq(banners.id, "banner-corghi-wheel-alignment"));
 
   for (const b of initialBanners) {
     await db.insert(banners).values(b).onConflictDoNothing();

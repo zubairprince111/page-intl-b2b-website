@@ -19,12 +19,42 @@ export type MobilityScene = BannerItem;
 
 const FALLBACK_BANNERS: BannerItem[] = [
   {
-    id: "ban-fallback-1",
-    title: "Durga Puja — Launch Special Offer (20% OFF)",
-    alt: "Launch Professional Diagnostic Solutions",
+    id: "banner-launch-durga-puja",
+    title: "LAUNCH Professional Diagnostic Solutions",
+    alt: "Launch Professional Diagnostic Solutions — Special Offer This Durga Puja Get Up To 20% Off",
     image: "/durga-puja-launch-banner.png",
-    link: "/shop",
+    link: "/shop?cat=Garage+Equipment",
+    mobilityKey: "All",
+    bgColor: "bg-white",
+    active: true,
+  },
+  {
+    id: "banner-fuel-efficiency",
+    title: "4-Wheeler Mobility Showcase — Fuel Efficiency",
+    alt: "4-Wheeler Mobility Showcase — Fuel Efficiency",
+    image: "/Fuel%20Efficiency%20Highway%20Showcase.png",
+    link: "/shop?mobility=4-Wheeler",
     mobilityKey: "4-Wheeler",
+    bgColor: "bg-gradient-to-r from-amber-950/40 via-zinc-950 to-sky-950/40",
+    active: true,
+  },
+  {
+    id: "banner-diagnostics",
+    title: "2-Wheeler Mobility Showcase — Automotive Diagnostics",
+    alt: "2-Wheeler Mobility Showcase — Automotive Diagnostics",
+    image: "/Futuristic%20Automotive%20Diagnostics%20Showcase.png",
+    link: "/shop?mobility=2-Wheeler",
+    mobilityKey: "2-Wheeler",
+    bgColor: "bg-zinc-900",
+    active: true,
+  },
+  {
+    id: "banner-lift",
+    title: "3-Wheeler Commercial Mobility — Two-Post Lift 4.0 Ton",
+    alt: "3-Wheeler Commercial Mobility — Two-Post Lift 4.0 Ton",
+    image: "/Page%20Two-Post%20Lift%204.0%20Ton.png",
+    link: "/shop?mobility=3-Wheeler",
+    mobilityKey: "3-Wheeler",
     bgColor: "bg-white",
     active: true,
   },
@@ -35,16 +65,24 @@ export function MobilityScrollStack() {
 
   const banners: BannerItem[] = useMemo(() => {
     if (!dbBanners || dbBanners.length === 0) return FALLBACK_BANNERS;
-    return dbBanners.map((b: any) => ({
-      id: b.id,
-      title: b.title,
-      alt: b.subtitle || b.title,
-      image: b.imageUrl,
-      link: b.link || "/shop",
-      mobilityKey: b.badge || "All",
-      bgColor: "bg-white",
-      active: b.isActive,
-    }));
+    return dbBanners.map((b: any) => {
+      let bg = "bg-white";
+      if (b.badge === "4-Wheeler" || b.title?.includes("4-Wheeler")) {
+        bg = "bg-gradient-to-r from-amber-950/40 via-zinc-950 to-sky-950/40";
+      } else if (b.badge === "2-Wheeler" || b.title?.includes("2-Wheeler")) {
+        bg = "bg-zinc-900";
+      }
+      return {
+        id: b.id,
+        title: b.title,
+        alt: b.subtitle || b.title,
+        image: b.imageUrl,
+        link: b.link || "/shop",
+        mobilityKey: b.badge || "All",
+        bgColor: bg,
+        active: b.isActive,
+      };
+    });
   }, [dbBanners]);
 
   const [currentSlide, setCurrentSlide] = useState<number>(0);
