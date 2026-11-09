@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Users, Settings, Headphones } from "lucide-react";
+import { Users, Settings, Headphones } from "lucide-react";
 import consultationEngineerImg from "@/assets/consultation-engineer.jpg";
 import { cn } from "@/lib/utils";
 
@@ -97,10 +97,9 @@ export function ConsultationBanner({ className }: ConsultationBannerProps) {
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-1">
               <Link
                 to="/services/book"
-                className="h-11 px-6 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                className="h-11 px-6 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-xs uppercase tracking-wider inline-flex items-center justify-center shadow-sm hover:shadow-md transition-all cursor-pointer"
               >
                 <span>CONSULT AN ENGINEER</span>
-                <ArrowRight className="w-4 h-4" />
               </Link>
 
               <Link
@@ -108,7 +107,6 @@ export function ConsultationBanner({ className }: ConsultationBannerProps) {
                 className="text-xs font-bold text-zinc-800 hover:text-red-600 underline underline-offset-4 decoration-zinc-400 hover:decoration-red-600 inline-flex items-center gap-1.5 transition-colors cursor-pointer py-1"
               >
                 <span>Or contact our team</span>
-                <ArrowRight className="w-3.5 h-3.5 text-red-600" />
               </Link>
             </div>
           </div>
