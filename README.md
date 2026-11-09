@@ -16,6 +16,7 @@ flowchart TD
 ```
 
 ### Technology Stack
+
 - **Framework & SSR:** TanStack Start & React 19 on Vite 8
 - **Server Runtime:** Nitro 3 Engine (Standalone Node Server preset)
 - **Database & ORM:** PostgreSQL 16 (production) / Embedded `@electric-sql/pglite` (zero-dependency local development) with Drizzle ORM
@@ -30,12 +31,14 @@ flowchart TD
 The platform is designed to run locally on Windows, macOS, or Linux with **zero external database dependencies** required out of the box using embedded PGlite.
 
 ### Prerequisites
+
 - Node.js 20.x or 22.x LTS
 - npm 10+
 
 ### Step-by-Step Setup
 
 1. **Clone and Install:**
+
    ```powershell
    git clone <repository-url>
    cd pixel-perfect
@@ -43,16 +46,19 @@ The platform is designed to run locally on Windows, macOS, or Linux with **zero 
    ```
 
 2. **Configure Environment:**
+
    ```powershell
    cp .env.example .env
    ```
 
 3. **Run Migrations & Seed Initial Data:**
+
    ```powershell
    npm run db:migrate
    npm run db:seed
    ```
-   *Seeds the full product catalog, initial technical articles, banners, and the default administrator account (`admin@page-bd.com` / `PageAdmin2026!Secure`).*
+
+   _Seeds the full product catalog, initial technical articles, banners, and the default administrator account (`admin@page-bd.com` / `PageAdmin2026!Secure`)._
 
 4. **Start Development Server:**
    ```powershell
@@ -86,20 +92,20 @@ curl -f http://localhost/api/health
 
 ## 📜 Available NPM Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Starts Vite development server with hot module replacement on port 8080 |
-| `npm run build` | Builds client assets and standalone Node SSR server (`.output/server/index.mjs`) |
-| `npm run preview` | Starts the production built server on port 8080 for verification |
-| `npm run lint` | Runs ESLint across all TypeScript and React sources |
-| `npm run format` | Enforces code formatting via Prettier across all files |
-| `npm test` | Executes unit and integration test suite via Vitest |
-| `npm run test:e2e` | Runs Playwright end-to-end browser tests across critical user journeys |
-| `npm run db:migrate` | Runs all pending Drizzle SQL migrations against active database |
-| `npm run db:seed` | Idempotently seeds initial catalog, updates, and admin user |
-| `npm run db:status` | Prints connection health, engine type, and row counts across all 16 tables |
-| `npm run db:backup` | Exports all database records into a portable timestamped JSON backup |
-| `npm run db:restore` | Restores database records from a specified backup file |
+| Command              | Description                                                                      |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `npm run dev`        | Starts Vite development server with hot module replacement on port 8080          |
+| `npm run build`      | Builds client assets and standalone Node SSR server (`.output/server/index.mjs`) |
+| `npm run preview`    | Starts the production built server on port 8080 for verification                 |
+| `npm run lint`       | Runs ESLint across all TypeScript and React sources                              |
+| `npm run format`     | Enforces code formatting via Prettier across all files                           |
+| `npm test`           | Executes unit and integration test suite via Vitest                              |
+| `npm run test:e2e`   | Runs Playwright end-to-end browser tests across critical user journeys           |
+| `npm run db:migrate` | Runs all pending Drizzle SQL migrations against active database                  |
+| `npm run db:seed`    | Idempotently seeds initial catalog, updates, and admin user                      |
+| `npm run db:status`  | Prints connection health, engine type, and row counts across all 16 tables       |
+| `npm run db:backup`  | Exports all database records into a portable timestamped JSON backup             |
+| `npm run db:restore` | Restores database records from a specified backup file                           |
 
 ---
 

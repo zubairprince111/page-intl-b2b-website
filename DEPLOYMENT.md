@@ -7,6 +7,7 @@ This guide covers deploying the PAGE International digital platform onto a produ
 ## 1. VPS Provisioning & Host Preparation
 
 ### Minimum Recommended Specs
+
 - **CPU:** 2 vCPUs
 - **RAM:** 4 GB (2 GB minimum with swap)
 - **Disk:** 40 GB NVMe SSD

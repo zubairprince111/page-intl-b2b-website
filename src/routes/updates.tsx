@@ -1,783 +1,1640 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
+  MoreHorizontal,
+  Grid,
+  List,
+  Sparkles,
+  MapPin,
+  Calendar,
+  Search,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Radio,
+  Tag,
+  ArrowUpRight,
   Ship,
   Truck,
   Wrench,
   Zap,
-  Sparkles,
-  MapPin,
-  Building2,
-  Calendar,
-  Clock,
-  Search,
-  Share2,
-  Check,
-  ChevronRight,
-  Filter,
-  ArrowUpRight,
-  Tag,
-  X,
-  Radio,
-  FileText,
-  Bookmark,
-  MessageSquare,
+  ShoppingBag,
+  Send,
+  SlidersHorizontal,
+  Flame,
+  CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
-import { PageHeader } from "@/components/site/PageHeader";
 import { QuoteModal } from "@/components/site/QuoteModal";
 import { useUpdates } from "@/lib/data-client";
-import { type FeedUpdate, type UpdateCategory } from "@/lib/types";
+import { type UpdateCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+// Real image assets
+import evWorkshopBayImg from "@/assets/ev-workshop-bay.jpg";
+import liftImg from "@/assets/p-lift.jpg";
+import scannerImg from "@/assets/p-scanner.jpg";
+import motoLiftImg from "@/assets/p-moto-lift.jpg";
+import tyreChangerImg from "@/assets/p-tyre-changer.jpg";
+import wheelBalancerImg from "@/assets/p-wheel-balancer.jpg";
+import compressorImg from "@/assets/p-compressor.jpg";
+import consultationImg from "@/assets/consultation-engineer.jpg";
+import heroWorkshopImg from "@/assets/hero-workshop.jpg";
+import targetSectorsWorkshopImg from "@/assets/target-sectors-workshop.jpg";
 
 export const Route = createFileRoute("/updates")({
   head: () => ({
     meta: [
       {
-        title: "Field Updates, Shipments & Deliveries — PAGE International Ltd.",
+        title: "Field Updates & Live Dispatches — PAGE International Ltd.",
       },
       {
         name: "description",
         content:
-          "Live activity feed, inbound shipment notices, client workshop deliveries, equipment commissioning, and technical bulletins from PAGE International.",
+          "Official Instagram-style live operational feed: Inbound container arrivals, client workshop installations, high-voltage EV diagnostic trials, and engineering bulletins across Bangladesh.",
       },
       {
         property: "og:title",
-        content: "PAGE International — Live Activity Feed & Dispatches",
+        content: "PAGE International — Live Activity Feed & Field Dispatches",
       },
       {
         property: "og:description",
         content:
-          "Track new equipment shipments arriving in Bangladesh and commercial workshop handovers in real time.",
+          "Track new machinery arrivals, turnkey workshop handovers, and equipment commissioning in real time.",
       },
     ],
   }),
   component: UpdatesFeedPage,
 });
 
+// Category Styling & Metadata
 const CATEGORY_CONFIG: Record<
   UpdateCategory,
   {
     label: string;
     icon: typeof Truck;
     badgeClass: string;
-    pillClass: string;
     dotColor: string;
   }
 > = {
   shipment_inbound: {
     label: "Shipment Inbound",
     icon: Ship,
-    badgeClass:
-      "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800",
-    pillClass: "hover:border-sky-300 hover:text-sky-600",
+    badgeClass: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30",
     dotColor: "bg-sky-500",
   },
   client_delivery: {
     label: "Client Delivery",
     icon: Truck,
-    badgeClass:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800",
-    pillClass: "hover:border-emerald-300 hover:text-emerald-600",
+    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
     dotColor: "bg-emerald-500",
   },
   commissioning: {
     label: "Commissioning & Trial",
     icon: Wrench,
-    badgeClass:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800",
-    pillClass: "hover:border-amber-300 hover:text-amber-600",
+    badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
     dotColor: "bg-amber-500",
   },
   tech_bulletin: {
     label: "Tech Bulletin",
     icon: Zap,
-    badgeClass:
-      "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800",
-    pillClass: "hover:border-purple-300 hover:text-purple-600",
+    badgeClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
     dotColor: "bg-purple-500",
   },
   product_launch: {
     label: "Product Launch",
     icon: Sparkles,
-    badgeClass:
-      "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800",
-    pillClass: "hover:border-rose-300 hover:text-rose-600",
+    badgeClass: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
     dotColor: "bg-rose-500",
   },
 };
 
+export interface InstagramPost {
+  id: string;
+  slug: string;
+  title: string;
+  category: UpdateCategory;
+  categoryLabel?: string | undefined;
+  location: string;
+  date: string;
+  images: string[];
+  caption: string;
+  likes: number;
+  commentsCount: number;
+  comments: Array<{
+    id: string;
+    user: string;
+    userAvatar?: string | undefined;
+    text: string;
+    time: string;
+    verified?: boolean | undefined;
+  }>;
+  equipment: Array<{
+    name: string;
+    slug: string;
+    price?: number | undefined;
+    image?: string | undefined;
+  }>;
+  pinned?: boolean | undefined;
+  hashtags: string[];
+  likedByText: string;
+}
+
+// Curated high-resolution default field dispatches
+const CURATED_FIELD_POSTS: InstagramPost[] = [
+  {
+    id: "post-1",
+    slug: "container-arrival-chittagong-port-hydraulic-lifts",
+    title: "Inbound Container Arrival: 16 Units of 4.0T Hydraulic Lifts",
+    category: "shipment_inbound",
+    location: "Chittagong Container Terminal (CCT), Port of Chittagong",
+    date: "2026-11-08",
+    images: [heroWorkshopImg, liftImg],
+    caption:
+      "40ft High-Cube container cleared through Chittagong customs carrying 16 units of our certified 4.0T electro-hydraulic two-post lifts. Pre-ordered bays for Dhaka & Sylhet service hubs are moving onto transport trailers today. All hydraulic cylinders pressure-tested at 210 bar before dispatch.",
+    likes: 218,
+    commentsCount: 9,
+    comments: [
+      {
+        id: "c-1",
+        user: "tanvir_autofix",
+        text: "Excited for our 2 units arriving in Tejgaon tomorrow!",
+        time: "1d ago",
+        verified: true,
+      },
+      {
+        id: "c-2",
+        user: "chittagong_fleet_hub",
+        text: "Can we schedule forklift unloading on Thursday morning?",
+        time: "18h ago",
+        verified: false,
+      },
+    ],
+    equipment: [
+      {
+        name: "Heavy-Duty 2-Post Electro-Hydraulic Lift 4.0T",
+        slug: "heavy-duty-2-post-lift-4t",
+        price: 285000,
+        image: liftImg,
+      },
+    ],
+    hashtags: [
+      "#ChittagongPort",
+      "#InboundLogistics",
+      "#WorkshopLift",
+      "#HeavyMachinery",
+      "#PAGEInternational",
+    ],
+    likedByText: "chittagong_fleet_hub and 217 others",
+    pinned: true,
+  },
+  {
+    id: "post-2",
+    slug: "turnkey-ev-diagnostic-bay-commissioning-tejgaon",
+    title: "Turnkey Commissioning: High-Voltage EV Diagnostic Bay",
+    category: "commissioning",
+    location: "Tejgaon Industrial Area, Dhaka",
+    date: "2026-11-06",
+    images: [evWorkshopBayImg, scannerImg],
+    caption:
+      "Live commissioning of the first dedicated EV diagnostic bay in Tejgaon. Complete 1,000V VDE insulated setup, CAT IV battery state-of-health analyzer, and digital cell balance workstation handed over to AutoFix Engineering team. Calibration completed with zero earth-leakage variance.",
+    likes: 342,
+    commentsCount: 14,
+    comments: [
+      {
+        id: "c-3",
+        user: "greenfleet_bd",
+        text: "Does this setup support 800V architecture for commercial electric buses?",
+        time: "2d ago",
+        verified: true,
+      },
+      {
+        id: "c-4",
+        user: "page.international",
+        text: "@greenfleet_bd Yes! Rated up to 1,000V DC working voltage with dual interlock safety.",
+        time: "1d ago",
+        verified: true,
+      },
+    ],
+    equipment: [
+      {
+        name: "High-Voltage EV Motor & Battery Insulation Tester",
+        slug: "high-voltage-ev-motor-insulation-tester",
+        price: 115000,
+        image: scannerImg,
+      },
+      {
+        name: "Automotive Diagnostic Tablet Scanner X-431",
+        slug: "automotive-diagnostic-tablet-scanner",
+        price: 165000,
+        image: scannerImg,
+      },
+    ],
+    hashtags: [
+      "#EVBangladesh",
+      "#BatteryDiagnostics",
+      "#ElectricVehicles",
+      "#TejgaonHub",
+      "#CleanMobility",
+    ],
+    likedByText: "tanvir_autofix and 341 others",
+    pinned: true,
+  },
+  {
+    id: "post-3",
+    slug: "rapid-2w-pneumatic-motorcycle-lift-installation-mirpur",
+    title: "Rapid 2-Wheeler Service Bays: Pneumatic Motorcycle Scissor Lifts",
+    category: "client_delivery",
+    location: "Mirpur Sector 10, Dhaka",
+    date: "2026-11-04",
+    images: [motoLiftImg, targetSectorsWorkshopImg],
+    caption:
+      "Four pneumatic foot-pedal motorcycle lifts installed and commissioned for Speed Motors Mirpur. Cycle time to full 1.0m height: 14 seconds flat. Floor-mounted safety drops ensure technicians work at eye-level with zero back strain across 60+ daily bike turnarounds.",
+    likes: 189,
+    commentsCount: 6,
+    comments: [
+      {
+        id: "c-5",
+        user: "speed_motors_bd",
+        text: "Technicians love the foot pedal control. Bay turnover speed doubled on Day 1.",
+        time: "3d ago",
+        verified: true,
+      },
+    ],
+    equipment: [
+      {
+        name: "Heavy-Duty Pneumatic Motorcycle Scissor Lift 500kg",
+        slug: "pneumatic-motorcycle-scissor-lift-500kg",
+        price: 78000,
+        image: motoLiftImg,
+      },
+    ],
+    hashtags: [
+      "#TwoWheeler",
+      "#BikeGarage",
+      "#MotorcycleLift",
+      "#DhakaMechanics",
+      "#RapidTurnaround",
+    ],
+    likedByText: "speed_motors_bd and 188 others",
+  },
+  {
+    id: "post-4",
+    slug: "3d-wheel-alignment-dynamic-balancer-sylhet",
+    title: "Precision Calibration: Dynamic Wheel Balancer & 3D Laser Alignment",
+    category: "commissioning",
+    location: "Agrabad Commercial Area, Chittagong",
+    date: "2026-11-02",
+    images: [wheelBalancerImg, tyreChangerImg],
+    caption:
+      'Precision dynamic wheel balancing line operational at Dhaka Tyre Chittagong branch. Direct laser pointer indicates exact clip-on and stick-on lead weight positioning down to 1 gram accuracy. Tyre changer features robotic helper arm for 22" low-profile alloy wheel mounting.',
+    likes: 164,
+    commentsCount: 8,
+    comments: [
+      {
+        id: "c-6",
+        user: "dhaka_tyre_hub",
+        text: "The robotic helper arm prevents scratches on chrome rims completely. Top tier build.",
+        time: "4d ago",
+        verified: true,
+      },
+    ],
+    equipment: [
+      {
+        name: "Dynamic Digital Wheel Balancer with Laser Indicator",
+        slug: "dynamic-digital-wheel-balancer",
+        price: 195000,
+        image: wheelBalancerImg,
+      },
+      {
+        name: "Automatic Tyre Changer with Robotic Helper Arm",
+        slug: "automatic-tyre-changer-helper-arm",
+        price: 245000,
+        image: tyreChangerImg,
+      },
+    ],
+    hashtags: [
+      "#WheelAlignment",
+      "#DynamicBalancing",
+      "#TyreService",
+      "#ChittagongWorkshops",
+      "#AlloyWheels",
+    ],
+    likedByText: "dhaka_tyre_hub and 163 others",
+  },
+  {
+    id: "post-5",
+    slug: "centralized-10bar-screw-compressor-gazipur",
+    title: "Continuous Air Power: 15HP Rotary Screw Compressor Installation",
+    category: "client_delivery",
+    location: "Gazipur Industrial Corridor, Dhaka",
+    date: "2026-10-29",
+    images: [compressorImg, consultationImg],
+    caption:
+      "Continuous 10-bar compressed air line installed for 8 simultaneous pneumatic bays at GreenFleet Logistics Gazipur hub. Integrated refrigerated air dryer and particulate coalescing filters prevent moisture buildup inside air impact wrenches and tire inflators.",
+    likes: 127,
+    commentsCount: 5,
+    comments: [
+      {
+        id: "c-7",
+        user: "selim_greenfleet",
+        text: "Zero air-pressure drop across all 8 lines even with three 1-inch impact guns firing.",
+        time: "1w ago",
+        verified: true,
+      },
+    ],
+    equipment: [
+      {
+        name: "Industrial Rotary Screw Air Compressor 15HP",
+        slug: "industrial-rotary-screw-compressor-15hp",
+        price: 320000,
+        image: compressorImg,
+      },
+    ],
+    hashtags: [
+      "#RotaryScrewCompressor",
+      "#Pneumatics",
+      "#FleetMaintenance",
+      "#GazipurHub",
+      "#EngineeringExcellence",
+    ],
+    likedByText: "selim_greenfleet and 126 others",
+  },
+  {
+    id: "post-6",
+    slug: "cat-iv-high-voltage-safety-standards-bulletin",
+    title: "Technical Field Bulletin: 1,000V VDE Safety Compliance for EV Garages",
+    category: "tech_bulletin",
+    location: "PAGE National Technical Training Academy, Dhaka",
+    date: "2026-10-25",
+    images: [scannerImg, evWorkshopBayImg],
+    caption:
+      "Field bulletin for automotive technicians handling hybrid & EV high-voltage safety interlocks. Always verify zero voltage across DC bus capacitors with certified CAT III 1000V / CAT IV 600V probes before detaching orange shielding harnesses. Download our 12-point EV inspection checklist.",
+    likes: 295,
+    commentsCount: 11,
+    comments: [
+      {
+        id: "c-8",
+        user: "arif_speedmotors",
+        text: "Our entire workshop team attended this training session. Crucial knowledge for 2026.",
+        time: "2w ago",
+        verified: true,
+      },
+    ],
+    equipment: [
+      {
+        name: "Automotive Diagnostic Tablet Scanner X-431",
+        slug: "automotive-diagnostic-tablet-scanner",
+        price: 165000,
+        image: scannerImg,
+      },
+    ],
+    hashtags: [
+      "#TechBulletin",
+      "#ElectricalSafety",
+      "#HighVoltage",
+      "#TechnicianTraining",
+      "#PAGEAcademy",
+    ],
+    likedByText: "arif_speedmotors and 294 others",
+  },
+];
+
+// Stories Highlights data
+interface StoryHighlight {
+  id: string;
+  label: string;
+  category: UpdateCategory | "all";
+  image: string;
+  subtitle: string;
+  posts: InstagramPost[];
+}
+
 export function UpdatesFeedPage() {
   const { data: rawUpdates = [], isLoading } = useUpdates(true);
 
-  const updates = useMemo<FeedUpdate[]>(() => {
-    return rawUpdates.map((u: any) => ({
+  // State management
+  const [activeTab, setActiveTab] = useState<"feed" | "grid" | "saved">("feed");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const [savedPosts, setSavedPosts] = useState<Record<string, boolean>>({});
+  const [likesCount, setLikesCount] = useState<Record<string, number>>({});
+  const [activeStoryModal, setActiveStoryModal] = useState<StoryHighlight | null>(null);
+  const [storySlideIndex, setStorySlideIndex] = useState<number>(0);
+  const [storyProgress, setStoryProgress] = useState<number>(0);
+  const [storyPaused, setStoryPaused] = useState<boolean>(false);
+  const [activeDetailPost, setActiveDetailPost] = useState<InstagramPost | null>(null);
+  const [activeQuoteProduct, setActiveQuoteProduct] = useState<any>(null);
+  const [newComments, setNewComments] = useState<Record<string, string>>({});
+  const [localComments, setLocalComments] = useState<
+    Record<string, Array<{ id: string; user: string; text: string; time: string }>>
+  >({});
+  const [heartBurstPostId, setHeartBurstPostId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Toast helper
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
+
+  // Merge Database Updates with Curated Field Posts
+  const allPosts = useMemo<InstagramPost[]>(() => {
+    const dbPosts: InstagramPost[] = rawUpdates.map((u: any) => ({
       id: u.id,
+      slug: u.slug || `upd-${u.id}`,
       title: u.title,
-      slug: u.slug,
       category: (u.category as UpdateCategory) || "shipment_inbound",
       categoryLabel: CATEGORY_CONFIG[u.category as UpdateCategory]?.label || u.category,
+      location: "Tejgaon Central Hub, Dhaka",
       date: u.publishedAt
         ? new Date(u.publishedAt).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10),
-      summary: u.excerpt || u.content.slice(0, 120),
-      content: u.content,
-      companyOrClient: "PAGE Commercial Partner Bay",
-      location: "Tejgaon Central Hub, Dhaka",
-      images: u.coverImage ? [u.coverImage] : ["/durga-puja-launch-banner.png"],
-      equipmentNames: ["Automotive Bay Lift", "Diagnostic Station"],
-      badge: "Verified Commissioning",
+      images: u.coverImage ? [u.coverImage] : [evWorkshopBayImg],
+      caption: u.content || u.excerpt || "",
+      likes: 95,
+      commentsCount: 3,
+      comments: [
+        {
+          id: `db-c-${u.id}`,
+          user: "autofix_engineering",
+          text: "Noted with commercial desk. Excellent operational documentation.",
+          time: "1d ago",
+          verified: true,
+        },
+      ],
+      equipment: [
+        {
+          name: "Heavy-Duty 2-Post Electro-Hydraulic Lift 4.0T",
+          slug: "heavy-duty-2-post-lift-4t",
+          price: 285000,
+          image: liftImg,
+        },
+      ],
+      hashtags: ["#PAGEInternational", "#WorkshopEngineering", "#FieldUpdate"],
+      likedByText: "tanvir_autofix and 94 others",
       pinned: false,
-      published: Boolean(u.isPublished),
-      author: "PAGE Field Operations Desk",
-      readTimeMinutes: 3,
-      tags: ["Commercial", "Workshop", "Installation"],
-      createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: u.updatedAt ? new Date(u.updatedAt).toISOString() : new Date().toISOString(),
     }));
+
+    // Deduplicate against curated posts
+    const dbSlugs = new Set(dbPosts.map((p) => p.slug));
+    const uniqueCurated = CURATED_FIELD_POSTS.filter((p) => !dbSlugs.has(p.slug));
+    return [...dbPosts, ...uniqueCurated];
   }, [rawUpdates]);
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeLocation, setActiveLocation] = useState<string>("all");
-  const [readingStory, setReadingStory] = useState<FeedUpdate | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [activeQuoteProduct, setActiveQuoteProduct] = useState<any>(null);
-
-  // Filter published only for public viewing
-  const publishedUpdates = useMemo(() => {
-    return updates.filter((u) => u.published);
-  }, [updates]);
-
-  // Extract unique regions/cities for quick filter chips
-  const locations = useMemo(() => {
-    const locs = new Set<string>();
-    publishedUpdates.forEach((u) => {
-      if (u.location) {
-        if (
-          u.location.includes("Dhaka") ||
-          u.location.includes("Tejgaon") ||
-          u.location.includes("Mirpur")
-        ) {
-          locs.add("Dhaka Region");
-        }
-        if (u.location.includes("Chittagong") || u.location.includes("Agrabad")) {
-          locs.add("Chittagong");
-        }
-        if (u.location.includes("Sylhet")) {
-          locs.add("Sylhet");
-        }
-      }
-    });
-    return Array.from(locs);
-  }, [publishedUpdates]);
+  // Story highlights list
+  const storyHighlights = useMemo<StoryHighlight[]>(() => {
+    return [
+      {
+        id: "story-all",
+        label: "Live Dispatches",
+        category: "all",
+        image: heroWorkshopImg,
+        subtitle: "Latest Arrivals & Field Deployments",
+        posts: allPosts.slice(0, 4),
+      },
+      {
+        id: "story-port",
+        label: "Port Chittagong",
+        category: "shipment_inbound",
+        image: liftImg,
+        subtitle: "Inbound Containers & Customs Clearance",
+        posts: allPosts.filter((p) => p.category === "shipment_inbound"),
+      },
+      {
+        id: "story-ev",
+        label: "EV Diagnostic",
+        category: "commissioning",
+        image: evWorkshopBayImg,
+        subtitle: "High-Voltage Safety & Battery Labs",
+        posts: allPosts.filter((p) => p.category === "commissioning"),
+      },
+      {
+        id: "story-2w",
+        label: "2-Wheeler Hubs",
+        category: "client_delivery",
+        image: motoLiftImg,
+        subtitle: "Rapid Turnaround Motorcycle Bays",
+        posts: allPosts.filter((p) => p.category === "client_delivery"),
+      },
+      {
+        id: "story-wheel",
+        label: "Wheel Alignment",
+        category: "commissioning",
+        image: wheelBalancerImg,
+        subtitle: "3D Dynamic Balancing Lines",
+        posts: allPosts.filter((p) => p.category === "commissioning"),
+      },
+      {
+        id: "story-pneumatic",
+        label: "Pneumatics",
+        category: "client_delivery",
+        image: compressorImg,
+        subtitle: "Industrial 10-Bar Screw Compressors",
+        posts: allPosts.filter((p) => p.category === "client_delivery"),
+      },
+      {
+        id: "story-training",
+        label: "Field Academy",
+        category: "tech_bulletin",
+        image: consultationImg,
+        subtitle: "VDE Safety Training & Tech Bulletins",
+        posts: allPosts.filter((p) => p.category === "tech_bulletin"),
+      },
+    ];
+  }, [allPosts]);
 
   // Filtered dataset
-  const filteredUpdates = useMemo(() => {
-    return publishedUpdates.filter((item) => {
-      // Category filter
-      if (selectedCategory !== "all" && item.category !== selectedCategory) {
+  const filteredPosts = useMemo(() => {
+    return allPosts.filter((post) => {
+      // Saved tab
+      if (activeTab === "saved" && !savedPosts[post.id]) {
         return false;
       }
 
-      // Location filter
-      if (activeLocation !== "all") {
-        if (activeLocation === "Dhaka Region") {
-          const match = item.location.toLowerCase();
-          if (!match.includes("dhaka") && !match.includes("tejgaon") && !match.includes("mirpur")) {
-            return false;
-          }
-        } else if (activeLocation === "Chittagong") {
-          if (
-            !item.location.toLowerCase().includes("chittagong") &&
-            !item.location.toLowerCase().includes("agrabad")
-          ) {
-            return false;
-          }
-        } else if (activeLocation === "Sylhet") {
-          if (!item.location.toLowerCase().includes("sylhet")) {
-            return false;
-          }
-        }
+      // Category filter
+      if (selectedCategory !== "all" && post.category !== selectedCategory) {
+        return false;
       }
 
       // Search query
       if (searchQuery.trim().length > 0) {
         const q = searchQuery.toLowerCase().trim();
-        const inTitle = item.title.toLowerCase().includes(q);
-        const inSummary = item.summary.toLowerCase().includes(q);
-        const inContent = item.content.toLowerCase().includes(q);
-        const inClient = item.companyOrClient?.toLowerCase().includes(q);
-        const inLoc = item.location.toLowerCase().includes(q);
-        const inEquip = item.equipmentNames?.some((e) => e.toLowerCase().includes(q));
-        const inTags = item.tags?.some((t) => t.toLowerCase().includes(q));
-        return inTitle || inSummary || inContent || inClient || inLoc || inEquip || inTags;
+        const inTitle = post.title.toLowerCase().includes(q);
+        const inCaption = post.caption.toLowerCase().includes(q);
+        const inLoc = post.location.toLowerCase().includes(q);
+        const inEquip = post.equipment.some((e) => e.name.toLowerCase().includes(q));
+        const inTags = post.hashtags.some((t) => t.toLowerCase().includes(q));
+        return inTitle || inCaption || inLoc || inEquip || inTags;
       }
 
       return true;
     });
-  }, [publishedUpdates, selectedCategory, activeLocation, searchQuery]);
+  }, [allPosts, activeTab, savedPosts, selectedCategory, searchQuery]);
 
-  const handleShare = (item: FeedUpdate) => {
-    const url = `${window.location.origin}/updates?slug=${item.slug}`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url);
-      setCopiedId(item.id);
-      setTimeout(() => setCopiedId(null), 2000);
+  // Handle Like toggle
+  const handleToggleLike = (postId: string, initialLikes: number) => {
+    setLikedPosts((prev) => {
+      const isCurrentlyLiked = !!prev[postId];
+      const nextState = !isCurrentlyLiked;
+      setLikesCount((lc) => ({
+        ...lc,
+        [postId]: (lc[postId] ?? initialLikes) + (nextState ? 1 : -1),
+      }));
+      return { ...prev, [postId]: nextState };
+    });
+  };
+
+  // Handle Double-Tap Heart animation
+  const handleDoubleTap = (postId: string, initialLikes: number) => {
+    setHeartBurstPostId(postId);
+    setTimeout(() => setHeartBurstPostId(null), 800);
+    if (!likedPosts[postId]) {
+      handleToggleLike(postId, initialLikes);
     }
   };
 
-  const handleOpenQuoteForEquipment = (equipName: string) => {
+  // Handle Bookmark toggle
+  const handleToggleBookmark = (postId: string) => {
+    setSavedPosts((prev) => {
+      const isSaved = !!prev[postId];
+      const next = !isSaved;
+      showToast(next ? "Saved to your bookmarks" : "Removed from bookmarks");
+      return { ...prev, [postId]: next };
+    });
+  };
+
+  // Handle Share
+  const handleSharePost = (post: InstagramPost) => {
+    const url = `${window.location.origin}/updates?slug=${post.slug}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      showToast("Link copied to clipboard! 📋");
+    }
+  };
+
+  // Handle Add Comment
+  const handleAddComment = (postId: string) => {
+    const text = newComments[postId]?.trim();
+    if (!text) return;
+
+    setLocalComments((prev) => ({
+      ...prev,
+      [postId]: [
+        ...(prev[postId] || []),
+        {
+          id: `cmt-${Date.now()}`,
+          user: "guest_engineer",
+          text,
+          time: "Just now",
+        },
+      ],
+    }));
+
+    setNewComments((prev) => ({ ...prev, [postId]: "" }));
+    showToast("Field comment posted!");
+  };
+
+  // Open quote modal for equipment
+  const handleOpenQuote = (equip: {
+    name: string;
+    slug: string;
+    price?: number | undefined;
+    image?: string | undefined;
+  }) => {
     setActiveQuoteProduct({
-      slug: equipName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      name: equipName,
+      slug: equip.slug,
+      name: equip.name,
       category: "Garage Equipment",
-      price: 0,
-      image: "/durga-puja-launch-banner.png",
+      price: equip.price || 0,
+      image: equip.image || liftImg,
       rating: 5,
       reviewsCount: 1,
       stock: "In stock",
-      brand: "PAGE Partner Brands",
+      brand: "PAGE International Partner",
       specs: [],
       fits: [],
     });
   };
 
-  const categories: { id: string; label: string; count: number }[] = [
-    { id: "all", label: "All Dispatches", count: publishedUpdates.length },
-    {
-      id: "shipment_inbound",
-      label: "Inbound Shipments",
-      count: publishedUpdates.filter((u) => u.category === "shipment_inbound").length,
-    },
-    {
-      id: "client_delivery",
-      label: "Client Deliveries",
-      count: publishedUpdates.filter((u) => u.category === "client_delivery").length,
-    },
-    {
-      id: "commissioning",
-      label: "Commissioning",
-      count: publishedUpdates.filter((u) => u.category === "commissioning").length,
-    },
-    {
-      id: "tech_bulletin",
-      label: "Tech Bulletins",
-      count: publishedUpdates.filter((u) => u.category === "tech_bulletin").length,
-    },
+  // Story Autoplay Timer Effect
+  useEffect(() => {
+    if (!activeStoryModal || storyPaused) return;
+
+    const currentPostCount = activeStoryModal.posts.length;
+    if (currentPostCount === 0) return;
+
+    const interval = setInterval(() => {
+      setStoryProgress((prev) => {
+        if (prev >= 100) {
+          if (storySlideIndex < currentPostCount - 1) {
+            setStorySlideIndex((s) => s + 1);
+            return 0;
+          } else {
+            // Close when finished all slides
+            setActiveStoryModal(null);
+            setStorySlideIndex(0);
+            return 0;
+          }
+        }
+        return prev + 2.5; // ~4 second total duration
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [activeStoryModal, storySlideIndex, storyPaused]);
+
+  // Categories Filter configuration
+  const categoryTabs = [
+    { id: "all", label: "All Updates", icon: Sparkles },
+    { id: "shipment_inbound", label: "Inbound Port", icon: Ship },
+    { id: "client_delivery", label: "Deliveries", icon: Truck },
+    { id: "commissioning", label: "Commissioning", icon: Wrench },
+    { id: "tech_bulletin", label: "EV Bulletins", icon: Zap },
+    { id: "product_launch", label: "New Tech", icon: Flame },
   ];
 
   return (
     <div className="bg-background text-foreground min-h-screen">
-      {/* Editorial Header */}
-      <PageHeader
-        eyebrow="Activity Feed & Operational Dispatches"
-        title="Field Updates & Logistics"
-        intro="Real-time operational dispatches from our logistics desks, port shipments, and client workshop installations across Bangladesh."
-      />
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="bg-foreground text-background font-medium text-xs sm:text-sm px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-border">
+            <Check className="h-4 w-4 text-emerald-400" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
 
-      {/* Main Container */}
-      <section className="container-page py-10 sm:py-14 lg:py-18">
-        {/* Top Control Bar: Search + Category Pills */}
-        <div className="space-y-4 mb-10 sm:mb-12">
-          {/* Search + Region Pills */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-secondary/50 border border-border">
-            {/* Search Input */}
-            <div className="relative flex-1 max-w-lg">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search updates by equipment, workshop name, port, or city..."
-                className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
+      {/* TOP INSTAGRAM PROFILE HEADER */}
+      <section className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10">
+            {/* Profile Avatar with Story Gradient Ring */}
+            <div className="relative shrink-0 group">
+              <div className="p-[3.5px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 shadow-md">
+                <div className="p-1 rounded-full bg-background">
+                  <img
+                    src="/page-logo-square.png"
+                    alt="PAGE International"
+                    className="h-20 w-20 sm:h-28 sm:w-28 rounded-full object-cover bg-white"
+                  />
+                </div>
+              </div>
+              <div className="absolute bottom-1 right-1 bg-red-600 text-white rounded-full p-1 border-2 border-background shadow-xs">
+                <Radio className="h-3.5 w-3.5 animate-pulse" />
+              </div>
             </div>
 
-            {/* Quick Location Filter */}
-            <div className="flex items-center gap-1.5 flex-wrap text-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mr-1 flex items-center gap-1">
-                <MapPin className="h-3 w-3 text-primary" /> Region:
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveLocation("all")}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer",
-                  activeLocation === "all"
-                    ? "bg-foreground text-background border-foreground font-semibold"
-                    : "bg-background text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground",
-                )}
-              >
-                All Regions
-              </button>
-              {locations.map((loc) => (
-                <button
-                  key={loc}
-                  type="button"
-                  onClick={() => setActiveLocation(loc)}
-                  className={cn(
-                    "px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer",
-                    activeLocation === loc
-                      ? "bg-foreground text-background border-foreground font-semibold"
-                      : "bg-background text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground",
-                  )}
-                >
-                  {loc}
-                </button>
-              ))}
+            {/* Profile Info & Actions */}
+            <div className="flex-1 text-center sm:text-left space-y-3 sm:space-y-4">
+              {/* Username + Verified Badge + CTAs */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                  <h1 className="text-xl sm:text-2xl font-bold font-display tracking-tight text-foreground">
+                    page.international
+                  </h1>
+                  <span title="Verified Commercial Automotive Partner">
+                    <CheckCircle2 className="h-5 w-5 text-sky-500 fill-sky-500/20" />
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                  <a
+                    href="https://wa.me/8809612724346?text=Hi%20PAGE%20International%2C%20I%20am%20following%20your%20field%20feed%20and%20would%20like%20to%20inquire%20about%20workshop%20machinery."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary h-8 px-4 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>Message WhatsApp</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+
+                  <Link
+                    to="/services/book"
+                    className="btn btn-outline h-8 px-3.5 text-xs font-semibold inline-flex items-center gap-1.5"
+                  >
+                    <span>Book Bay Consultation</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                        showToast("Profile link copied!");
+                      }
+                    }}
+                    className="h-8 w-8 rounded-lg border border-border bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    title="Share profile"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Row */}
+              <div className="flex items-center justify-center sm:justify-start gap-6 sm:gap-8 text-xs sm:text-sm">
+                <div>
+                  <span className="font-bold text-foreground">{allPosts.length}</span>{" "}
+                  <span className="text-muted-foreground">dispatches</span>
+                </div>
+                <div>
+                  <span className="font-bold text-foreground">1,850+</span>{" "}
+                  <span className="text-muted-foreground">active bays</span>
+                </div>
+                <div>
+                  <span className="font-bold text-foreground">64</span>{" "}
+                  <span className="text-muted-foreground">districts</span>
+                </div>
+              </div>
+
+              {/* Bio Description */}
+              <div className="text-xs sm:text-sm text-foreground/90 max-w-xl space-y-1">
+                <p className="font-semibold text-foreground">
+                  PAGE International Ltd. — Industrial & Automotive Infrastructure
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  🇧🇩 Official field feed: Turnkey electro-hydraulic lifts, high-voltage EV
+                  diagnostic labs, pneumatic 2W systems, and live inbound container logistics across
+                  Bangladesh.
+                </p>
+                <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-[11px] font-mono text-primary font-semibold">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Tejgaon Central Logistics Bay, Dhaka
+                  </span>
+                  <span>•</span>
+                  <a
+                    href="https://page.com.bd"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:underline flex items-center gap-1"
+                  >
+                    page.com.bd
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Category Tabs Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {categories.map((cat) => (
+      {/* STORIES HIGHLIGHTS TRAY */}
+      <section className="border-b border-border bg-secondary/20 py-4 overflow-x-auto scrollbar-none">
+        <div className="max-w-4xl mx-auto px-4 flex items-center gap-4 sm:gap-6 justify-start sm:justify-center">
+          {storyHighlights.map((story) => (
+            <button
+              key={story.id}
+              type="button"
+              onClick={() => {
+                setActiveStoryModal(story);
+                setStorySlideIndex(0);
+                setStoryProgress(0);
+              }}
+              className="group flex flex-col items-center gap-1.5 focus:outline-none shrink-0"
+            >
+              <div className="p-[2.5px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 group-hover:scale-105 group-hover:shadow-md transition-all">
+                <div className="p-0.5 rounded-full bg-background">
+                  <img
+                    src={story.image}
+                    alt={story.label}
+                    className="h-14 w-14 sm:h-16 sm:w-16 rounded-full object-cover"
+                  />
+                </div>
+              </div>
+              <span className="text-[11px] sm:text-xs font-medium text-foreground tracking-tight group-hover:text-primary transition-colors max-w-[70px] sm:max-w-[80px] truncate text-center">
+                {story.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* MAIN CONTAINER */}
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+        {/* VIEW MODE TABS + SEARCH BAR */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
+          {/* View Mode Switcher */}
+          <div className="flex items-center justify-center gap-1 bg-secondary/60 p-1 rounded-xl border border-border/80 self-center sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab("feed")}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                activeTab === "feed"
+                  ? "bg-background text-foreground shadow-xs border border-border"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <List className="h-3.5 w-3.5" />
+              <span>Feed</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("grid")}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                activeTab === "grid"
+                  ? "bg-background text-foreground shadow-xs border border-border"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Grid className="h-3.5 w-3.5" />
+              <span>Explore</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("saved")}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                activeTab === "saved"
+                  ? "bg-background text-foreground shadow-xs border border-border"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Bookmark className="h-3.5 w-3.5" />
+              <span>Saved</span>
+              {Object.values(savedPosts).filter(Boolean).length > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-primary text-primary-foreground">
+                  {Object.values(savedPosts).filter(Boolean).length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Search Input */}
+          <div className="relative flex-1 max-w-xs self-stretch sm:self-auto">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search machinery, port, city..."
+              className="w-full bg-secondary/50 border border-border rounded-xl pl-9 pr-8 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* CATEGORY CHIPS */}
+        <div className="py-4 flex items-center gap-2 overflow-x-auto scrollbar-none">
+          {categoryTabs.map((cat) => {
+            const Icon = cat.icon;
+            const isSelected = selectedCategory === cat.id;
+            return (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all whitespace-nowrap cursor-pointer shadow-xs",
-                  selectedCategory === cat.id
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-card text-foreground border-border hover:bg-muted hover:border-border/80",
+                  "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer",
+                  isSelected
+                    ? "bg-foreground text-background border-foreground shadow-xs"
+                    : "bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground",
                 )}
               >
+                <Icon className="h-3.5 w-3.5" />
                 <span>{cat.label}</span>
-                <span
-                  className={cn(
-                    "px-1.5 py-0.2 rounded-full text-[10px] font-bold font-mono",
-                    selectedCategory === cat.id
-                      ? "bg-white/20 text-white"
-                      : "bg-secondary text-muted-foreground",
-                  )}
-                >
-                  {cat.count}
-                </span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Feed Story Stream */}
-        {filteredUpdates.length === 0 ? (
-          <div className="text-center py-16 px-4 border border-dashed border-border rounded-2xl bg-card">
+        {/* FEED CONTENT STREAM */}
+        {filteredPosts.length === 0 ? (
+          <div className="text-center py-20 px-4 border border-dashed border-border rounded-3xl bg-card my-6">
             <Radio className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-60" />
-            <h3 className="text-base font-bold text-foreground">No updates matching your filter</h3>
+            <h3 className="text-base font-bold text-foreground">No field dispatches found</h3>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-              Try adjusting your search query, selecting another category, or clearing region
-              filters.
+              {activeTab === "saved"
+                ? "You haven't bookmarked any dispatches yet. Click the bookmark icon on any post to save it here."
+                : "Try adjusting your search keywords or switching category filters."}
             </p>
             <button
               type="button"
               onClick={() => {
+                setActiveTab("feed");
                 setSelectedCategory("all");
                 setSearchQuery("");
-                setActiveLocation("all");
               }}
               className="mt-4 btn btn-outline h-9 px-4 text-xs font-bold uppercase"
             >
-              Reset All Filters
+              Reset Filters
             </button>
           </div>
+        ) : activeTab === "grid" ? (
+          /* 3-COLUMN EXPLORE GRID */
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 sm:gap-3 py-4">
+            {filteredPosts.map((post) => {
+              const cfg = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.shipment_inbound;
+              const isLiked = !!likedPosts[post.id];
+              const likes = likesCount[post.id] ?? post.likes;
+
+              return (
+                <div
+                  key={post.id}
+                  onClick={() => setActiveDetailPost(post)}
+                  className="group relative aspect-square bg-muted rounded-lg sm:rounded-xl overflow-hidden cursor-pointer border border-border/60 shadow-xs"
+                >
+                  <img
+                    src={post.images[0]}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    loading="lazy"
+                  />
+
+                  {/* Multi-photo indicator icon */}
+                  {post.images.length > 1 && (
+                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-xs text-white p-1 rounded-md">
+                      <Grid className="h-3 w-3" />
+                    </div>
+                  )}
+
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 text-white p-2 text-center">
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full border",
+                        cfg.badgeClass,
+                      )}
+                    >
+                      {cfg.label}
+                    </span>
+                    <div className="flex items-center gap-4 text-xs font-bold">
+                      <span className="flex items-center gap-1">
+                        <Heart
+                          className={cn(
+                            "h-4 w-4",
+                            isLiked ? "fill-red-500 text-red-500" : "fill-white",
+                          )}
+                        />
+                        {likes}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="h-4 w-4 fill-white" />
+                        {post.commentsCount + (localComments[post.id]?.length || 0)}
+                      </span>
+                    </div>
+                    <p className="text-[11px] line-clamp-1 text-white/80 max-w-[90%] font-medium">
+                      {post.title}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          <div className="space-y-8 sm:space-y-12">
-            {filteredUpdates.map((item, index) => {
-              const cfg = CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG.shipment_inbound;
-              const Icon = cfg.icon;
-              const formattedDate = new Date(item.date).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              });
+          /* SINGLE-COLUMN VERTICAL INSTAGRAM FEED */
+          <div className="max-w-[580px] mx-auto space-y-8 sm:space-y-10 py-4">
+            {filteredPosts.map((post) => {
+              const cfg = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.shipment_inbound;
+              const isLiked = !!likedPosts[post.id];
+              const isSaved = !!savedPosts[post.id];
+              const likes = likesCount[post.id] ?? post.likes;
+              const commentsList = [...post.comments, ...(localComments[post.id] || [])];
 
               return (
                 <article
-                  key={item.id}
-                  className="group relative rounded-2xl sm:rounded-3xl border border-border/80 bg-card hover:border-border transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden"
+                  key={post.id}
+                  className="rounded-2xl sm:rounded-3xl border border-border/80 bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all"
                 >
-                  {/* Top Meta Header Strip */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-8 pt-6 pb-4 border-b border-border/50 bg-secondary/20">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      {/* Category Badge */}
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-xs",
-                          cfg.badgeClass,
-                        )}
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                        <span>{item.categoryLabel || cfg.label}</span>
-                      </span>
+                  {/* CARD HEADER */}
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-border/40">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar with gradient ring */}
+                      <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600">
+                        <img
+                          src="/page-logo-square.png"
+                          alt="PAGE International"
+                          className="h-9 w-9 rounded-full object-cover bg-white"
+                        />
+                      </div>
 
-                      {/* Pinned Tag */}
-                      {item.pinned && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                          <Bookmark className="h-3 w-3 fill-current" />
-                          <span>Pinned Dispatch</span>
-                        </span>
-                      )}
-
-                      {/* Custom Badge */}
-                      {item.badge && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Date & Read Time */}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3.5 w-3.5 text-primary" />
-                        {formattedDate}
-                      </span>
-                      {item.readTimeMinutes && (
-                        <>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {item.readTimeMinutes} min read
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs sm:text-sm font-bold font-display text-foreground">
+                            page.international
                           </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Main Content Body: Grid Layout (Image + Text Story) */}
-                  <div className="p-5 sm:p-8 grid gap-6 lg:grid-cols-12 lg:items-start">
-                    {/* Story Left Column */}
-                    <div
-                      className={cn(
-                        "space-y-4",
-                        item.images && item.images.length > 0 ? "lg:col-span-7" : "lg:col-span-12",
-                      )}
-                    >
-                      {/* Client / Location Context Line */}
-                      {(item.companyOrClient || item.location) && (
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-                          {item.companyOrClient && (
-                            <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                              <Building2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                              <span>{item.companyOrClient}</span>
-                            </div>
-                          )}
-                          {item.location && (
-                            <div className="flex items-center gap-1.5">
-                              <MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                              <span>{item.location}</span>
-                            </div>
-                          )}
+                          <CheckCircle2 className="h-3.5 w-3.5 text-sky-500 fill-sky-500/20" />
+                          <span className="text-muted-foreground text-xs">•</span>
+                          <span className="text-[11px] text-muted-foreground font-mono">
+                            {new Date(post.date).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
                         </div>
-                      )}
 
-                      {/* Headline / Story Title */}
-                      <h2
-                        onClick={() => setReadingStory(item)}
-                        className="text-xl sm:text-2xl lg:text-[26px] font-bold font-display text-foreground leading-snug hover:text-primary transition-colors cursor-pointer"
-                      >
-                        {item.title}
-                      </h2>
-
-                      {/* Summary Paragraph (Hook) */}
-                      <p className="text-sm sm:text-base leading-relaxed text-foreground/80 font-normal">
-                        {item.summary}
-                      </p>
-
-                      {/* Equipment Pills */}
-                      {item.equipmentNames && item.equipmentNames.length > 0 && (
-                        <div className="pt-2">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                            Featured Machinery & Tooling:
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {item.equipmentNames.map((eq) => (
-                              <button
-                                key={eq}
-                                type="button"
-                                onClick={() => handleOpenQuoteForEquipment(eq)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 border border-border/80 transition-all cursor-pointer group/pill"
-                              >
-                                <Tag className="h-3 w-3 text-primary group-hover/pill:scale-110 transition-transform" />
-                                <span>{eq}</span>
-                                <ArrowUpRight className="h-3 w-3 opacity-40 group-hover/pill:opacity-100" />
-                              </button>
-                            ))}
-                          </div>
+                        {/* Location Geotag */}
+                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <MapPin className="h-3 w-3 text-red-500 shrink-0" />
+                          <span className="truncate max-w-[240px] sm:max-w-[320px] font-medium">
+                            {post.location}
+                          </span>
                         </div>
-                      )}
-
-                      {/* Action Bar: Read Full Story + Share + Quick Quote */}
-                      <div className="pt-4 flex flex-wrap items-center gap-3 border-t border-border/60">
-                        <button
-                          type="button"
-                          onClick={() => setReadingStory(item)}
-                          className="btn btn-primary h-9 px-4 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 shadow-sm"
-                        >
-                          <span>Read Full Dispatch</span>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleShare(item)}
-                          className="btn btn-outline h-9 px-3 text-xs font-semibold inline-flex items-center gap-1.5"
-                          title="Copy direct link to this dispatch"
-                        >
-                          {copiedId === item.id ? (
-                            <>
-                              <Check className="h-3.5 w-3.5 text-emerald-600" />
-                              <span className="text-emerald-600">Copied Link</span>
-                            </>
-                          ) : (
-                            <>
-                              <Share2 className="h-3.5 w-3.5" />
-                              <span>Share</span>
-                            </>
-                          )}
-                        </button>
-
-                        <Link
-                          to="/support"
-                          className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors ml-auto hidden sm:inline-flex items-center gap-1"
-                        >
-                          <span>Inquire with Commercial Desk</span>
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </Link>
                       </div>
                     </div>
 
-                    {/* Story Right Column (Photography / Visual Preview) */}
-                    {item.images && item.images.length > 0 && (
-                      <div className="lg:col-span-5 space-y-3">
-                        <div
-                          onClick={() => setReadingStory(item)}
-                          className="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden border border-border bg-muted cursor-pointer group/img shadow-sm"
-                        >
-                          <img
-                            src={item.images[0]}
-                            alt={item.title}
-                            loading={index === 0 ? "eager" : "lazy"}
-                            className="w-full h-full object-cover object-center group-hover/img:scale-105 transition-transform duration-500 ease-out"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity flex items-end p-4">
-                            <span className="text-white text-xs font-semibold inline-flex items-center gap-1">
-                              <span>Click to read full dispatch & view photos</span>
-                              <ChevronRight className="h-3.5 w-3.5" />
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Secondary Thumbnails */}
-                        {item.images.length > 1 && (
-                          <div className="grid grid-cols-3 gap-2">
-                            {item.images.slice(1, 4).map((img, imgIdx) => (
-                              <div
-                                key={imgIdx}
-                                onClick={() => setReadingStory(item)}
-                                className="relative aspect-[16/10] rounded-lg overflow-hidden border border-border bg-muted cursor-pointer hover:opacity-80 transition-opacity"
-                              >
-                                <img
-                                  src={img}
-                                  alt=""
-                                  className="w-full h-full object-cover object-center"
-                                />
-                              </div>
-                            ))}
-                          </div>
+                    {/* Right category badge & options */}
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                          cfg.badgeClass,
                         )}
+                      >
+                        {cfg.label}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSharePost(post)}
+                        className="text-muted-foreground hover:text-foreground p-1 transition-colors"
+                        title="Share dispatch"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CARD MEDIA (CAROUSEL / PHOTO WITH DOUBLE-TAP HEART) */}
+                  <div
+                    onDoubleClick={() => handleDoubleTap(post.id, post.likes)}
+                    className="relative aspect-square sm:aspect-[4/3] bg-muted overflow-hidden select-none cursor-pointer group"
+                  >
+                    <img
+                      src={post.images[0]}
+                      alt={post.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+
+                    {/* Double-tap animated heart pop */}
+                    {heartBurstPostId === post.id && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in zoom-in-50 duration-300">
+                        <Heart className="h-24 w-24 text-white fill-white drop-shadow-2xl animate-pulse" />
+                      </div>
+                    )}
+
+                    {/* Category badge overlay on mobile */}
+                    <div className="sm:hidden absolute top-3 left-3 z-10">
+                      <span
+                        className={cn(
+                          "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border shadow-md",
+                          cfg.badgeClass,
+                          "bg-black/60 text-white border-white/20",
+                        )}
+                      >
+                        {cfg.label}
+                      </span>
+                    </div>
+
+                    {/* Multi-image indicator badge */}
+                    {post.images.length > 1 && (
+                      <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        1 / {post.images.length}
                       </div>
                     )}
                   </div>
 
-                  {/* Author Byline */}
-                  <div className="px-5 sm:px-8 py-3 bg-secondary/30 border-t border-border/40 text-[11px] text-muted-foreground flex items-center justify-between">
-                    <span className="font-medium">
-                      Reported by:{" "}
-                      <span className="text-foreground font-semibold">{item.author}</span>
-                    </span>
-                    <span className="text-primary font-bold uppercase tracking-wider text-[10px]">
-                      PAGE International Ltd.
-                    </span>
+                  {/* CARD ACTION BAR */}
+                  <div className="p-4 sm:p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {/* Heart Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleLike(post.id, post.likes)}
+                          className="group/btn flex items-center gap-1 focus:outline-none cursor-pointer"
+                          aria-label="Like post"
+                        >
+                          <Heart
+                            className={cn(
+                              "h-6 w-6 transition-all duration-200 group-hover/btn:scale-115",
+                              isLiked
+                                ? "text-red-500 fill-red-500 scale-105"
+                                : "text-foreground group-hover/btn:text-red-500",
+                            )}
+                          />
+                        </button>
+
+                        {/* Comment Button */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveDetailPost(post)}
+                          className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                          aria-label="View comments"
+                        >
+                          <MessageCircle className="h-6 w-6 group-hover/btn:scale-110 transition-transform" />
+                        </button>
+
+                        {/* Share Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleSharePost(post)}
+                          className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                          aria-label="Share post"
+                        >
+                          <Send className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+                        </button>
+                      </div>
+
+                      {/* Bookmark Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleBookmark(post.id)}
+                        className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                        aria-label="Save post"
+                      >
+                        <Bookmark
+                          className={cn(
+                            "h-6 w-6 transition-transform group-hover/btn:scale-110",
+                            isSaved ? "text-foreground fill-current" : "",
+                          )}
+                        />
+                      </button>
+                    </div>
+
+                    {/* LIKES COUNTER */}
+                    <div className="text-xs sm:text-sm font-bold text-foreground">
+                      Liked by{" "}
+                      <span className="font-semibold text-foreground/90">
+                        {isLiked ? "You and " : ""}
+                        {post.likedByText}
+                      </span>
+                    </div>
+
+                    {/* CAPTION & TITLE */}
+                    <div className="space-y-1 text-xs sm:text-sm leading-relaxed">
+                      <div className="font-bold text-foreground font-display">{post.title}</div>
+                      <p className="text-foreground/90 font-normal">
+                        <span className="font-bold text-foreground mr-1.5">page.international</span>
+                        {post.caption}
+                      </p>
+                    </div>
+
+                    {/* HASHTAGS */}
+                    {post.hashtags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {post.hashtags.map((tag) => (
+                          <span
+                            key={tag}
+                            onClick={() => setSearchQuery(tag.replace("#", ""))}
+                            className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* FEATURED MACHINERY (INSTAGRAM SHOPPING TAG) */}
+                    {post.equipment.length > 0 && (
+                      <div className="pt-2 border-t border-border/50">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                          <ShoppingBag className="h-3 w-3 text-primary" />
+                          <span>Featured Machinery & Specs:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {post.equipment.map((eq) => (
+                            <button
+                              key={eq.name}
+                              type="button"
+                              onClick={() => handleOpenQuote(eq)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-secondary/80 hover:bg-primary/10 hover:text-primary hover:border-primary/40 border border-border transition-all cursor-pointer shadow-2xs group/tag"
+                            >
+                              <Tag className="h-3 w-3 text-primary group-hover/tag:scale-110 transition-transform" />
+                              <span className="truncate max-w-[260px]">{eq.name}</span>
+                              <ArrowUpRight className="h-3 w-3 opacity-60 group-hover/tag:opacity-100" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* COMMENTS PREVIEW */}
+                    <div className="pt-1 space-y-1 text-xs">
+                      {commentsList.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveDetailPost(post)}
+                          className="text-muted-foreground hover:text-foreground text-xs font-medium cursor-pointer"
+                        >
+                          View all {commentsList.length} field comments
+                        </button>
+                      )}
+
+                      {commentsList.slice(-2).map((cmt) => (
+                        <div key={cmt.id} className="text-foreground/90 leading-tight">
+                          <span className="font-bold text-foreground mr-1.5">{cmt.user}</span>
+                          <span>{cmt.text}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* ADD COMMENT INPUT BAR */}
+                    <div className="pt-2 flex items-center gap-2 border-t border-border/40">
+                      <input
+                        type="text"
+                        value={newComments[post.id] || ""}
+                        onChange={(e) =>
+                          setNewComments((prev) => ({ ...prev, [post.id]: e.target.value }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleAddComment(post.id);
+                          }
+                        }}
+                        placeholder="Add a field inquiry or technical note..."
+                        className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none py-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddComment(post.id)}
+                        disabled={!newComments[post.id]?.trim()}
+                        className="text-primary font-bold text-xs uppercase disabled:opacity-30 disabled:pointer-events-none hover:text-primary/80 transition-colors"
+                      >
+                        Post
+                      </button>
+                    </div>
                   </div>
                 </article>
               );
             })}
           </div>
         )}
+      </main>
 
-        {/* Bottom Callout: Receive Live Updates via WhatsApp & Email */}
-        <div className="mt-14 sm:mt-18 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-secondary/60 p-6 sm:p-10 text-center max-w-3xl mx-auto shadow-sm">
-          <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4 border border-primary/20">
-            <Radio className="h-6 w-6" />
-          </div>
-          <h3 className="text-xl sm:text-2xl font-bold font-display text-foreground uppercase tracking-tight">
-            Stay Connected with PAGE Field Operations
-          </h3>
-          <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Are you a workshop owner, automotive technician, or corporate fleet manager? Get early
-            arrival notices for inbound containers, seasonal discounts, and technician training
-            sessions.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="https://wa.me/8809612724346?text=Hi%20PAGE%20International%2C%20I%20would%20like%20to%20subscribe%20to%20your%20inbound%20shipment%20and%20equipment%20delivery%20updates."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary h-10 px-6 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 shadow-md"
-            >
-              <span>Connect on WhatsApp Updates</span>
-              <ArrowUpRight className="h-4 w-4" />
-            </a>
-            <Link
-              to="/support"
-              className="btn btn-outline h-10 px-6 text-xs font-bold uppercase tracking-wider"
-            >
-              Contact Commercial Desk
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* MODAL: Full Reading Experience ("Feel Like Reading It") */}
-      {readingStory && (
+      {/* FULL-SCREEN INSTAGRAM STORY MODAL */}
+      {activeStoryModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200"
-          onClick={() => setReadingStory(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200"
+          onClick={() => setActiveStoryModal(null)}
         >
           <div
-            className="relative w-full max-w-3xl max-h-[90vh] bg-card rounded-2xl sm:rounded-3xl border border-border shadow-2xl overflow-y-auto my-auto"
+            className="relative w-full max-w-sm sm:max-w-md h-[88vh] sm:h-[82vh] bg-zinc-900 text-white rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between"
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={() => setStoryPaused(true)}
+            onMouseUp={() => setStoryPaused(false)}
+            onTouchStart={() => setStoryPaused(true)}
+            onTouchEnd={() => setStoryPaused(false)}
           >
-            {/* Modal Header */}
-            <div className="sticky top-0 z-20 flex items-center justify-between p-4 sm:p-6 bg-card/95 backdrop-blur-md border-b border-border">
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-xs font-bold uppercase border",
-                    CATEGORY_CONFIG[readingStory.category]?.badgeClass,
-                  )}
-                >
-                  {readingStory.categoryLabel || CATEGORY_CONFIG[readingStory.category]?.label}
-                </span>
-                <span className="text-xs text-muted-foreground font-mono">
-                  {new Date(readingStory.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
+            {/* Story Progress Bars */}
+            <div className="p-3 absolute top-0 inset-x-0 z-30 flex items-center gap-1.5 bg-gradient-to-b from-black/80 to-transparent">
+              {activeStoryModal.posts.map((_, idx) => (
+                <div key={idx} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-white transition-all duration-100 ease-linear"
+                    style={{
+                      width:
+                        idx < storySlideIndex
+                          ? "100%"
+                          : idx === storySlideIndex
+                            ? `${storyProgress}%`
+                            : "0%",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Story Header */}
+            <div className="p-4 pt-6 absolute top-2 inset-x-0 z-30 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/page-logo-square.png"
+                  alt="PAGE"
+                  className="h-8 w-8 rounded-full border border-white/40 bg-white"
+                />
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-bold">page.international</span>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-sky-400 fill-sky-400/20" />
+                  </div>
+                  <span className="text-[10px] text-white/70 block">{activeStoryModal.label}</span>
+                </div>
               </div>
+
               <button
                 type="button"
-                onClick={() => setReadingStory(null)}
-                className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Close modal"
+                onClick={() => setActiveStoryModal(null)}
+                className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60 flex items-center justify-center transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 sm:p-10 space-y-6">
-              {/* Context Pill (Client & Location) */}
-              {(readingStory.companyOrClient || readingStory.location) && (
-                <div className="p-3.5 rounded-xl bg-secondary/50 border border-border flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-                  {readingStory.companyOrClient && (
-                    <div className="flex items-center gap-1.5 font-bold text-foreground">
-                      <Building2 className="h-4 w-4 text-primary" />
-                      <span>{readingStory.companyOrClient}</span>
-                    </div>
-                  )}
-                  {readingStory.location && (
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <MapPin className="h-4 w-4 text-zinc-400" />
-                      <span>{readingStory.location}</span>
-                    </div>
-                  )}
-                </div>
-              )}
+            {/* Story Slide Photo */}
+            {activeStoryModal.posts[storySlideIndex] && (
+              <div className="relative flex-1 w-full h-full">
+                <img
+                  src={activeStoryModal.posts[storySlideIndex].images[0]}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
 
-              {/* Title */}
-              <h1 className="text-2xl sm:text-3xl font-bold font-display text-foreground leading-tight">
-                {readingStory.title}
-              </h1>
+                {/* Story Tap Navigation Zones */}
+                <div
+                  className="absolute inset-y-0 left-0 w-1/3 z-20 cursor-pointer"
+                  onClick={() => {
+                    if (storySlideIndex > 0) {
+                      setStorySlideIndex((s) => s - 1);
+                      setStoryProgress(0);
+                    }
+                  }}
+                />
+                <div
+                  className="absolute inset-y-0 right-0 w-1/3 z-20 cursor-pointer"
+                  onClick={() => {
+                    if (storySlideIndex < activeStoryModal.posts.length - 1) {
+                      setStorySlideIndex((s) => s + 1);
+                      setStoryProgress(0);
+                    } else {
+                      setActiveStoryModal(null);
+                    }
+                  }}
+                />
 
-              {/* Main Photo */}
-              {readingStory.images && readingStory.images.length > 0 && (
-                <div className="rounded-2xl overflow-hidden border border-border shadow-md">
-                  <img
-                    src={readingStory.images[0]}
-                    alt={readingStory.title}
-                    className="w-full aspect-[16/9] object-cover"
-                  />
-                </div>
-              )}
+                {/* Bottom Story Content Card */}
+                <div className="absolute bottom-4 inset-x-4 z-30 space-y-3">
+                  <div className="flex items-center gap-1.5 text-xs text-white/80">
+                    <MapPin className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                    <span>{activeStoryModal.posts[storySlideIndex].location}</span>
+                  </div>
 
-              {/* Story Content / Paragraphs */}
-              <div className="prose prose-zinc dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed space-y-4">
-                {readingStory.content.split("\n\n").map((para, pIdx) => (
-                  <p key={pIdx} className="whitespace-pre-line text-foreground/90">
-                    {para}
+                  <h3 className="text-base sm:text-lg font-bold font-display leading-tight">
+                    {activeStoryModal.posts[storySlideIndex].title}
+                  </h3>
+
+                  <p className="text-xs text-white/90 line-clamp-3 leading-relaxed">
+                    {activeStoryModal.posts[storySlideIndex].caption}
                   </p>
-                ))}
-              </div>
 
-              {/* Featured Equipment Mentioned */}
-              {readingStory.equipmentNames && readingStory.equipmentNames.length > 0 && (
-                <div className="p-4 rounded-xl bg-secondary/30 border border-border space-y-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-primary block">
-                    Referenced Machinery in This Dispatch:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {readingStory.equipmentNames.map((eq) => (
+                  {/* Story CTA button */}
+                  {activeStoryModal.posts[storySlideIndex]?.equipment &&
+                    activeStoryModal.posts[storySlideIndex].equipment.length > 0 && (
                       <button
-                        key={eq}
                         type="button"
                         onClick={() => {
-                          setReadingStory(null);
-                          handleOpenQuoteForEquipment(eq);
+                          const currentSlide = activeStoryModal.posts[storySlideIndex];
+                          const eq = currentSlide?.equipment?.[0];
+                          if (eq) {
+                            setActiveStoryModal(null);
+                            handleOpenQuote(eq);
+                          }
                         }}
-                        className="btn btn-outline h-8 px-3 text-xs font-semibold inline-flex items-center gap-1.5 bg-card hover:bg-primary/10 hover:text-primary hover:border-primary/40"
+                        className="w-full btn btn-primary h-10 text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-lg"
                       >
-                        <Tag className="h-3 w-3 text-primary" />
-                        <span>{eq}</span>
-                        <ArrowUpRight className="h-3 w-3" />
+                        <ShoppingBag className="h-4 w-4" />
+                        <span>Request Quotation for Machinery</span>
                       </button>
+                    )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* INSTAGRAM POST DETAIL MODAL (DESKTOP SPLIT VIEW) */}
+      {activeDetailPost && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setActiveDetailPost(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl max-h-[92vh] bg-card rounded-2xl sm:rounded-3xl border border-border shadow-2xl overflow-hidden my-auto grid grid-cols-1 md:grid-cols-12"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Left: Photo */}
+            <div className="md:col-span-7 bg-black flex items-center justify-center relative aspect-square md:aspect-auto">
+              <img
+                src={activeDetailPost.images[0]}
+                alt={activeDetailPost.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Modal Right: Instagram Comments & Details Sidebar */}
+            <div className="md:col-span-5 flex flex-col justify-between max-h-[500px] md:max-h-[85vh] bg-card">
+              {/* Sidebar Header */}
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src="/page-logo-square.png"
+                    alt="PAGE"
+                    className="h-8 w-8 rounded-full border border-border"
+                  />
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-bold text-foreground">page.international</span>
+                      <CheckCircle2 className="h-3 w-3 text-sky-500 fill-sky-500/20" />
+                    </div>
+                    <span className="text-[11px] text-muted-foreground truncate block max-w-[180px]">
+                      {activeDetailPost.location}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveDetailPost(null)}
+                  className="h-8 w-8 rounded-full bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Sidebar Scrollable Body */}
+              <div className="p-4 flex-1 overflow-y-auto space-y-4 text-xs">
+                {/* Author caption */}
+                <div className="space-y-1.5 pb-3 border-b border-border/50">
+                  <h4 className="font-bold text-foreground font-display text-sm">
+                    {activeDetailPost.title}
+                  </h4>
+                  <p className="text-foreground/90 leading-relaxed">{activeDetailPost.caption}</p>
+                  <div className="flex flex-wrap gap-1 text-[11px] text-sky-600 dark:text-sky-400">
+                    {activeDetailPost.hashtags.map((t) => (
+                      <span key={t}>{t}</span>
                     ))}
                   </div>
                 </div>
-              )}
 
-              {/* Author & Signature */}
-              <div className="pt-6 border-t border-border flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
-                <div>
-                  <p className="font-semibold text-foreground">Author: {readingStory.author}</p>
-                  <p className="text-[11px]">PAGE International Technical & Operations Group</p>
+                {/* Featured Equipment CTA */}
+                {activeDetailPost.equipment.length > 0 && (
+                  <div className="p-3 rounded-xl bg-secondary/50 border border-border space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary block">
+                      Machinery Referenced:
+                    </span>
+                    {activeDetailPost.equipment.map((eq) => (
+                      <button
+                        key={eq.name}
+                        type="button"
+                        onClick={() => {
+                          setActiveDetailPost(null);
+                          handleOpenQuote(eq);
+                        }}
+                        className="w-full btn btn-outline h-8 px-2.5 text-xs font-semibold inline-flex items-center justify-between bg-card hover:bg-primary/10 hover:text-primary hover:border-primary/40"
+                      >
+                        <span className="truncate">{eq.name}</span>
+                        <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Comments List */}
+                <div className="space-y-3 pt-2">
+                  <span className="text-[11px] font-bold uppercase text-muted-foreground">
+                    Field Inquiries & Notes:
+                  </span>
+                  {[
+                    ...activeDetailPost.comments,
+                    ...(localComments[activeDetailPost.id] || []),
+                  ].map((cmt) => (
+                    <div key={cmt.id} className="space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-foreground">{cmt.user}</span>
+                        <span className="text-[10px] text-muted-foreground">{cmt.time}</span>
+                      </div>
+                      <p className="text-muted-foreground leading-snug">{cmt.text}</p>
+                    </div>
+                  ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleShare(readingStory)}
-                  className="btn btn-outline h-9 px-4 text-xs font-semibold inline-flex items-center gap-1.5"
-                >
-                  <Share2 className="h-3.5 w-3.5" />
-                  <span>Share This Update</span>
-                </button>
+              </div>
+
+              {/* Sidebar Action Footer */}
+              <div className="p-4 border-t border-border bg-secondary/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleLike(activeDetailPost.id, activeDetailPost.likes)}
+                      className="focus:outline-none"
+                    >
+                      <Heart
+                        className={cn(
+                          "h-5 w-5",
+                          likedPosts[activeDetailPost.id]
+                            ? "text-red-500 fill-red-500"
+                            : "text-foreground",
+                        )}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSharePost(activeDetailPost)}
+                      className="text-foreground hover:text-primary"
+                    >
+                      <Send className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <button type="button" onClick={() => handleToggleBookmark(activeDetailPost.id)}>
+                    <Bookmark
+                      className={cn(
+                        "h-5 w-5",
+                        savedPosts[activeDetailPost.id] ? "fill-current text-foreground" : "",
+                      )}
+                    />
+                  </button>
+                </div>
+
+                <div className="text-xs font-bold text-foreground">
+                  {likesCount[activeDetailPost.id] ?? activeDetailPost.likes} likes
+                </div>
+
+                {/* Add Comment in Modal */}
+                <div className="pt-2 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newComments[activeDetailPost.id] || ""}
+                    onChange={(e) =>
+                      setNewComments((prev) => ({
+                        ...prev,
+                        [activeDetailPost.id]: e.target.value,
+                      }))
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleAddComment(activeDetailPost.id);
+                      }
+                    }}
+                    placeholder="Add an inquiry..."
+                    className="flex-1 bg-secondary border border-border rounded-lg px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddComment(activeDetailPost.id)}
+                    disabled={!newComments[activeDetailPost.id]?.trim()}
+                    className="btn btn-primary h-8 px-3 text-xs font-bold uppercase disabled:opacity-30"
+                  >
+                    Post
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Quote Modal when an equipment is clicked */}
+      {/* QUOTE MODAL */}
       {activeQuoteProduct && (
         <QuoteModal product={activeQuoteProduct} onClose={() => setActiveQuoteProduct(null)} />
       )}
