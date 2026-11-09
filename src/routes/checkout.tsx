@@ -10,10 +10,13 @@ import {
   Truck,
   User,
   Wallet,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { taka } from "@/lib/data";
 import { useCart } from "@/lib/cart";
+import { useCurrentUser } from "@/lib/auth-client";
+import { useCreateOrder } from "@/lib/data-client";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -29,17 +32,78 @@ export const Route = createFileRoute("/checkout")({
 
 export function Checkout() {
   const { lines, subtotal, clear, isLoaded } = useCart();
+  const { data: user } = useCurrentUser();
+  const createOrderMutation = useCreateOrder();
+
   const [done, setDone] = useState(false);
   const [pay, setPay] = useState("cod");
   const [isBusiness, setIsBusiness] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    companyName: "",
+    bin: "",
+    address: "",
+    city: "Dhaka",
+    district: "",
+    postalCode: "",
+    notes: "",
+    honeypot: "",
+  });
+
+  // Autofill workshop details if signed in
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+        companyName: user.companyName || prev.companyName,
+        city: user.city || prev.city,
+      }));
+      if (user.companyName) {
+        setIsBusiness(true);
+      }
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = "PG-" + Math.floor(100000 + Math.random() * 900000);
-    setOrderId(id);
-    clear();
-    setDone(true);
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const res = (await createOrderMutation.mutateAsync({
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        companyName: isBusiness ? formData.companyName : undefined,
+        shippingAddress: formData.address,
+        city: formData.city,
+        district: formData.district || undefined,
+        postalCode: formData.postalCode || undefined,
+        paymentMethod: pay,
+        notes: formData.notes || undefined,
+        items: lines.map((l) => ({ productSlug: l.product.slug, quantity: l.qty })),
+        honeypot: formData.honeypot,
+      })) as { success: boolean; orderNumber: string };
+
+      if (res.orderNumber) {
+        setOrderId(res.orderNumber);
+      }
+      clear();
+      setDone(true);
+    } catch (err: any) {
+      setSubmitError(err?.message || "Failed to process commercial order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isLoaded) {
@@ -184,6 +248,8 @@ export function Checkout() {
                     placeholder="Your full legal name"
                     className="field"
                     autoComplete="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
 
@@ -197,6 +263,8 @@ export function Checkout() {
                     placeholder="+880 1..."
                     className="field"
                     autoComplete="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   />
                 </div>
 
@@ -206,13 +274,24 @@ export function Checkout() {
                       <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                         Company / Workshop Name *
                       </label>
-                      <input required placeholder="e.g. Apex Garage Ltd." className="field" />
+                      <input
+                        required
+                        placeholder="e.g. Apex Garage Ltd."
+                        className="field"
+                        value={formData.companyName}
+                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                         BIN / VAT Registration # (Optional)
                       </label>
-                      <input placeholder="For commercial tax invoice" className="field" />
+                      <input
+                        placeholder="For commercial tax invoice"
+                        className="field"
+                        value={formData.bin}
+                        onChange={(e) => setFormData({ ...formData, bin: e.target.value })}
+                      />
                     </div>
                   </>
                 )}
@@ -226,6 +305,8 @@ export function Checkout() {
                     placeholder="House/Plot #, Road/Avenue, Industrial Zone"
                     className="field"
                     autoComplete="street-address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   />
                 </div>
 
@@ -235,21 +316,25 @@ export function Checkout() {
                   </label>
                   <input
                     required
-                    defaultValue="Dhaka"
                     className="field"
                     autoComplete="address-level2"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
-                    Email Address (For Invoicing)
+                    Email Address (For Invoicing) *
                   </label>
                   <input
+                    required
                     type="email"
                     placeholder="billing@domain.com"
                     className="field"
                     autoComplete="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
 
@@ -260,6 +345,8 @@ export function Checkout() {
                   <textarea
                     placeholder="e.g., Heavy equipment unloading instructions, preferred time window, gate clearance"
                     className="field h-20 py-2.5"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   />
                 </div>
               </div>
@@ -379,12 +466,37 @@ export function Checkout() {
               </div>
             </div>
 
+            {/* Honeypot */}
+            <input
+              type="text"
+              name="b_chk_hp"
+              tabIndex={-1}
+              autoComplete="off"
+              value={formData.honeypot}
+              onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+              className="hidden"
+              aria-hidden="true"
+            />
+
+            {submitError && (
+              <div className="mt-4 rounded border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
+                {submitError}
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={!lines.length}
-              className="btn btn-primary mt-6 w-full h-12 text-xs font-bold uppercase tracking-wider"
+              disabled={!lines.length || isSubmitting}
+              className="btn btn-primary mt-6 w-full h-12 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              Place & Confirm Order
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Processing Commercial Order...</span>
+                </>
+              ) : (
+                <span>Place & Confirm Order</span>
+              )}
             </button>
 
             <div className="mt-4 text-[11px] text-muted-foreground space-y-1">

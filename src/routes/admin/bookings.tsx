@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { getBookings, updateBookingStatus, type ConsultBooking } from "@/lib/admin-data";
+import { useBookings, useUpdateBooking, useDeleteBooking } from "@/lib/data-client";
 import {
   CalendarCheck,
   Search,
@@ -14,6 +14,7 @@ import {
   MapPin,
   Calendar,
   Wrench,
+  Trash2,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -25,44 +26,65 @@ export const Route = createFileRoute("/admin/bookings")({
 });
 
 function AdminBookings() {
-  const [bookings, setBookings] = useState(() => getBookings());
+  const { data: bookings = [], isLoading } = useBookings();
+  const updateBookingMutation = useUpdateBooking();
+  const deleteBookingMutation = useDeleteBooking();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const filtered = bookings.filter((b) => {
+  const filtered = bookings.filter((b: any) => {
+    const sName = b.serviceType || b.serviceName || "";
     const matchSearch =
       !search ||
       b.companyName.toLowerCase().includes(search.toLowerCase()) ||
       b.contactName.toLowerCase().includes(search.toLowerCase()) ||
-      b.serviceName.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || b.status === statusFilter;
+      sName.toLowerCase().includes(search.toLowerCase());
+    const matchStatus =
+      statusFilter === "all" || b.status.toLowerCase() === statusFilter.toLowerCase();
     return matchSearch && matchStatus;
   });
 
-  function handleStatusChange(id: string, status: ConsultBooking["status"]) {
-    updateBookingStatus(id, status);
-    setBookings(getBookings());
+  async function handleStatusChange(id: string, status: string) {
+    await updateBookingMutation.mutateAsync({ id, status: status.toUpperCase() });
   }
 
-  function statusBadge(status: ConsultBooking["status"]) {
-    const styles = {
-      pending: "bg-amber-500/15 text-amber-400",
-      confirmed: "bg-emerald-500/15 text-emerald-400",
-      completed: "bg-blue-500/15 text-blue-400",
-      cancelled: "bg-red-500/15 text-red-400",
-    };
-    const icons = {
-      pending: <Clock className="h-3 w-3" />,
-      confirmed: <Check className="h-3 w-3" />,
-      completed: <CheckCircle2 className="h-3 w-3" />,
-      cancelled: <XCircle className="h-3 w-3" />,
-    };
+  async function handleDelete(id: string) {
+    if (confirm("Are you sure you want to delete this booking record?")) {
+      await deleteBookingMutation.mutateAsync(id);
+    }
+  }
+
+  function statusBadge(rawStatus: string) {
+    const status = (rawStatus || "pending").toLowerCase();
+    const isPending = status === "pending";
+    const isConfirmed = status === "confirmed";
+    const isCompleted = status === "completed";
+
+    const badgeClass = isPending
+      ? "bg-amber-500/15 text-amber-400"
+      : isConfirmed
+        ? "bg-emerald-500/15 text-emerald-400"
+        : isCompleted
+          ? "bg-blue-500/15 text-blue-400"
+          : "bg-red-500/15 text-red-400";
+
+    const icon = isPending ? (
+      <Clock className="h-3 w-3" />
+    ) : isConfirmed ? (
+      <Check className="h-3 w-3" />
+    ) : isCompleted ? (
+      <CheckCircle2 className="h-3 w-3" />
+    ) : (
+      <XCircle className="h-3 w-3" />
+    );
+
     return (
       <span
-        className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${styles[status]}`}
+        className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${badgeClass}`}
       >
-        {icons[status]}
-        {status}
+        {icon}
+        <span className="capitalize">{status}</span>
       </span>
     );
   }
@@ -142,14 +164,18 @@ function AdminBookings() {
                   <Wrench className="h-3.5 w-3.5 text-zinc-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-[10px] text-zinc-600">Service</p>
-                    <p className="text-[12px] text-zinc-300">{b.serviceName}</p>
+                    <p className="text-[12px] text-zinc-300">
+                      {b.serviceType || "Equipment Demonstration"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <MapPin className="h-3.5 w-3.5 text-zinc-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-[10px] text-zinc-600">Center</p>
-                    <p className="text-[12px] text-zinc-300">{b.centerName}</p>
+                    <p className="text-[12px] text-zinc-300">
+                      {b.centerName || b.city || "PAGE Regional Hub"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
@@ -157,12 +183,9 @@ function AdminBookings() {
                   <div>
                     <p className="text-[10px] text-zinc-600">Preferred Date</p>
                     <p className="text-[12px] text-zinc-300 font-medium">
-                      {new Date(b.preferredDate).toLocaleDateString("en-GB", {
-                        weekday: "long",
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {b.bookingDate
+                        ? `${b.bookingDate} (${b.timeSlot || "Flexible"})`
+                        : "Flexible"}
                     </p>
                   </div>
                 </div>
@@ -187,48 +210,50 @@ function AdminBookings() {
               )}
 
               {/* Actions */}
-              <div className="flex flex-wrap gap-2 pt-1 border-t border-white/[0.04]">
-                {b.status === "pending" && (
+              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/[0.04]">
+                {b.status.toLowerCase() === "pending" && (
                   <>
                     <button
                       onClick={() => handleStatusChange(b.id, "confirmed")}
-                      className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       <Check className="h-3 w-3" />
                       Confirm
                     </button>
                     <button
                       onClick={() => handleStatusChange(b.id, "cancelled")}
-                      className="flex items-center gap-1.5 bg-white/[0.06] hover:bg-red-500/20 text-zinc-300 hover:text-red-400 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 bg-white/[0.06] hover:bg-red-500/20 text-zinc-300 hover:text-red-400 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       <XCircle className="h-3 w-3" />
                       Cancel
                     </button>
                   </>
                 )}
-                {b.status === "confirmed" && (
+                {b.status.toLowerCase() === "confirmed" && (
                   <>
                     <button
                       onClick={() => handleStatusChange(b.id, "completed")}
-                      className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       <CheckCircle2 className="h-3 w-3" />
                       Mark Complete
                     </button>
                     <button
                       onClick={() => handleStatusChange(b.id, "cancelled")}
-                      className="flex items-center gap-1.5 bg-white/[0.06] hover:bg-red-500/20 text-zinc-300 hover:text-red-400 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 bg-white/[0.06] hover:bg-red-500/20 text-zinc-300 hover:text-red-400 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       <XCircle className="h-3 w-3" />
                       Cancel
                     </button>
                   </>
                 )}
-                {(b.status === "completed" || b.status === "cancelled") && (
-                  <span className="text-[11px] text-zinc-600 italic">
-                    {b.status === "completed" ? "Consultation completed" : "Booking cancelled"}
-                  </span>
-                )}
+                <button
+                  onClick={() => handleDelete(b.id)}
+                  className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-red-500/20 text-zinc-500 hover:text-red-400 text-[11px] font-medium px-2.5 py-1.5 rounded-lg transition-colors ml-auto cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Delete
+                </button>
               </div>
             </div>
           ))}

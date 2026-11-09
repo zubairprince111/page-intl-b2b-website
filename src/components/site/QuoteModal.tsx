@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, FileSpreadsheet, Minus, Plus, X } from "lucide-react";
+import { CheckCircle2, FileSpreadsheet, Minus, Plus, X, Loader2 } from "lucide-react";
 import type { Product } from "@/lib/data";
-import { addQuote } from "@/lib/admin-data";
+import { useCreateQuote } from "@/lib/data-client";
 
 export interface QuoteModalProps {
   product: Product | null;
@@ -11,6 +11,10 @@ export interface QuoteModalProps {
 export function QuoteModal({ product, onClose }: QuoteModalProps) {
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quoteNumber, setQuoteNumber] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const createQuoteMutation = useCreateQuote();
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -20,6 +24,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
     businessType: "Workshop / Garage",
     city: "Dhaka",
     notes: "",
+    honeypot: "",
   });
 
   // Prevent background body scrolling when quotation modal is opened
@@ -49,11 +54,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
 
   if (!product) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.companyName || !formData.phone) return;
+    setErrorMsg(null);
+    setIsSubmitting(true);
+
     try {
-      addQuote({
+      const res = await createQuoteMutation.mutateAsync({
         companyName: formData.companyName,
         contactName: formData.contactName || formData.companyName,
         phone: formData.phone,
@@ -64,11 +72,18 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
         businessType: formData.businessType,
         city: formData.city,
         notes: formData.notes,
+        honeypot: formData.honeypot,
       });
-    } catch {
-      // Fallback gracefully
+
+      if (res.quoteNumber) {
+        setQuoteNumber(res.quoteNumber);
+      }
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to submit quotation. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-    setSubmitted(true);
   };
 
   const handleReset = () => {
@@ -105,9 +120,9 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
               <strong className="text-foreground">
                 {qty}x {product.name}
               </strong>{" "}
-              has been logged under Reference ID:{" "}
+              has been logged in our system under Reference ID:{" "}
               <span className="font-mono font-bold text-primary">
-                #RFQ-{Math.floor(100000 + Math.random() * 900000)}
+                {quoteNumber || `#RFQ-${Math.floor(100000 + Math.random() * 900000)}`}
               </span>
               .
             </p>
@@ -294,14 +309,42 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 />
               </div>
 
+              {/* Honeypot field for bot protection */}
+              <input
+                type="text"
+                name="b_quote_hp"
+                tabIndex={-1}
+                autoComplete="off"
+                value={formData.honeypot}
+                onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                className="hidden"
+                aria-hidden="true"
+              />
+
+              {errorMsg && (
+                <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-500">
+                  {errorMsg}
+                </div>
+              )}
+
               {/* Submit CTA */}
               <div className="pt-1">
                 <button
                   type="submit"
-                  className="btn btn-primary w-full h-10 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={isSubmitting}
+                  className="btn btn-primary w-full h-10 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  <FileSpreadsheet className="h-4 w-4" />
-                  <span>Submit Price Quotation Request</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Submitting to Engineering Desk...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileSpreadsheet className="h-4 w-4" />
+                      <span>Submit Price Quotation Request</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

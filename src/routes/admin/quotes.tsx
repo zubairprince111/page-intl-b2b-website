@@ -1,15 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import {
-  getQuotes,
-  getInventory,
-  replyToQuote,
-  replyToQuoteWithDetails,
-  updateQuoteStatus,
-  openGmailQuotationDraft,
-  type QuoteRequest,
-  type InventoryItem,
-} from "@/lib/admin-data";
+import { useQuotes, useInventory, useUpdateQuote, useDeleteQuote } from "@/lib/data-client";
+import { openGmailQuotationDraft } from "@/lib/quotation-email";
 import { taka } from "@/lib/data";
 import {
   FileText,
@@ -32,7 +24,7 @@ import {
   Eye,
   Sparkles,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   QuotationEmailModal,
   generateQuotationEmailHtml,
@@ -47,14 +39,24 @@ export const Route = createFileRoute("/admin/quotes")({
 });
 
 function AdminQuotes() {
-  const [quotes, setQuotes] = useState(() => getQuotes());
-  const [inventory] = useState(() => getInventory());
+  const { data: rawQuotes = [], isLoading: quotesLoading } = useQuotes();
+  const { data: inventory = [] } = useInventory();
+  const updateQuoteMutation = useUpdateQuote();
+  const deleteQuoteMutation = useDeleteQuote();
+
+  const quotes = useMemo(() => {
+    return rawQuotes.map((q: any) => ({
+      ...q,
+      items: Array.isArray(q.itemsJson) ? q.itemsJson : undefined,
+    }));
+  }, [rawQuotes]);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [gmailToast, setGmailToast] = useState(false);
   const [previewEmailQuote, setPreviewEmailQuote] = useState<{
-    quote: QuoteRequest;
+    quote: any;
     productName: string;
     unitPrice: number;
     qty: number;
@@ -76,17 +78,18 @@ function AdminQuotes() {
     message: "",
   });
 
-  const filtered = quotes.filter((q) => {
+  const filtered = quotes.filter((q: any) => {
     const matchSearch =
       !search ||
       q.companyName.toLowerCase().includes(search.toLowerCase()) ||
       q.contactName.toLowerCase().includes(search.toLowerCase()) ||
       q.productName.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || q.status === statusFilter;
+    const matchStatus =
+      statusFilter === "all" || q.status.toLowerCase() === statusFilter.toLowerCase();
     return matchSearch && matchStatus;
   });
 
-  function toggleExpand(q: QuoteRequest) {
+  function toggleExpand(q: any) {
     if (expandedId === q.id) {
       setExpandedId(null);
     } else {
@@ -94,16 +97,18 @@ function AdminQuotes() {
       const matchInv = inventory.find(
         (i) => i.slug === q.productSlug || i.name.toLowerCase() === q.productName.toLowerCase(),
       );
-      const isMulti = q.items && q.items.length > 1;
+      const isMulti = (q.itemsJson || q.items) && (q.itemsJson || q.items).length > 1;
+      const qItems = q.itemsJson || q.items;
       const calculatedTotal =
-        isMulti && q.items
-          ? q.items.reduce(
-              (acc, it) => acc + (it.unitPrice || matchInv?.price || 150000) * it.qty,
+        isMulti && qItems
+          ? qItems.reduce(
+              (acc: number, it: any) =>
+                acc + (it.unitPrice || matchInv?.priceBdt || 150000) * it.qty,
               0,
             )
-          : q.quotedPrice || matchInv?.price || 150000;
+          : q.quotedPrice || matchInv?.priceBdt || 150000;
 
-      const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : matchInv?.price || 150000);
+      const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : matchInv?.priceBdt || 150000);
       const qty = isMulti ? 1 : q.qty || 1;
 
       setReplyState({
@@ -113,7 +118,7 @@ function AdminQuotes() {
         qty,
         message:
           q.reply ||
-          `Dear ${q.contactName || q.companyName}, thank you for your quotation request for ${isMulti ? `${q.items?.length} workshop products` : q.productName}. We are pleased to provide you with this official commercial quotation including certified installation, delivery, and warranty support.`,
+          `Dear ${q.contactName || q.companyName}, thank you for your quotation request for ${isMulti ? `${qItems?.length} workshop products` : q.productName}. We are pleased to provide you with this official commercial quotation including certified installation, delivery, and warranty support.`,
       });
     }
   }
@@ -125,27 +130,24 @@ function AdminQuotes() {
         ...prev,
         productSlug: item.slug,
         productName: item.name,
-        unitPrice: item.price,
+        unitPrice: item.priceBdt,
       }));
     }
   }
 
-  async function handleSendDetailedReply(id: string, status: QuoteRequest["status"] = "replied") {
-    const q = quotes.find((item) => item.id === id);
-    replyToQuoteWithDetails(id, {
-      productSlug: replyState.productSlug,
-      productName: replyState.productName,
-      unitPrice: replyState.unitPrice,
-      qty: replyState.qty,
-      reply: replyState.message,
+  async function handleSendDetailedReply(id: string, status = "replied") {
+    const q = quotes.find((item: any) => item.id === id);
+    await updateQuoteMutation.mutateAsync({
+      id,
       status,
+      reply: replyState.message,
+      quotedPrice: replyState.unitPrice,
     });
-    setQuotes(getQuotes());
 
     if (q) {
       // 1. Copy formatted HTML email template to clipboard
       const html = generateQuotationEmailHtml({
-        quote: q,
+        quote: q as any,
         productName: replyState.productName,
         unitPrice: replyState.unitPrice,
         qty: replyState.qty,
@@ -156,7 +158,7 @@ function AdminQuotes() {
 
       // 2. Open Gmail compose with clean body so user can paste the rich layout
       openGmailQuotationDraft({
-        quote: q,
+        quote: q as any,
         productName: replyState.productName,
         unitPrice: replyState.unitPrice,
         qty: replyState.qty,
@@ -166,20 +168,24 @@ function AdminQuotes() {
     }
   }
 
-  async function handleOpenDirectGmail(q: QuoteRequest) {
-    const isMulti = q.items && q.items.length > 1;
+  async function handleOpenDirectGmail(q: any) {
+    const qItems = q.itemsJson || q.items;
+    const isMulti = qItems && qItems.length > 1;
     const matchInv = inventory.find(
       (i) => i.slug === q.productSlug || i.name.toLowerCase() === q.productName.toLowerCase(),
     );
     const calculatedTotal =
-      isMulti && q.items
-        ? q.items.reduce((acc, it) => acc + (it.unitPrice || matchInv?.price || 150000) * it.qty, 0)
-        : q.quotedPrice || matchInv?.price || 150000;
+      isMulti && qItems
+        ? qItems.reduce(
+            (acc: number, it: any) => acc + (it.unitPrice || matchInv?.priceBdt || 150000) * it.qty,
+            0,
+          )
+        : q.quotedPrice || matchInv?.priceBdt || 150000;
 
-    const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : matchInv?.price || 150000);
+    const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : matchInv?.priceBdt || 150000);
     const qty = isMulti ? 1 : q.qty || 1;
     const prodName = isMulti
-      ? `${q.items?.length} Products (${q.items?.map((it) => it.productName).join(", ")})`
+      ? `${qItems?.length} Products (${qItems?.map((it: any) => it.productName).join(", ")})`
       : q.productName;
 
     const html = generateQuotationEmailHtml({
@@ -202,35 +208,45 @@ function AdminQuotes() {
     });
   }
 
-  function handleStatusChange(id: string, status: QuoteRequest["status"]) {
-    updateQuoteStatus(id, status);
-    setQuotes(getQuotes());
+  async function handleStatusChange(id: string, status: string) {
+    await updateQuoteMutation.mutateAsync({ id, status });
   }
 
-  function statusBadge(status: QuoteRequest["status"]) {
-    const styles = {
-      pending: "bg-amber-500/15 text-amber-400",
-      replied: "bg-blue-500/15 text-blue-400",
-      accepted: "bg-emerald-500/15 text-emerald-400",
-      declined: "bg-red-500/15 text-red-400",
-    };
-    const icons = {
-      pending: <Clock className="h-3 w-3" />,
-      replied: <MessageSquare className="h-3 w-3" />,
-      accepted: <Check className="h-3 w-3" />,
-      declined: <XCircle className="h-3 w-3" />,
-    };
+  function statusBadge(rawStatus: string) {
+    const status = rawStatus.toLowerCase();
+    const isPending = status === "pending";
+    const isReplied = status === "replied" || status === "quoted";
+    const isAccepted = status === "accepted" || status === "completed";
+
+    const badgeClass = isPending
+      ? "bg-amber-500/15 text-amber-400"
+      : isReplied
+        ? "bg-blue-500/15 text-blue-400"
+        : isAccepted
+          ? "bg-emerald-500/15 text-emerald-400"
+          : "bg-red-500/15 text-red-400";
+
+    const icon = isPending ? (
+      <Clock className="h-3 w-3" />
+    ) : isReplied ? (
+      <MessageSquare className="h-3 w-3" />
+    ) : isAccepted ? (
+      <Check className="h-3 w-3" />
+    ) : (
+      <XCircle className="h-3 w-3" />
+    );
+
     return (
       <span
-        className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${styles[status]}`}
+        className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${badgeClass}`}
       >
-        {icons[status]}
-        {status}
+        {icon}
+        <span className="capitalize">{status}</span>
       </span>
     );
   }
 
-  const pendingCount = quotes.filter((q) => q.status === "pending").length;
+  const pendingCount = quotes.filter((q: any) => q.status === "pending").length;
 
   return (
     <AdminLayout activeRoute="/admin/quotes">
@@ -280,7 +296,7 @@ function AdminQuotes() {
 
         {/* Quote Cards */}
         <div className="space-y-3">
-          {filtered.map((q) => {
+          {filtered.map((q: any) => {
             const isExpanded = expandedId === q.id;
             return (
               <div
@@ -383,11 +399,11 @@ function AdminQuotes() {
                             <span>Requested Products ({q.items.length} Line Items)</span>
                           </h4>
                           <span className="text-[11px] font-mono text-zinc-400 bg-white/[0.04] px-2 py-0.5 rounded">
-                            {q.items.reduce((acc, it) => acc + it.qty, 0)} total units
+                            {q.items.reduce((acc: number, it: any) => acc + it.qty, 0)} total units
                           </span>
                         </div>
                         <div className="divide-y divide-white/[0.06] overflow-hidden rounded-lg border border-white/[0.06] bg-[#1a1a1a]">
-                          {q.items.map((it, idx) => (
+                          {q.items.map((it: any, idx: number) => (
                             <div
                               key={idx}
                               className="p-3 flex items-center justify-between gap-3 text-xs"
@@ -446,7 +462,8 @@ function AdminQuotes() {
                           >
                             {inventory.map((item) => (
                               <option key={item.slug} value={item.slug}>
-                                {item.name} ({item.sku})
+                                {item.name} (
+                                {(item as any).sku || item.slug.slice(0, 6).toUpperCase()})
                               </option>
                             ))}
                           </select>
@@ -607,7 +624,7 @@ function AdminQuotes() {
           message={previewEmailQuote.message}
           onClose={() => setPreviewEmailQuote(null)}
           onSent={() => {
-            setQuotes(getQuotes());
+            setPreviewEmailQuote(null);
           }}
         />
       )}

@@ -25,7 +25,8 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/site/PageHeader";
 import { QuoteModal } from "@/components/site/QuoteModal";
-import { getUpdates, type FeedUpdate, type UpdateCategory } from "@/lib/admin-data";
+import { useUpdates } from "@/lib/data-client";
+import { type FeedUpdate, type UpdateCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/updates")({
@@ -106,26 +107,41 @@ const CATEGORY_CONFIG: Record<
 };
 
 export function UpdatesFeedPage() {
-  const [updates, setUpdates] = useState<FeedUpdate[]>(() => getUpdates());
+  const { data: rawUpdates = [], isLoading } = useUpdates(true);
+
+  const updates = useMemo<FeedUpdate[]>(() => {
+    return rawUpdates.map((u: any) => ({
+      id: u.id,
+      title: u.title,
+      slug: u.slug,
+      category: (u.category as UpdateCategory) || "shipment_inbound",
+      categoryLabel: CATEGORY_CONFIG[u.category as UpdateCategory]?.label || u.category,
+      date: u.publishedAt
+        ? new Date(u.publishedAt).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+      summary: u.excerpt || u.content.slice(0, 120),
+      content: u.content,
+      companyOrClient: "PAGE Commercial Partner Bay",
+      location: "Tejgaon Central Hub, Dhaka",
+      images: u.coverImage ? [u.coverImage] : ["/durga-puja-launch-banner.png"],
+      equipmentNames: ["Automotive Bay Lift", "Diagnostic Station"],
+      badge: "Verified Commissioning",
+      pinned: false,
+      published: Boolean(u.isPublished),
+      author: "PAGE Field Operations Desk",
+      readTimeMinutes: 3,
+      tags: ["Commercial", "Workshop", "Installation"],
+      createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: u.updatedAt ? new Date(u.updatedAt).toISOString() : new Date().toISOString(),
+    }));
+  }, [rawUpdates]);
+
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeLocation, setActiveLocation] = useState<string>("all");
   const [readingStory, setReadingStory] = useState<FeedUpdate | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeQuoteProduct, setActiveQuoteProduct] = useState<any>(null);
-
-  // Real-time synchronization when updates are created/modified in Admin Panel
-  useEffect(() => {
-    const handleUpdate = () => {
-      setUpdates(getUpdates());
-    };
-    window.addEventListener("updates_updated", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
-    return () => {
-      window.removeEventListener("updates_updated", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
-    };
-  }, []);
 
   // Filter published only for public viewing
   const publishedUpdates = useMemo(() => {

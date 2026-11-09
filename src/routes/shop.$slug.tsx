@@ -17,7 +17,7 @@ import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { products, getShopProducts, getProductBySlug, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
-import { addQuote } from "@/lib/admin-data";
+import { useCreateQuote } from "@/lib/data-client";
 
 export const Route = createFileRoute("/shop/$slug")({
   loader: ({ params }) => {
@@ -94,6 +94,7 @@ function ProductPage() {
   const [selectedArmType, setSelectedArmType] = useState(armOptions[0]?.id || "standard");
 
   const inCart = lines.some((l) => l.slug === p.slug);
+  const createQuoteMutation = useCreateQuote();
 
   // Quote Form State
   const [quoteData, setQuoteData] = useState({
@@ -106,11 +107,11 @@ function ProductPage() {
     notes: "",
   });
 
-  const handleQuoteSubmit = (e: React.FormEvent) => {
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quoteData.businessName || !quoteData.phone) return;
     try {
-      addQuote({
+      await createQuoteMutation.mutateAsync({
         companyName: quoteData.businessName,
         contactName: quoteData.contactPerson || quoteData.businessName,
         phone: quoteData.phone,

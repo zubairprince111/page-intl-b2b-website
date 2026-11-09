@@ -13,8 +13,30 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-import type { QuoteRequest } from "@/lib/admin-data";
 import { taka } from "@/lib/data";
+
+export type QuoteRequest = {
+  id: string;
+  companyName: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  productSlug: string;
+  productName: string;
+  qty: number;
+  items?:
+    { productSlug: string; productName: string; qty: number; unitPrice?: number }[] | undefined;
+  itemsJson?:
+    { productSlug: string; productName: string; qty: number; unitPrice?: number }[] | undefined;
+  businessType?: string | null;
+  city?: string | null;
+  notes?: string | null;
+  status?: string;
+  reply?: string | null;
+  quotedPrice?: number | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
 
 export interface QuotationEmailProps {
   quote: QuoteRequest;

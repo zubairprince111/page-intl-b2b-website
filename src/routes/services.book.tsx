@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { centers } from "@/lib/data";
-import { addBooking } from "@/lib/admin-data";
+import { useCreateBooking } from "@/lib/data-client";
 
 type S = { service?: string | undefined; center?: string | undefined };
 
@@ -98,6 +98,9 @@ export function BookConsultation() {
   const search = Route.useSearch();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmedBookingNum, setConfirmedBookingNum] = useState("");
+  const createBookingMutation = useCreateBooking();
   const [sel, setSel] = useState<string[]>(search.service ? [search.service] : ["lift-demo"]);
 
   const [biz, setBiz] = useState({
@@ -141,6 +144,11 @@ export function BookConsultation() {
         <h1 className="display-lg mt-4 text-foreground font-bold">
           Equipment Consultation Scheduled
         </h1>
+        {confirmedBookingNum && (
+          <p className="mt-1 text-xs font-mono text-primary font-bold">
+            Reference ID: {confirmedBookingNum}
+          </p>
+        )}
         <p className="mt-3 max-w-lg text-xs sm:text-sm text-muted-foreground leading-relaxed">
           Your appointment for{" "}
           <strong>
@@ -585,34 +593,48 @@ export function BookConsultation() {
               ) : (
                 <button
                   type="button"
-                  disabled={!canNext}
-                  onClick={() => {
+                  disabled={!canNext || isSubmitting}
+                  onClick={async () => {
+                    setIsSubmitting(true);
                     try {
-                      addBooking({
+                      const bookingDate =
+                        day !== null
+                          ? days[day]!.toISOString().slice(0, 10)
+                          : new Date().toISOString().slice(0, 10);
+
+                      const res = await createBookingMutation.mutateAsync({
                         companyName: biz.businessName,
-                        contactName: info.contactPerson,
+                        contactName: info.contactPerson || biz.businessName,
                         phone: info.phone,
                         email: info.email,
-                        serviceId: sel[0] || "consultation",
-                        serviceName:
+                        serviceType:
                           chosenServices.map((s) => s.name).join(", ") ||
                           "General Equipment Consultation",
+                        bookingDate,
+                        timeSlot: slot,
+                        city: locationType === "hub" ? c?.area || "Dhaka" : "Dhaka",
                         centerId: locationType === "hub" ? center : "onsite",
                         centerName:
                           locationType === "hub"
                             ? c?.name || "PAGE Equipment Hub"
                             : `On-site: ${onsiteAddress || biz.businessName}`,
-                        preferredDate: `${day !== null ? days[day]!.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)} (${slot})`,
                         notes: info.notes,
                       });
-                    } catch {
-                      // Fallback gracefully
+
+                      if (res.bookingNumber) {
+                        setConfirmedBookingNum(res.bookingNumber);
+                      }
+                      setDone(true);
+                    } catch (err) {
+                      console.error("Booking error:", err);
+                      setDone(true);
+                    } finally {
+                      setIsSubmitting(false);
                     }
-                    setDone(true);
                   }}
-                  className="btn btn-primary h-10 px-8 text-xs font-bold uppercase tracking-wider shadow"
+                  className="btn btn-primary h-10 px-8 text-xs font-bold uppercase tracking-wider shadow disabled:opacity-50"
                 >
-                  Confirm Appointment
+                  {isSubmitting ? "Securing Appointment..." : "Confirm Appointment"}
                 </button>
               )}
             </div>

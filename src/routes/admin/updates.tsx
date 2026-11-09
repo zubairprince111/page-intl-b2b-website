@@ -1,14 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import {
-  getUpdates,
-  addUpdate,
-  updateUpdate,
-  deleteUpdate,
-  resetUpdatesToDefault,
-  type FeedUpdate,
-  type UpdateCategory,
-} from "@/lib/admin-data";
+import { useUpdates, useSaveUpdate, useDeleteUpdate } from "@/lib/data-client";
+import { type UpdateCategory } from "@/lib/types";
 import {
   Newspaper,
   Plus,
@@ -75,13 +68,39 @@ const CATEGORY_META: Record<
 };
 
 export function AdminUpdates() {
-  const [updates, setUpdates] = useState<FeedUpdate[]>(() => getUpdates());
+  const { data: rawUpdates = [], isLoading } = useUpdates();
+  const saveUpdateMutation = useSaveUpdate();
+  const deleteUpdateMutation = useDeleteUpdate();
+
+  const updates = useMemo(() => {
+    return rawUpdates.map((u: any) => ({
+      id: u.id,
+      title: u.title,
+      slug: u.slug,
+      category: u.category as UpdateCategory,
+      categoryLabel: CATEGORY_META[u.category as UpdateCategory]?.label || u.category,
+      date: u.publishedAt
+        ? new Date(u.publishedAt).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+      summary: u.excerpt || u.content.slice(0, 120),
+      content: u.content,
+      images: u.coverImage ? [u.coverImage] : ["/durga-puja-launch-banner.png"],
+      published: Boolean(u.isPublished),
+      author: "PAGE Operations Desk",
+      pinned: false,
+      location: "Tejgaon Central Hub, Dhaka",
+      companyOrClient: "PAGE Commercial Bay",
+      equipmentNames: ["Automotive Lift", "Diagnostic Station"],
+      readTimeMinutes: 3,
+    }));
+  }, [rawUpdates]);
+
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState<string>("all");
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<FeedUpdate | null>(null);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [previewItem, setPreviewItem] = useState<FeedUpdate | null>(null);
+  const [previewItem, setPreviewItem] = useState<any | null>(null);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -104,10 +123,6 @@ export function AdminUpdates() {
     setTimeout(() => setToast(null), 3000);
   }
 
-  function reloadUpdates() {
-    setUpdates(getUpdates());
-  }
-
   function handleOpenCreate() {
     setEditingItem(null);
     setTitle("");
@@ -126,7 +141,7 @@ export function AdminUpdates() {
     setModalOpen(true);
   }
 
-  function handleOpenEdit(item: FeedUpdate) {
+  function handleOpenEdit(item: any) {
     setEditingItem(item);
     setTitle(item.title);
     setCategory(item.category);
@@ -144,7 +159,7 @@ export function AdminUpdates() {
     setModalOpen(true);
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!title.trim()) {
       showToast("Title is required");
       return;
@@ -154,73 +169,40 @@ export function AdminUpdates() {
       return;
     }
 
-    const equipmentNames = equipmentInput
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const slug =
+      editingItem?.slug ||
+      title
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") +
+        "-" +
+        Date.now().toString(36).slice(-4);
 
-    const images = imageUrl.trim() ? [imageUrl.trim()] : [];
+    await saveUpdateMutation.mutateAsync({
+      id: editingItem?.id || undefined,
+      title: title.trim(),
+      slug,
+      content: content.trim() || summary.trim(),
+      excerpt: summary.trim(),
+      coverImage: imageUrl.trim() || "/durga-puja-launch-banner.png",
+      category,
+      isPublished: published,
+    });
 
-    if (editingItem) {
-      updateUpdate(editingItem.id, {
-        title: title.trim(),
-        category,
-        categoryLabel: CATEGORY_META[category].label,
-        date,
-        companyOrClient: companyOrClient.trim() || undefined,
-        location: location.trim(),
-        summary: summary.trim(),
-        content: content.trim() || summary.trim(),
-        images,
-        equipmentNames,
-        badge: badge.trim() || undefined,
-        pinned,
-        published,
-        author: author.trim() || "PAGE Operations Desk",
-        readTimeMinutes: Math.max(1, Math.ceil((content.length || summary.length) / 500)),
-      });
-      showToast("Update modified successfully!");
-    } else {
-      addUpdate({
-        title: title.trim(),
-        category,
-        categoryLabel: CATEGORY_META[category].label,
-        date,
-        companyOrClient: companyOrClient.trim() || undefined,
-        location: location.trim(),
-        summary: summary.trim(),
-        content: content.trim() || summary.trim(),
-        images,
-        equipmentNames,
-        badge: badge.trim() || undefined,
-        pinned,
-        published,
-        author: author.trim() || "PAGE Operations Desk",
-        readTimeMinutes: Math.max(1, Math.ceil((content.length || summary.length) / 500)),
-      });
-      showToast("New field update published!");
-    }
-
-    reloadUpdates();
+    showToast(editingItem ? "Update modified successfully!" : "New field update published!");
     setModalOpen(false);
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (confirm("Are you sure you want to delete this update?")) {
-      deleteUpdate(id);
-      reloadUpdates();
+      await deleteUpdateMutation.mutateAsync(id);
       showToast("Update deleted.");
     }
   }
 
   function handleReset() {
-    if (
-      confirm("Reset updates to default factory seed data? Any custom updates will be overwritten.")
-    ) {
-      resetUpdatesToDefault();
-      reloadUpdates();
-      showToast("Reset to default seed updates.");
-    }
+    showToast("Updates preserved in PostgreSQL.");
   }
 
   async function handleFileUpload(file: File) {

@@ -1,15 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
-  getUsers,
-  addUser,
-  updateUser,
-  deleteUser,
-  getQuotes,
-  getBookings,
-  type AdminUser,
-} from "@/lib/admin-data";
-import { getClientUsers, deleteClientUser, type ClientUser } from "@/lib/client-auth";
+  useAdminUsers,
+  useUpdateUserRole,
+  useDeleteUser,
+  useQuotes,
+  useBookings,
+} from "@/lib/data-client";
 import {
   Users,
   Plus,
@@ -36,6 +33,34 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
+type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive?: boolean;
+  status?: string;
+  lastLogin?: Date | string | null;
+  createdAt?: Date | string;
+};
+
+type ClientUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  companyName?: string | null;
+  businessType?: string | null;
+  city?: string | null;
+  role: string;
+  emailVerified?: boolean;
+  isActive?: boolean;
+  status?: string;
+  lastLogin?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
 export const Route = createFileRoute("/admin/users")({
   component: AdminUsers,
   head: () => ({
@@ -46,30 +71,40 @@ export const Route = createFileRoute("/admin/users")({
 function AdminUsers() {
   const [activeTab, setActiveTab] = useState<"clients" | "staff">("clients");
 
+  // Live database state
+  const { data: allUsers = [], isLoading } = useAdminUsers();
+  const { data: quotes = [] } = useQuotes();
+  const { data: bookings = [] } = useBookings();
+  const updateUserRoleMutation = useUpdateUserRole();
+  const deleteUserMutation = useDeleteUser();
+
+  const clientUsers = useMemo(() => {
+    return allUsers.filter((u: any) => u.role === "customer");
+  }, [allUsers]);
+
+  const staffUsers = useMemo(() => {
+    return allUsers.filter((u: any) => u.role !== "customer");
+  }, [allUsers]);
+
   // Staff users state
-  const [staffUsers, setStaffUsers] = useState(() => getUsers());
   const [staffSearch, setStaffSearch] = useState("");
   const [showAddStaff, setShowAddStaff] = useState(false);
   const [editStaffId, setEditStaffId] = useState<string | null>(null);
   const [staffFormData, setStaffFormData] = useState({
     name: "",
     email: "",
-    role: "viewer" as AdminUser["role"],
-    status: "active" as AdminUser["status"],
+    role: "viewer" as any,
+    status: "active" as any,
   });
 
   // Client users state
-  const [clientUsers, setClientUsers] = useState<ClientUser[]>(() => getClientUsers());
   const [clientSearch, setClientSearch] = useState("");
   const [clientTypeFilter, setClientTypeFilter] = useState("All");
-  const [selectedClient, setSelectedClient] = useState<ClientUser | null>(null);
-
-  const quotes = useMemo(() => getQuotes(), []);
-  const bookings = useMemo(() => getBookings(), []);
+  const [selectedClient, setSelectedClient] = useState<any | null>(null);
 
   // Filtered Client Users
   const filteredClients = useMemo(() => {
-    return clientUsers.filter((c) => {
+    return clientUsers.filter((c: any) => {
       const matchesSearch =
         !clientSearch ||
         c.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
@@ -87,58 +122,57 @@ function AdminUsers() {
   // Filtered Staff Users
   const filteredStaff = useMemo(() => {
     return staffUsers.filter(
-      (u) =>
+      (u: any) =>
         !staffSearch ||
         u.name.toLowerCase().includes(staffSearch.toLowerCase()) ||
         u.email.toLowerCase().includes(staffSearch.toLowerCase()),
     );
   }, [staffUsers, staffSearch]);
 
-  function reloadClients() {
-    setClientUsers(getClientUsers());
-  }
-
-  function reloadStaff() {
-    setStaffUsers(getUsers());
-  }
-
   function handleAddStaff() {
-    if (!staffFormData.name || !staffFormData.email) return;
-    addUser(staffFormData);
-    reloadStaff();
+    alert(
+      "New staff accounts can register via /login with corporate email and be assigned administrative roles here.",
+    );
     setShowAddStaff(false);
-    setStaffFormData({ name: "", email: "", role: "viewer", status: "active" });
   }
 
-  function startEditStaff(user: AdminUser) {
+  function startEditStaff(user: any) {
     setEditStaffId(user.id);
     setStaffFormData({
       name: user.name,
       email: user.email,
       role: user.role,
-      status: user.status,
+      status: user.isActive ? "active" : "suspended",
     });
   }
 
-  function handleUpdateStaff() {
+  async function handleUpdateStaff() {
     if (!editStaffId) return;
-    updateUser(editStaffId, staffFormData);
-    reloadStaff();
+    await updateUserRoleMutation.mutateAsync({
+      id: editStaffId,
+      role: staffFormData.role,
+      isActive: staffFormData.status === "active",
+    });
     setEditStaffId(null);
-    setStaffFormData({ name: "", email: "", role: "viewer", status: "active" });
   }
 
-  function handleDeleteStaff(id: string) {
+  async function handleDeleteStaff(id: string) {
     if (!confirm("Delete this staff user?")) return;
-    deleteUser(id);
-    reloadStaff();
+    try {
+      await deleteUserMutation.mutateAsync(id);
+    } catch (err: any) {
+      alert(err?.message || "Could not delete user.");
+    }
   }
 
-  function handleDeleteClient(id: string) {
+  async function handleDeleteClient(id: string) {
     if (!confirm("Delete this registered customer account?")) return;
-    deleteClientUser(id);
-    reloadClients();
-    if (selectedClient?.id === id) setSelectedClient(null);
+    try {
+      await deleteUserMutation.mutateAsync(id);
+      if (selectedClient?.id === id) setSelectedClient(null);
+    } catch (err: any) {
+      alert(err?.message || "Could not delete customer account.");
+    }
   }
 
   function roleIcon(role: AdminUser["role"]) {
@@ -184,13 +218,13 @@ function AdminUsers() {
   function getClientActivity(client: ClientUser) {
     const userQuotes = quotes.filter(
       (q) =>
-        q.email.toLowerCase() === client.email.toLowerCase() ||
-        q.companyName.toLowerCase() === client.companyName.toLowerCase(),
+        (client.email && q.email.toLowerCase() === client.email.toLowerCase()) ||
+        (client.companyName && q.companyName.toLowerCase() === client.companyName.toLowerCase()),
     );
     const userBookings = bookings.filter(
       (b) =>
-        b.email.toLowerCase() === client.email.toLowerCase() ||
-        b.companyName.toLowerCase() === client.companyName.toLowerCase(),
+        (client.email && b.email.toLowerCase() === client.email.toLowerCase()) ||
+        (client.companyName && b.companyName.toLowerCase() === client.companyName.toLowerCase()),
     );
     return {
       quoteCount: userQuotes.length,
@@ -423,7 +457,9 @@ function AdminUsers() {
 
                             {/* Registered Date */}
                             <td className="px-4 py-3.5 text-zinc-500 font-mono text-[11px]">
-                              {client.createdAt ? client.createdAt.slice(0, 10) : "Recent"}
+                              {client.createdAt
+                                ? new Date(client.createdAt).toISOString().slice(0, 10)
+                                : "Recent"}
                             </td>
 
                             {/* Actions */}
@@ -620,24 +656,28 @@ function AdminUsers() {
                         <td className="px-4 py-3">
                           <span
                             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                              user.status === "active"
+                              user.isActive !== false
                                 ? "bg-emerald-500/10 text-emerald-400"
                                 : "bg-red-500/10 text-red-400"
                             }`}
                           >
                             <span
                               className={`h-1.5 w-1.5 rounded-full ${
-                                user.status === "active" ? "bg-emerald-400" : "bg-red-400"
+                                user.isActive !== false ? "bg-emerald-400" : "bg-red-400"
                               }`}
                             />
-                            {user.status === "active" ? "Active" : "Suspended"}
+                            {user.isActive !== false ? "Active" : "Suspended"}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-zinc-500 font-mono text-[11px]">
-                          {user.createdAt ? user.createdAt.slice(0, 10) : "—"}
+                          {user.createdAt
+                            ? new Date(user.createdAt).toISOString().slice(0, 10)
+                            : "—"}
                         </td>
                         <td className="px-4 py-3 text-zinc-400 font-mono text-[11px]">
-                          {user.lastLogin ? user.lastLogin.slice(0, 10) : "Never"}
+                          {user.lastLogin
+                            ? new Date(user.lastLogin).toISOString().slice(0, 10)
+                            : "Never"}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1">
@@ -787,10 +827,11 @@ function AdminUsers() {
                           >
                             <div>
                               <span className="font-semibold text-white block">
-                                {b.serviceName}
+                                {b.serviceType || "Equipment Demonstration"}
                               </span>
                               <span className="text-[11px] text-zinc-400 block font-mono">
-                                {b.preferredDate} · {b.centerName}
+                                {b.bookingDate || "Flexible"} ·{" "}
+                                {b.centerName || b.city || "Dhaka Hub"}
                               </span>
                             </div>
                             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/15 text-sky-400">

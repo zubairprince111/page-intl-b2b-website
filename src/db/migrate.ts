@@ -23,16 +23,13 @@ export async function runMigrations() {
   }
 }
 
-// Auto-run when file is executed directly (e.g. npm run db:migrate)
-const isMain = process.argv[1]?.replace(/\\/g, "/").endsWith("src/db/migrate.ts");
-if (isMain) {
-  runMigrations()
-    .then(() => {
-      console.log("[db:migrate] Done.");
-      process.exit(0);
-    })
-    .catch((err) => {
-      console.error("[db:migrate] Failed:", err);
-      process.exit(1);
-    });
-}
+// Execute migrations
+runMigrations()
+  .then(() => {
+    console.log("[db:migrate] Done.");
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("[db:migrate] Failed:", err);
+    process.exit(1);
+  });

@@ -20,7 +20,7 @@ import {
   Newspaper,
 } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/lib/auth-client";
-import { getAdminStats } from "@/lib/admin-data";
+import { useAdminStats } from "@/lib/data-client";
 
 const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
@@ -46,7 +46,7 @@ export function AdminLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: user, isLoading } = useCurrentUser();
   const logoutMutation = useLogout();
-  const stats = getAdminStats();
+  const { data: stats } = useAdminStats();
 
   useEffect(() => {
     if (!isLoading) {
@@ -72,7 +72,7 @@ export function AdminLayout({
     );
   }
 
-  const notifCount = stats.pendingQuotes + stats.pendingBookings;
+  const notifCount = (stats?.pendingQuotes ?? 0) + (stats?.pendingBookings ?? 0);
   const initials = user.name
     .split(" ")
     .map((n) => n[0])

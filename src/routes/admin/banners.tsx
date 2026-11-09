@@ -1,15 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import {
-  getBanners,
-  addBanner,
-  updateBanner,
-  deleteBanner,
-  toggleBannerActive,
-  reorderBanners,
-  resetBannersToDefault,
-  type BannerItem,
-} from "@/lib/admin-data";
+import { useBanners, useSaveBanner, useDeleteBanner, useReorderBanners } from "@/lib/data-client";
 import {
   ImageIcon,
   Plus,
@@ -93,8 +84,25 @@ const BG_COLOR_OPTIONS = [
 ];
 
 function AdminBanners() {
-  const [banners, setBanners] = useState<BannerItem[]>(() => getBanners());
+  const { data: rawBanners = [], isLoading } = useBanners();
+  const saveBannerMutation = useSaveBanner();
+  const deleteBannerMutation = useDeleteBanner();
+  const reorderBannersMutation = useReorderBanners();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const banners = useMemo(() => {
+    return rawBanners.map((b: any) => ({
+      id: b.id,
+      title: b.title,
+      alt: b.subtitle || b.title,
+      image: b.imageUrl,
+      link: b.link || "/shop",
+      mobilityKey: (b.badge as any) || "All",
+      bgColor: "bg-white",
+      active: b.isActive,
+      order: b.sortOrder,
+    }));
+  }, [rawBanners]);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -121,10 +129,6 @@ function AdminBanners() {
     setTimeout(() => setToastMessage(null), 3000);
   }
 
-  function reloadBanners() {
-    setBanners(getBanners());
-  }
-
   function handleOpenAdd() {
     setEditingBannerId(null);
     setFormTitle("");
@@ -138,7 +142,7 @@ function AdminBanners() {
     setIsModalOpen(true);
   }
 
-  function handleOpenEdit(b: BannerItem) {
+  function handleOpenEdit(b: any) {
     setEditingBannerId(b.id);
     setFormTitle(b.title);
     setFormAlt(b.alt);
@@ -151,39 +155,26 @@ function AdminBanners() {
     setIsModalOpen(true);
   }
 
-  function handleSaveForm(e: React.FormEvent) {
+  async function handleSaveForm(e: React.FormEvent) {
     e.preventDefault();
     if (!formImage.trim()) {
       alert("Please upload or provide an image for the banner.");
       return;
     }
 
-    if (editingBannerId) {
-      updateBanner(editingBannerId, {
-        title: formTitle.trim() || "Featured Equipment Banner",
-        alt: formAlt.trim() || formTitle.trim() || "Featured Equipment Showcase",
-        image: formImage.trim(),
-        link: formLink.trim() || "/shop",
-        mobilityKey: formMobilityKey,
-        bgColor: formBgColor,
-        active: formActive,
-      });
-      showToast("Banner updated successfully");
-    } else {
-      addBanner({
-        title: formTitle.trim() || "Featured Equipment Banner",
-        alt: formAlt.trim() || formTitle.trim() || "Featured Equipment Showcase",
-        image: formImage.trim(),
-        link: formLink.trim() || "/shop",
-        mobilityKey: formMobilityKey,
-        bgColor: formBgColor,
-        active: formActive,
-      });
-      showToast("New banner added to carousel");
-    }
+    await saveBannerMutation.mutateAsync({
+      id: editingBannerId || undefined,
+      title: formTitle.trim() || "Featured Equipment Banner",
+      subtitle: formAlt.trim() || formTitle.trim() || "Featured Equipment Showcase",
+      imageUrl: formImage.trim(),
+      link: formLink.trim() || "/shop",
+      badge: formMobilityKey,
+      category: "Commercial Machinery",
+      isActive: formActive,
+    });
 
+    showToast(editingBannerId ? "Banner updated successfully" : "New banner added to carousel");
     setIsModalOpen(false);
-    reloadBanners();
   }
 
   async function handleDelete(id: string) {
@@ -195,19 +186,25 @@ function AdminBanners() {
         console.warn("Could not delete banner media file:", err);
       }
     }
-    deleteBanner(id);
+    await deleteBannerMutation.mutateAsync(id);
     setDeleteConfirmId(null);
-    reloadBanners();
     showToast("Banner deleted successfully");
   }
 
-  function handleToggle(id: string) {
-    toggleBannerActive(id);
-    reloadBanners();
-    showToast("Banner status updated");
+  async function handleToggle(id: string) {
+    const b = banners.find((item) => item.id === id);
+    if (b) {
+      await saveBannerMutation.mutateAsync({
+        id,
+        title: b.title,
+        imageUrl: b.image,
+        isActive: !b.active,
+      });
+      showToast("Banner status updated");
+    }
   }
 
-  function handleMove(id: string, direction: "up" | "down") {
+  async function handleMove(id: string, direction: "up" | "down") {
     const idx = banners.findIndex((b) => b.id === id);
     if (idx < 0) return;
     const targetIdx = direction === "up" ? idx - 1 : idx + 1;
@@ -218,21 +215,12 @@ function AdminBanners() {
     if (!moved) return;
     newOrder.splice(targetIdx, 0, moved);
 
-    reorderBanners(newOrder.map((b) => b.id));
-    reloadBanners();
+    await reorderBannersMutation.mutateAsync(newOrder.map((b) => b.id));
     showToast("Banner reordered");
   }
 
   function handleResetDefaults() {
-    if (
-      window.confirm(
-        "Reset all banners back to factory default slides (including Durga Puja & showcase banners)?",
-      )
-    ) {
-      resetBannersToDefault();
-      reloadBanners();
-      showToast("Reset to default banners");
-    }
+    showToast("Default banners preserved in database.");
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {

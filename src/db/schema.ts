@@ -58,6 +58,8 @@ export const productsTable = pgTable(
     subcategory: text("subcategory"),
     priceBdt: integer("price_bdt").notNull().default(0),
     inStock: boolean("in_stock").notNull().default(true),
+    warehouseQty: integer("warehouse_qty").notNull().default(10),
+    reorderLevel: integer("reorder_level").notNull().default(2),
     badge: text("badge"),
     description: text("description").notNull(),
     specs: jsonb("specs").$type<Record<string, string>>(),
@@ -94,6 +96,12 @@ export const quotes = pgTable(
     city: text("city").notNull().default("Dhaka"),
     notes: text("notes"),
     status: text("status").notNull().default("PENDING"), // "PENDING" | "CONTACTED" | "QUOTED" | "COMPLETED" | "CANCELLED"
+    reply: text("reply"),
+    quotedPrice: integer("quoted_price"),
+    itemsJson:
+      jsonb("items_json").$type<
+        { productSlug: string; productName: string; qty: number; unitPrice?: number }[]
+      >(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -121,7 +129,10 @@ export const bookings = pgTable(
     bookingDate: text("booking_date").notNull(),
     timeSlot: text("time_slot").notNull(),
     city: text("city"),
+    centerId: text("center_id"),
+    centerName: text("center_name"),
     notes: text("notes"),
+    adminNotes: text("admin_notes"),
     status: text("status").notNull().default("PENDING"), // "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED"
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -409,3 +420,10 @@ export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type EmailVerificationToken = typeof emailVerificationTokens.$inferSelect;
 export type EmailLogEntry = typeof emailLog.$inferSelect;
 export type AuditLogEntry = typeof auditLog.$inferSelect;
+
+export type UserRow = User;
+export type QuoteRow = Quote;
+export type BookingRow = Booking;
+export type BannerRow = Banner;
+export type OrderRow = Order;
+export type UpdateRow = Update;

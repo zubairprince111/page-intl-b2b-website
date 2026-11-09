@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { getSettings, saveSettings, type SiteSetting } from "@/lib/admin-data";
+import { useSettings, useUpdateSettings } from "@/lib/data-client";
 import {
   Settings,
   Save,
@@ -14,7 +14,7 @@ import {
   RotateCcw,
   Share2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
@@ -24,17 +24,40 @@ export const Route = createFileRoute("/admin/settings")({
 });
 
 function AdminSettings() {
-  const [settings, setSettings] = useState(() => getSettings());
+  const { data: dbSettings = {}, isLoading } = useSettings();
+  const updateSettingsMutation = useUpdateSettings();
+
+  const [settings, setSettings] = useState<any>({
+    siteName: "PAGE International",
+    tagline: "Think Next. Build Better.",
+    primaryColor: "#dc2626",
+    contactEmail: "info@pageinternational.com",
+    contactPhone: "+880-1700-000000",
+    heroHeadline: "THINK NEXT.",
+    heroSubline: "Built to Perform. Certified to Last.",
+    announcementBar: "🔥 Free installation on all 2-post lifts this month!",
+    announcementActive: false,
+    socialLinkedin: "https://www.linkedin.com/company/page-international-ltd/",
+    socialFacebook: "https://www.facebook.com/pageinternationalltd/",
+    socialInstagram: "https://www.instagram.com/pageintl",
+  });
+
+  useEffect(() => {
+    if (dbSettings && Object.keys(dbSettings).length > 0) {
+      setSettings((prev: any) => ({ ...prev, ...dbSettings }));
+    }
+  }, [dbSettings]);
+
   const [saved, setSaved] = useState(false);
 
-  function handleSave() {
-    saveSettings(settings);
+  async function handleSave() {
+    await updateSettingsMutation.mutateAsync(settings);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
 
-  function handleReset() {
-    const defaults: SiteSetting = {
+  async function handleReset() {
+    const defaults = {
       siteName: "PAGE International",
       tagline: "Think Next. Build Better.",
       primaryColor: "#dc2626",
@@ -49,7 +72,7 @@ function AdminSettings() {
       socialInstagram: "https://www.instagram.com/pageintl",
     };
     setSettings(defaults);
-    saveSettings(defaults);
+    await updateSettingsMutation.mutateAsync(defaults);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }

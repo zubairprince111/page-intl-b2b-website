@@ -1,17 +1,52 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getBanners, seedBanners, type BannerItem } from "@/lib/admin-data";
+import { useBanners } from "@/lib/data-client";
+
+export interface BannerItem {
+  id: string;
+  title: string;
+  alt: string;
+  image: string;
+  link: string;
+  mobilityKey?: string;
+  bgColor?: string;
+  active: boolean;
+}
 
 export type MobilityScene = BannerItem;
 
+const FALLBACK_BANNERS: BannerItem[] = [
+  {
+    id: "ban-fallback-1",
+    title: "Durga Puja — Launch Special Offer (20% OFF)",
+    alt: "Launch Professional Diagnostic Solutions",
+    image: "/durga-puja-launch-banner.png",
+    link: "/shop",
+    mobilityKey: "4-Wheeler",
+    bgColor: "bg-white",
+    active: true,
+  },
+];
+
 export function MobilityScrollStack() {
-  const [banners, setBanners] = useState<BannerItem[]>(() => {
-    const all = getBanners();
-    const active = all.filter((b) => b.active);
-    return active.length > 0 ? active : seedBanners;
-  });
+  const { data: dbBanners = [] } = useBanners(true);
+
+  const banners: BannerItem[] = useMemo(() => {
+    if (!dbBanners || dbBanners.length === 0) return FALLBACK_BANNERS;
+    return dbBanners.map((b: any) => ({
+      id: b.id,
+      title: b.title,
+      alt: b.subtitle || b.title,
+      image: b.imageUrl,
+      link: b.link || "/shop",
+      mobilityKey: b.badge || "All",
+      bgColor: "bg-white",
+      active: b.isActive,
+    }));
+  }, [dbBanners]);
+
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
@@ -19,24 +54,6 @@ export function MobilityScrollStack() {
   const [dragStartX, setDragStartX] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Listen to admin banner changes in real time
-  useEffect(() => {
-    const handleUpdate = () => {
-      const all = getBanners();
-      const active = all.filter((b) => b.active);
-      const finalBanners = active.length > 0 ? active : seedBanners;
-      setBanners(finalBanners);
-      setCurrentSlide((curr) => Math.min(curr, Math.max(0, finalBanners.length - 1)));
-    };
-
-    window.addEventListener("banners_updated", handleUpdate);
-    window.addEventListener("storage", handleUpdate);
-    return () => {
-      window.removeEventListener("banners_updated", handleUpdate);
-      window.removeEventListener("storage", handleUpdate);
-    };
-  }, []);
 
   const total = banners.length;
 

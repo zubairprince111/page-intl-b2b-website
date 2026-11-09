@@ -1,16 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
-  getInventory,
-  updateInventoryItem,
-  addInventoryItem,
-  deleteInventoryItem,
-  getQuotes,
-  replyToQuoteWithDetails,
-  openGmailQuotationDraft,
-  type InventoryItem,
-  type QuoteRequest,
-} from "@/lib/admin-data";
+  useInventory,
+  useUpdateInventoryItem,
+  useCreateInventoryItem,
+  useDeleteInventoryItem,
+  useQuotes,
+  useUpdateQuote,
+} from "@/lib/data-client";
+import { openGmailQuotationDraft } from "@/lib/quotation-email";
 import { taka, categories, images } from "@/lib/data";
 import {
   Package,
@@ -68,8 +66,13 @@ const PRESET_GALLERY = [
 ];
 
 function AdminInventory() {
-  const [inventory, setInventory] = useState(() => getInventory());
-  const [quotes, setQuotes] = useState(() => getQuotes());
+  const { data: rawInventory = [], isLoading: inventoryLoading } = useInventory();
+  const { data: quotes = [] } = useQuotes();
+  const updateItemMutation = useUpdateInventoryItem();
+  const createItemMutation = useCreateInventoryItem();
+  const deleteItemMutation = useDeleteInventoryItem();
+  const updateQuoteMutation = useUpdateQuote();
+
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
   const [stockFilter, setStockFilter] = useState("All");
@@ -78,6 +81,27 @@ function AdminInventory() {
   const [imageTab, setImageTab] = useState<"presets" | "upload" | "url">("presets");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Normalize database product rows
+  const inventory = useMemo(() => {
+    return rawInventory.map((p: any) => ({
+      ...p,
+      price: p.priceBdt ?? p.price ?? 0,
+      warehouseQty: p.warehouseQty ?? 10,
+      reorderLevel: p.reorderLevel ?? 5,
+      stock:
+        (p.warehouseQty ?? 10) === 0
+          ? "Out of stock"
+          : (p.warehouseQty ?? 10) <= (p.reorderLevel ?? 5)
+            ? "Low stock"
+            : "In stock",
+      image: (p.images && p.images[0]) || p.image || images.lift,
+      sku: p.sku || `PG-${p.slug.slice(0, 6).toUpperCase()}`,
+      brand: p.brand || "PAGE Genuine",
+      rating: p.rating || 5.0,
+      reviews: p.reviews || 1,
+    }));
+  }, [rawInventory]);
 
   // Quote reply modal state
   const [showQuoteModal, setShowQuoteModal] = useState(false);
@@ -88,7 +112,7 @@ function AdminInventory() {
   const [quoteMessage, setQuoteMessage] = useState<string>("");
   const [quoteSuccessMsg, setQuoteSuccessMsg] = useState<string | null>(null);
   const [previewEmailQuote, setPreviewEmailQuote] = useState<{
-    quote: QuoteRequest;
+    quote: any;
     productName: string;
     unitPrice: number;
     qty: number;
@@ -154,7 +178,7 @@ function AdminInventory() {
     return items;
   }, [inventory, search, catFilter, stockFilter, sortField, sortDir]);
 
-  function startEdit(item: InventoryItem) {
+  function startEdit(item: any) {
     setEditingSlug(item.slug);
     setEditData({
       price: item.price,
@@ -164,15 +188,15 @@ function AdminInventory() {
     });
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editingSlug) return;
-    updateInventoryItem(editingSlug, {
-      price: editData.price,
+    await updateItemMutation.mutateAsync({
+      slug: editingSlug,
+      priceBdt: editData.price,
       warehouseQty: editData.warehouseQty,
       reorderLevel: editData.reorderLevel,
-      stock: editData.stock as any,
+      inStock: editData.stock !== "Out of stock",
     });
-    setInventory(getInventory());
     setEditingSlug(null);
   }
 
@@ -186,11 +210,10 @@ function AdminInventory() {
         console.warn("Could not delete product media file:", err);
       }
     }
-    deleteInventoryItem(slug);
-    setInventory(getInventory());
+    await deleteItemMutation.mutateAsync(slug);
   }
 
-  function handleCreateProduct() {
+  async function handleCreateProduct() {
     if (!newProduct.name || !newProduct.sku) {
       alert("Product name and SKU are required.");
       return;
@@ -202,35 +225,21 @@ function AdminInventory() {
         .replace(/(^-|-$)/g, "") +
       "-" +
       Date.now().toString(36).slice(-4);
-    addInventoryItem({
+
+    await createItemMutation.mutateAsync({
       slug,
       name: newProduct.name,
       brand: newProduct.brand || "PAGE Genuine",
       category: newProduct.category,
-      price: Number(newProduct.price) || 0,
+      priceBdt: Number(newProduct.price) || 0,
       warehouseQty: Number(newProduct.warehouseQty) || 0,
       reorderLevel: Number(newProduct.reorderLevel) || 5,
-      sku: newProduct.sku.toUpperCase(),
+      inStock: Number(newProduct.warehouseQty) > 0,
       description:
         newProduct.description || "Commercial grade equipment distributed by PAGE International.",
-      rating: 5.0,
-      reviews: 1,
-      stock:
-        Number(newProduct.warehouseQty) === 0
-          ? "Out of stock"
-          : Number(newProduct.warehouseQty) <= 5
-            ? "Low stock"
-            : "In stock",
-      image: newProduct.image || images.workshop,
-      fits: ["Universal Workshop Fit"],
-      specs: [
-        ["Warranty", "1 Year Commercial"],
-        ["Standard", "ISO/CE Certified"],
-      ],
-      mobility: ["4-Wheeler"],
-      isEquipment: true,
+      images: [newProduct.image],
     });
-    setInventory(getInventory());
+
     setShowAddModal(false);
     setNewProduct({
       name: "",
@@ -267,11 +276,9 @@ function AdminInventory() {
     }
   }
 
-  function openQuoteReplyForProduct(product?: InventoryItem) {
-    const currentQuotes = getQuotes();
-    setQuotes(currentQuotes);
-    const pendingQuotes = currentQuotes.filter((q) => q.status === "pending");
-    const firstQuote = pendingQuotes[0] || currentQuotes[0];
+  function openQuoteReplyForProduct(product?: any) {
+    const pendingQuotes = quotes.filter((q: any) => q.status === "pending");
+    const firstQuote = pendingQuotes[0] || quotes[0];
 
     const targetProduct =
       product ||
@@ -333,20 +340,17 @@ function AdminInventory() {
     const prod = inventory.find((i) => i.slug === quoteProductSlug);
     const finalProdName = prod?.name || "Equipment";
 
-    replyToQuoteWithDetails(selectedQuoteId, {
-      productSlug: quoteProductSlug,
-      productName: finalProdName,
-      unitPrice: quotePrice,
-      qty: quoteQty,
-      reply: quoteMessage,
+    await updateQuoteMutation.mutateAsync({
+      id: selectedQuoteId,
       status: "replied",
+      reply: quoteMessage,
+      quotedPrice: quotePrice,
     });
-    setQuotes(getQuotes());
 
     if (q) {
       // 1. Copy rich HTML to clipboard so the admin can paste directly into Gmail
       const html = generateQuotationEmailHtml({
-        quote: q,
+        quote: q as any,
         productName: finalProdName,
         unitPrice: quotePrice,
         qty: quoteQty,
@@ -356,7 +360,7 @@ function AdminInventory() {
 
       // 2. Open Gmail compose with prefilled quotation report
       openGmailQuotationDraft({
-        quote: q,
+        quote: q as any,
         productName: finalProdName,
         unitPrice: quotePrice,
         qty: quoteQty,
@@ -1194,7 +1198,6 @@ function AdminInventory() {
             message={previewEmailQuote.message}
             onClose={() => setPreviewEmailQuote(null)}
             onSent={() => {
-              setQuotes(getQuotes());
               setShowQuoteModal(false);
             }}
           />

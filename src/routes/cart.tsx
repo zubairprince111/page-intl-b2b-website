@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/lib/cart";
-import { addQuote } from "@/lib/admin-data";
+import { useCreateQuote } from "@/lib/data-client";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -38,6 +38,7 @@ export const Route = createFileRoute("/cart")({
 
 export function Cart() {
   const { lines, setQty, remove, clear, isLoaded } = useCart();
+  const createQuoteMutation = useCreateQuote();
   const [submitted, setSubmitted] = useState(false);
   const [refId, setRefId] = useState("");
   const [formData, setFormData] = useState({
@@ -51,23 +52,20 @@ export function Cart() {
 
   const totalUnits = lines.reduce((acc, l) => acc + l.qty, 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.companyName || !formData.phone) return;
-    const generatedRef = `RFQ-${Math.floor(100000 + Math.random() * 900000)}`;
-    setRefId(generatedRef);
 
-    // Save all cart items into ONE single consolidated quotation request
+    // Save all cart items into ONE single consolidated quotation request in PostgreSQL
     try {
       if (lines.length > 0) {
-        const totalUnits = lines.reduce((acc, l) => acc + l.qty, 0);
         const firstLine = lines[0];
         const productSummary =
           lines.length === 1 && firstLine
             ? `${firstLine.qty}x ${firstLine.product.name}`
             : `${lines.length} Products: ${lines.map((l) => `${l.qty}x ${l.product.name}`).join(", ")}`;
 
-        addQuote({
+        const res = await createQuoteMutation.mutateAsync({
           companyName: formData.companyName,
           contactName: formData.contactName || formData.companyName,
           phone: formData.phone,
@@ -84,9 +82,13 @@ export function Cart() {
           businessType: "Cart Multi-Item Order",
           city: formData.city || "Dhaka",
           notes: formData.notes
-            ? `${formData.notes} [Cart Ref: ${generatedRef}]`
-            : `Quotation Cart Ref: ${generatedRef} (${lines.length} products, ${totalUnits} total units)`,
+            ? `${formData.notes} [Cart Request]`
+            : `Quotation Cart Request (${lines.length} products, ${totalUnits} total units)`,
         });
+
+        if (res.quoteNumber) {
+          setRefId(res.quoteNumber);
+        }
       }
     } catch (err) {
       console.error("Failed to add quotation from cart:", err);
