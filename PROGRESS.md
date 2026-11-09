@@ -18,7 +18,7 @@
 | **Phase 6** | Performance & "Smooth Like Butter" UX              | **DONE**        | Skeletons, code splitting (charts, radix, lucide isolated), zero chunks > 600kB, image loading |
 | **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **DONE**        | Semantic HTML, JSON-LD on / & /shop/$slug, sitemap.xml, robots.txt, form htmlFor & id labels   |
 | **Phase 8** | Testing (Vitest Unit/Integration & Playwright E2E) | **DONE**        | 14 Vitest unit/integration tests (auth, rate limiting, pricing, media) + 6 Playwright E2E journeys |
-| **Phase 9** | Operations, CI/CD, Docs & Verification             | **IN PROGRESS** | Health checks (/api/health), Docker Compose verify, DEPLOYMENT.md, V2 Audit Report            |
+| **Phase 9** | Operations, CI/CD, Docs & Verification             | **DONE**        | Health checks (/api/health), Docker Compose verify, DEPLOYMENT.md, V2 Audit Report            |
 
 ---
 
@@ -147,4 +147,15 @@
   5. Admin quotation management & review.
   6. Customer portal registration and authenticated account access.
 - [x] All 14 Vitest unit and integration tests passing cleanly (`npm test`).
+
+### Phase 9: Operations, CI/CD, Docs & Final Verification
+
+- [x] Implemented `/api/health` healthcheck endpoint in `src/server.ts` verifying real PostgreSQL database connectivity, server uptime, and environment status (returning 503 on database disconnect).
+- [x] Configured automatic PGlite WASM/data asset copy script (`scripts/copy-pglite-assets.cjs`) hooking into production builds (`npm run build`) for standalone Node server preview.
+- [x] Built GitHub Actions CI pipeline (`.github/workflows/ci.yml`) executing formatting, typecheck, lint, test, build, and health check validation.
+- [x] Wrote production deployment runbook (`DEPLOYMENT.md`) covering Docker Compose, Caddy reverse proxy, zero-downtime deployments, backup/restore, and monitoring.
+- [x] Rewrote `README.md` with accurate architectural overview, quickstart guides, environment variables, and run instructions.
+- [x] Authored comprehensive production readiness report (`PRODUCTION_READINESS_REPORT_V2.md`).
+- [x] Conducted full verification suite: TypeScript (`npx tsc --noEmit`), ESLint (`npm run lint`), Vitest (`npm test`), and production build with live health check verification.
+
 

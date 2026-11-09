@@ -46,6 +46,53 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+
+    // Healthcheck endpoint for Docker, Caddy, Kubernetes & monitoring
+    if (url.pathname === "/api/health") {
+      try {
+        const { db } = await import("./db");
+        const { sql } = await import("drizzle-orm");
+        await db.execute(sql`SELECT 1`);
+
+        return new Response(
+          JSON.stringify({
+            status: "ok",
+            uptime: Math.floor(process.uptime()),
+            database: "connected",
+            timestamp: new Date().toISOString(),
+            version: "2.0.0",
+            service: "page-international-platform",
+          }),
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+              "cache-control": "no-cache, no-store, must-revalidate",
+            },
+          },
+        );
+      } catch (err: any) {
+        return new Response(
+          JSON.stringify({
+            status: "error",
+            uptime: Math.floor(process.uptime()),
+            database: "disconnected",
+            error: err?.message || "Database query failed",
+            timestamp: new Date().toISOString(),
+            version: "2.0.0",
+          }),
+          {
+            status: 503,
+            headers: {
+              "content-type": "application/json",
+              "cache-control": "no-cache, no-store, must-revalidate",
+            },
+          },
+        );
+      }
+    }
+
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
