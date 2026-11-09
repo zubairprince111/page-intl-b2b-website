@@ -54,6 +54,40 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://page-bd.com/#organization",
+              name: "PAGE International Ltd.",
+              url: "https://page-bd.com",
+              logo: "https://page-bd.com/page logo.png",
+              description:
+                "Specialized B2B supplier and distributor of automotive garage machinery, spare parts, diagnostics, tools, and workshop solutions in Bangladesh.",
+              telephone: "+880-1713-000000",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Tejgaon Industrial Area",
+                addressLocality: "Dhaka",
+                postalCode: "1208",
+                addressCountry: "BD",
+              },
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://page-bd.com/#website",
+              url: "https://page-bd.com",
+              name: "PAGE International",
+              publisher: { "@id": "https://page-bd.com/#organization" },
+            },
+          ],
+        }),
+      },
+    ],
   }),
   component: Home,
 });

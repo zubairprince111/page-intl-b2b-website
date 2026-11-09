@@ -295,10 +295,14 @@ export function BookConsultation() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    <label
+                      htmlFor="book-biz-name"
+                      className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    >
                       Business / Workshop Name *
                     </label>
                     <input
+                      id="book-biz-name"
                       required
                       type="text"
                       placeholder="e.g. Paramount Auto Center Ltd."
@@ -309,10 +313,14 @@ export function BookConsultation() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    <label
+                      htmlFor="book-biz-type"
+                      className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    >
                       Business Type
                     </label>
                     <select
+                      id="book-biz-type"
                       className="field"
                       value={biz.businessType}
                       onChange={(e) => setBiz({ ...biz, businessType: e.target.value })}
@@ -329,10 +337,14 @@ export function BookConsultation() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    <label
+                      htmlFor="book-biz-bays"
+                      className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    >
                       Existing or Planned Service Bays
                     </label>
                     <select
+                      id="book-biz-bays"
                       className="field"
                       value={biz.bays}
                       onChange={(e) => setBiz({ ...biz, bays: e.target.value })}
@@ -345,10 +357,14 @@ export function BookConsultation() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    <label
+                      htmlFor="book-biz-equip"
+                      className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    >
                       Target Machinery of Interest
                     </label>
                     <input
+                      id="book-biz-equip"
                       type="text"
                       placeholder="e.g. Torq 2-Post Lift 4.0T, TC-820 Tyre Changer"
                       className="field"
@@ -514,10 +530,14 @@ export function BookConsultation() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    <label
+                      htmlFor="book-contact-person"
+                      className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    >
                       Contact Person / Lead Engineer *
                     </label>
                     <input
+                      id="book-contact-person"
                       required
                       type="text"
                       placeholder="e.g. Engr. Shafiqul Islam"
@@ -528,10 +548,14 @@ export function BookConsultation() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    <label
+                      htmlFor="book-contact-phone"
+                      className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    >
                       Phone / WhatsApp *
                     </label>
                     <input
+                      id="book-contact-phone"
                       required
                       type="tel"
                       placeholder="+880 17XXXXXXXX"
@@ -543,10 +567,14 @@ export function BookConsultation() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="book-contact-email"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Corporate Email
                   </label>
                   <input
+                    id="book-contact-email"
                     type="email"
                     placeholder="workshop@company.com"
                     className="field"
@@ -556,10 +584,14 @@ export function BookConsultation() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="book-notes"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Specific Technical Questions / Bay Requirements
                   </label>
                   <textarea
+                    id="book-notes"
                     rows={3}
                     placeholder="Provide details about your workshop power supply (single/three phase), ceiling height, or specific demo requirements..."
                     className="field"

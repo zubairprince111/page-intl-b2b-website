@@ -45,6 +45,36 @@ export const Route = createFileRoute("/shop/$slug")({
         { property: "og:description", content: p.description },
         { property: "og:type", content: "product" },
       ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: p.name,
+            description: p.description,
+            sku: p.sku,
+            brand: {
+              "@type": "Brand",
+              name: p.brand,
+            },
+            offers: {
+              "@type": "Offer",
+              url: `https://page-bd.com/shop/${p.slug}`,
+              priceCurrency: "BDT",
+              price: p.price,
+              availability:
+                p.stock === "In stock"
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/OutOfStock",
+              seller: {
+                "@type": "Organization",
+                name: "PAGE International Ltd.",
+              },
+            },
+          }),
+        },
+      ],
     };
   },
   notFoundComponent: () => (

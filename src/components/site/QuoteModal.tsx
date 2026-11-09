@@ -211,10 +211,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-3 pr-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="quote-company"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Company / Workshop *
                   </label>
                   <input
+                    id="quote-company"
                     required
                     type="text"
                     value={formData.companyName}
@@ -224,10 +228,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="quote-contact"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Contact Person Name
                   </label>
                   <input
+                    id="quote-contact"
                     type="text"
                     value={formData.contactName}
                     placeholder="e.g. Engr. Tanvir Ahmed"
@@ -239,10 +247,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="quote-phone"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Mobile Phone *
                   </label>
                   <input
+                    id="quote-phone"
                     required
                     type="tel"
                     value={formData.phone}
@@ -252,10 +264,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="quote-email"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Work Email
                   </label>
                   <input
+                    id="quote-email"
                     type="email"
                     value={formData.email}
                     placeholder="contact@workshop.com"
@@ -267,10 +283,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="quote-business-type"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Business Sector
                   </label>
                   <select
+                    id="quote-business-type"
                     value={formData.businessType}
                     onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
                     className="w-full h-8 rounded-lg border border-input bg-card px-2 text-xs text-foreground focus:border-primary focus:outline-none"
@@ -283,10 +303,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  <label
+                    htmlFor="quote-city"
+                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  >
                     Region / City
                   </label>
                   <input
+                    id="quote-city"
                     type="text"
                     value={formData.city}
                     placeholder="Dhaka"
@@ -297,10 +321,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                <label
+                  htmlFor="quote-notes"
+                  className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                >
                   Specific Requirements or Notes
                 </label>
                 <textarea
+                  id="quote-notes"
                   rows={2}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}

@@ -7,18 +7,18 @@
 
 ## Overall Status Tracker
 
-| Phase       | Description                                        | Status          | Blockers / Notes                                                                             |
-| ----------- | -------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------- |
-| **Phase 0** | Safety, Baseline & Repo Hygiene                    | **DONE**        | Secrets audited; .env.example, .gitignore, .dockerignore hardened; baseline recorded         |
-| **Phase 1** | Build, Docker & Code Formatting                    | **DONE**        | Dynamic Nitro preset, Docker multi-stage non-root, Caddyfile, .gitattributes & lint fix      |
-| **Phase 2** | PostgreSQL Database & Drizzle Migrations           | **DONE**        | Schema extension, migrations, seed with admin bootstrap, backup/restore scripts              |
-| **Phase 3** | Authentication & Security Hardening                | **DONE**        | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization |
-| **Phase 4** | Real Data Flows (Zero LocalStorage)                | **DONE**        | Full PostgreSQL persistence, RPC bridge, React Query, 0 localStorage, admin-data deleted     |
-| **Phase 5** | Transactional Email & Persistent Storage           | **DONE**        | Async email queuing (Console, SMTP via nodemailer, Resend), DB logging, media storage        |
+| Phase       | Description                                        | Status          | Blockers / Notes                                                                               |
+| ----------- | -------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------- |
+| **Phase 0** | Safety, Baseline & Repo Hygiene                    | **DONE**        | Secrets audited; .env.example, .gitignore, .dockerignore hardened; baseline recorded           |
+| **Phase 1** | Build, Docker & Code Formatting                    | **DONE**        | Dynamic Nitro preset, Docker multi-stage non-root, Caddyfile, .gitattributes & lint fix        |
+| **Phase 2** | PostgreSQL Database & Drizzle Migrations           | **DONE**        | Schema extension, migrations, seed with admin bootstrap, backup/restore scripts                |
+| **Phase 3** | Authentication & Security Hardening                | **DONE**        | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization   |
+| **Phase 4** | Real Data Flows (Zero LocalStorage)                | **DONE**        | Full PostgreSQL persistence, RPC bridge, React Query, 0 localStorage, admin-data deleted       |
+| **Phase 5** | Transactional Email & Persistent Storage           | **DONE**        | Async email queuing (Console, SMTP via nodemailer, Resend), DB logging, media storage          |
 | **Phase 6** | Performance & "Smooth Like Butter" UX              | **DONE**        | Skeletons, code splitting (charts, radix, lucide isolated), zero chunks > 600kB, image loading |
-| **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **IN PROGRESS** | Semantic HTML, JSON-LD, sitemap, meta tags, responsive checks (360px - 1920px)               |
-| **Phase 8** | Testing (Vitest Unit/Integration & Playwright E2E) | **PENDING**     | Full user journey tests, load test (autocannon)                                              |
-| **Phase 9** | Operations, CI/CD, Docs & Verification             | **PENDING**     | Health checks, pino logging, GitHub Actions, README & DEPLOYMENT.md rewrite, V2 Audit        |
+| **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **DONE**        | Semantic HTML, JSON-LD on / & /shop/$slug, sitemap.xml, robots.txt, form htmlFor & id labels   |
+| **Phase 8** | Testing (Vitest Unit/Integration & Playwright E2E) | **IN PROGRESS** | Full user journey tests, order pricing test, auth rate limit test                              |
+| **Phase 9** | Operations, CI/CD, Docs & Verification             | **PENDING**     | Health checks, pino logging, GitHub Actions, README & DEPLOYMENT.md rewrite, V2 Audit          |
 
 ---
 
@@ -123,4 +123,13 @@
 - [x] Verified global error boundary and 404 handler in `src/routes/__root.tsx`.
 - [x] Added `decoding="async"` and verified `loading="lazy"` across large image sections (`ConsultationBanner`, `TargetSectorsSection`, `ProductCard`).
 - [x] Verified high-priority LCP preloading in `HeroStory.tsx` (`fetchPriority="high"`).
+
+### Phase 7: Accessibility (WCAG AA), SEO & Polish
+
+- [x] Disallowed admin and sensitive routes from crawling in `public/robots.txt` and linked canonical `sitemap.xml`.
+- [x] Generated standard XML sitemap (`public/sitemap.xml`) covering all core public routes and canonical equipment slugs.
+- [x] Injected JSON-LD structured data on homepage (`Organization` and `WebSite` schemas).
+- [x] Injected JSON-LD structured data on product detail pages (`Product`, `Offer`, and stock availability).
+- [x] Fixed form accessibility: mapped `htmlFor` and `id` across all input fields, selects, and textareas in `QuoteModal.tsx` and `services.book.tsx`.
+- [x] Verified responsive layouts down to 360px mobile viewports.
 
