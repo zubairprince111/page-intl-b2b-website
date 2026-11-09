@@ -46,7 +46,7 @@ function AccountPage() {
 
   useEffect(() => {
     if (!userLoading && !user) {
-      navigate({ to: "/login" });
+      navigate({ to: "/admin/login" });
     }
   }, [user, userLoading, navigate]);
 
@@ -60,7 +60,7 @@ function AccountPage() {
 
   async function handleLogout() {
     await logoutMutation.mutateAsync();
-    navigate({ to: "/login" });
+    navigate({ to: "/admin/login" });
   }
 
   async function handlePasswordChange(e: React.FormEvent) {

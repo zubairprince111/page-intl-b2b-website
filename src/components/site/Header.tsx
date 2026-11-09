@@ -214,17 +214,11 @@ export function Header() {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-2.5">
-            {/* Workshop Account / Sign In */}
+            {/* Admin Portal Sign In */}
             <Link
-              to={currentUser ? (currentUser.role === "admin" ? "/admin" : "/account") : "/login"}
-              aria-label={
-                currentUser ? `Workshop Account: ${currentUser.name}` : "Sign In to Workshop Portal"
-              }
-              title={
-                currentUser
-                  ? `${currentUser.name} (${currentUser.companyName})`
-                  : "Sign In to Workshop Portal"
-              }
+              to={currentUser ? "/admin" : "/admin/login"}
+              aria-label={currentUser ? `Admin Portal: ${currentUser.name}` : "Admin Staff Sign In"}
+              title={currentUser ? `Admin Portal: ${currentUser.name}` : "Admin Staff Sign In"}
               className={`relative grid h-9.5 w-9.5 place-items-center rounded-full border transition-all ${
                 isGlass
                   ? "border-zinc-200/90 bg-white/80 hover:bg-white text-zinc-800 shadow-xs"

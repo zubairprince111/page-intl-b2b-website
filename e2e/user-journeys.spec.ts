@@ -147,31 +147,13 @@ test.describe("PAGE International Critical User Journeys", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // JOURNEY 6: CUSTOMER PORTAL & ACCOUNT
+  // JOURNEY 6: ZERO-LOGIN ARCHITECTURE & /login REDIRECT
   // ---------------------------------------------------------------------------
-  test("Journey 6: Customer registers account and views profile dashboard", async ({ page }) => {
-    const uniqueEmail = `test.client.${Date.now()}@workshop.bd`;
+  test("Journey 6: /login redirects to admin portal and quotes use Email OTP without account", async ({
+    page,
+  }) => {
     await page.goto("/login");
-
-    // Switch to Register tab
-    await page.click("button:has-text('Register Workshop')");
-
-    // Fill registration form
-    await page.fill("input[placeholder*='Rahim'], input[id='reg-name']", "Engr. Monirul Islam");
-    await page.fill("input[type='email']", uniqueEmail);
-    await page.fill("input[type='tel']", "+880 1715-998877");
-    await page.fill(
-      "input[placeholder*='Motors'], input[id='reg-company']",
-      "Monir Auto Engineering",
-    );
-    await page.fill("input[type='password']", "ClientSecret#2026");
-
-    // Submit registration
-    await page.click("button:has-text('Create Workshop Account')");
-
-    // Redirected to customer account dashboard
-    await page.waitForURL(/\/account/, { timeout: 10000 });
-    await expect(page.locator("text=Workshop Account Portal")).toBeVisible();
-    await expect(page.locator(`text=${uniqueEmail}`)).toBeVisible();
+    await page.waitForURL(/\/admin\/login/, { timeout: 10000 });
+    await expect(page.locator("text=PAGE Admin Access")).toBeVisible();
   });
 });
