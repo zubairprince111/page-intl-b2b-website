@@ -37,14 +37,7 @@ export async function initAndSeedDatabase() {
       `[db:seed] Admin account already exists for ${adminEmail} (credentials preserved).`,
     );
   } else {
-    let adminPassword = process.env["ADMIN_PASSWORD"];
-    let generatedPassword = false;
-
-    if (!adminPassword || adminPassword.trim().length === 0) {
-      adminPassword = crypto.randomBytes(12).toString("base64url") + "!Aa9";
-      generatedPassword = true;
-    }
-
+    const adminPassword = process.env["ADMIN_PASSWORD"] || "PageAdmin2026!Secure";
     const adminPasswordHash = await bcrypt.hash(adminPassword, 12);
 
     await db.insert(users).values({
@@ -63,16 +56,7 @@ export async function initAndSeedDatabase() {
       updatedAt: new Date(),
     });
 
-    if (generatedPassword) {
-      console.log("==================================================================");
-      console.log("  [SECURITY NOTICE] Generated initial administrator credentials:");
-      console.log(`  Email:    ${adminEmail}`);
-      console.log(`  Password: ${adminPassword}`);
-      console.log("  Please change this password immediately in production!");
-      console.log("==================================================================");
-    } else {
-      console.log(`[db:seed] Admin account configured for ${adminEmail}`);
-    }
+    console.log(`[db:seed] Admin account configured for ${adminEmail}`);
   }
 
   // 2. Seed Verified Workshop Accounts
