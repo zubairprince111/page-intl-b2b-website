@@ -177,6 +177,7 @@ export function TargetSectorsSection() {
                   : "opacity-0 scale-105 pointer-events-none",
               )}
               loading="lazy"
+              decoding="async"
             />
           ))}
 

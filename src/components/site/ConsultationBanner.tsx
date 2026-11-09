@@ -121,6 +121,7 @@ export function ConsultationBanner({ className }: ConsultationBannerProps) {
               alt="Certified automotive engineering specialist in modern workshop"
               className="absolute inset-0 w-full h-full object-cover object-[42%_center]"
               loading="lazy"
+              decoding="async"
             />
 
             {/* Red Dynamic Angled Ribbon Accent Overlay */}

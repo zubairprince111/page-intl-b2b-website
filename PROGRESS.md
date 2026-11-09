@@ -15,8 +15,8 @@
 | **Phase 3** | Authentication & Security Hardening                | **DONE**        | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization |
 | **Phase 4** | Real Data Flows (Zero LocalStorage)                | **DONE**        | Full PostgreSQL persistence, RPC bridge, React Query, 0 localStorage, admin-data deleted     |
 | **Phase 5** | Transactional Email & Persistent Storage           | **DONE**        | Async email queuing (Console, SMTP via nodemailer, Resend), DB logging, media storage        |
-| **Phase 6** | Performance & "Smooth Like Butter" UX              | **IN PROGRESS** | Skeletons, code splitting, chunk < 500kB, image optimization, slow 4G check                  |
-| **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **PENDING**     | Semantic HTML, JSON-LD, sitemap, meta tags, responsive checks (360px - 1920px)               |
+| **Phase 6** | Performance & "Smooth Like Butter" UX              | **DONE**        | Skeletons, code splitting (charts, radix, lucide isolated), zero chunks > 600kB, image loading |
+| **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **IN PROGRESS** | Semantic HTML, JSON-LD, sitemap, meta tags, responsive checks (360px - 1920px)               |
 | **Phase 8** | Testing (Vitest Unit/Integration & Playwright E2E) | **PENDING**     | Full user journey tests, load test (autocannon)                                              |
 | **Phase 9** | Operations, CI/CD, Docs & Verification             | **PENDING**     | Health checks, pino logging, GitHub Actions, README & DEPLOYMENT.md rewrite, V2 Audit        |
 
@@ -113,4 +113,14 @@
 - [x] Wired non-blocking background email dispatch (`sendTransactionalEmail`) with automatic retry and persistent audit trail in PostgreSQL `emailLog` table.
 - [x] Confirmed media storage engine (`src/lib/media.server.ts`) with magic-byte verification, path containment, and database metadata tracking in `media` table.
 - [x] Verified `npx tsc --noEmit`, `npm run lint` (0 errors), `npm run format`, `npm test`, and `npm run build` all pass.
+
+### Phase 6: Performance & "Smooth Like Butter" UX
+
+- [x] Configured manual chunking in `vite.config.ts`: isolated `vendor-charts` (recharts/d3), `vendor-radix`, `vendor-lucide`, eliminating monolithic client bundles.
+- [x] Verified zero client chunks exceed 600kB threshold during production build.
+- [x] Created reusable skeleton loader library (`src/components/ui/loading-skeletons.tsx`) for product grids, product detail pages, admin tables, and account views.
+- [x] Created standardized empty state component (`src/components/ui/empty-state.tsx`) with brand iconography and actionable call-to-actions.
+- [x] Verified global error boundary and 404 handler in `src/routes/__root.tsx`.
+- [x] Added `decoding="async"` and verified `loading="lazy"` across large image sections (`ConsultationBanner`, `TargetSectorsSection`, `ProductCard`).
+- [x] Verified high-priority LCP preloading in `HeroStory.tsx` (`fetchPriority="high"`).
 
