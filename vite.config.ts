@@ -26,6 +26,9 @@ export default defineConfig(({ command }) => ({
   server: {
     host: "::",
     port: 8080,
+    watch: {
+      ignored: ["**/*.mp4", "**/*.webm", "**/public/**"],
+    },
   },
   plugins: [
     tailwindcss(),
@@ -35,7 +38,7 @@ export default defineConfig(({ command }) => ({
     }),
     command === "build"
       ? nitro({
-          defaultPreset: "cloudflare-module",
+          defaultPreset: process.env["NITRO_PRESET"] || "node-server",
         })
       : null,
     viteReact(),

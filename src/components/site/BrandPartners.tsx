@@ -14,11 +14,7 @@ export function BrandPartners() {
       category: "Diagnostics & Systems",
       country: "Germany",
       logo: (
-        <svg
-          viewBox="0 0 160 40"
-          className="h-7 md:h-8 w-auto fill-current"
-          aria-label="Bosch"
-        >
+        <svg viewBox="0 0 160 40" className="h-7 md:h-8 w-auto fill-current" aria-label="Bosch">
           {/* Bosch iconic Magneto Armature symbol */}
           <g transform="translate(6, 4)">
             <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2.8" />
@@ -47,16 +43,24 @@ export function BrandPartners() {
       category: "High-Performance Braking",
       country: "Italy",
       logo: (
-        <svg
-          viewBox="0 0 170 40"
-          className="h-7 md:h-8 w-auto fill-current"
-          aria-label="Brembo"
-        >
+        <svg viewBox="0 0 170 40" className="h-7 md:h-8 w-auto fill-current" aria-label="Brembo">
           {/* Brembo distinct lower-case circular b emblem */}
           <g transform="translate(4, 5)">
-            <circle cx="15" cy="15" r="13" fill="#E21B24" className="group-hover:fill-[#E21B24] transition-colors" />
+            <circle
+              cx="15"
+              cy="15"
+              r="13"
+              fill="#E21B24"
+              className="group-hover:fill-[#E21B24] transition-colors"
+            />
             <circle cx="15" cy="15" r="7.5" fill="white" />
-            <circle cx="15" cy="15" r="3.2" fill="#E21B24" className="group-hover:fill-[#E21B24] transition-colors" />
+            <circle
+              cx="15"
+              cy="15"
+              r="3.2"
+              fill="#E21B24"
+              className="group-hover:fill-[#E21B24] transition-colors"
+            />
             <rect x="2" y="2" width="6" height="13" fill="white" rx="1" />
           </g>
           {/* brembo iconic lowercase wordmark */}
@@ -79,11 +83,7 @@ export function BrandPartners() {
       category: "Diagnostic & ADAS Systems",
       country: "Tech",
       logo: (
-        <svg
-          viewBox="0 0 160 40"
-          className="h-7 md:h-8 w-auto fill-current"
-          aria-label="Launch"
-        >
+        <svg viewBox="0 0 160 40" className="h-7 md:h-8 w-auto fill-current" aria-label="Launch">
           {/* Launch red angled accent chevron */}
           <polygon
             points="6,32 18,8 26,8 14,32"
@@ -135,7 +135,14 @@ export function BrandPartners() {
           >
             HUNTER
           </text>
-          <rect x="4" y="27" width="102" height="2" fill="#CE1126" className="group-hover:fill-[#CE1126] transition-colors" />
+          <rect
+            x="4"
+            y="27"
+            width="102"
+            height="2"
+            fill="#CE1126"
+            className="group-hover:fill-[#CE1126] transition-colors"
+          />
           <text
             x="4"
             y="35"
@@ -156,11 +163,7 @@ export function BrandPartners() {
       category: "High-Performance Lubricants",
       country: "France",
       logo: (
-        <svg
-          viewBox="0 0 150 40"
-          className="h-7 md:h-8 w-auto"
-          aria-label="Motul"
-        >
+        <svg viewBox="0 0 150 40" className="h-7 md:h-8 w-auto" aria-label="Motul">
           {/* Motul classic red rounded container badge */}
           <rect
             x="4"
@@ -192,14 +195,16 @@ export function BrandPartners() {
       category: "Workshop & Precision Tools",
       country: "Switzerland",
       logo: (
-        <svg
-          viewBox="0 0 185 40"
-          className="h-7 md:h-8 w-auto fill-current"
-          aria-label="Kraftwerk"
-        >
+        <svg viewBox="0 0 185 40" className="h-7 md:h-8 w-auto fill-current" aria-label="Kraftwerk">
           {/* Swiss Flag Badge */}
           <g transform="translate(4, 8)">
-            <rect width="24" height="24" rx="3" fill="#D52B1E" className="group-hover:fill-[#D52B1E] transition-colors" />
+            <rect
+              width="24"
+              height="24"
+              rx="3"
+              fill="#D52B1E"
+              className="group-hover:fill-[#D52B1E] transition-colors"
+            />
             <rect x="10" y="4.5" width="4" height="15" fill="#FFFFFF" rx="0.5" />
             <rect x="4.5" y="10" width="15" height="4" fill="#FFFFFF" rx="0.5" />
           </g>
@@ -235,16 +240,25 @@ export function BrandPartners() {
       category: "Engine Filtration & Thermal Systems",
       country: "Germany",
       logo: (
-        <svg
-          viewBox="0 0 160 40"
-          className="h-7 md:h-8 w-auto fill-current"
-          aria-label="Mahle"
-        >
+        <svg viewBox="0 0 160 40" className="h-7 md:h-8 w-auto fill-current" aria-label="Mahle">
           {/* Mahle distinctive blue circle emblem with geometric cutout */}
           <g transform="translate(6, 6)">
-            <circle cx="14" cy="14" r="13" fill="#003B7E" className="group-hover:fill-[#003B7E] transition-colors" />
+            <circle
+              cx="14"
+              cy="14"
+              r="13"
+              fill="#003B7E"
+              className="group-hover:fill-[#003B7E] transition-colors"
+            />
             <circle cx="14" cy="14" r="7.5" fill="#FFFFFF" />
-            <rect x="12" y="1" width="4" height="26" fill="#003B7E" className="group-hover:fill-[#003B7E] transition-colors" />
+            <rect
+              x="12"
+              y="1"
+              width="4"
+              height="26"
+              fill="#003B7E"
+              className="group-hover:fill-[#003B7E] transition-colors"
+            />
           </g>
           {/* MAHLE bold industrial wordmark */}
           <text
@@ -266,13 +280,17 @@ export function BrandPartners() {
       category: "Professional Diagnostic & Workshop Units",
       country: "USA",
       logo: (
-        <svg
-          viewBox="0 0 160 40"
-          className="h-7 md:h-8 w-auto fill-current"
-          aria-label="Snap-on"
-        >
+        <svg viewBox="0 0 160 40" className="h-7 md:h-8 w-auto fill-current" aria-label="Snap-on">
           {/* Snap-on red accent underline bar */}
-          <rect x="6" y="28" width="138" height="3" fill="#D81E05" className="group-hover:fill-[#D81E05] transition-colors" rx="1" />
+          <rect
+            x="6"
+            y="28"
+            width="138"
+            height="3"
+            fill="#D81E05"
+            className="group-hover:fill-[#D81E05] transition-colors"
+            rx="1"
+          />
           {/* Snap-on signature italicized heavyweight wordmark */}
           <text
             x="6"

@@ -55,11 +55,10 @@ export function SplashScreen({ onComplete, disabled = false }: SplashScreenProps
       onClick={handleDismiss}
       className={cn(
         "fixed inset-0 z-[99999] flex items-center justify-center select-none overflow-hidden cursor-pointer transition-all duration-700 ease-out",
-        isFading ? "opacity-0 pointer-events-none scale-105" : "opacity-100"
+        isFading ? "opacity-0 pointer-events-none scale-105" : "opacity-100",
       )}
       style={{
-        background:
-          "radial-gradient(ellipse at 50% 50%, #ef4444 0%, #dc2626 55%, #991b1b 100%)",
+        background: "radial-gradient(ellipse at 50% 50%, #ef4444 0%, #dc2626 55%, #991b1b 100%)",
       }}
     >
       {/* Subtle Technical Grid & Ambient Lighting Overlay */}

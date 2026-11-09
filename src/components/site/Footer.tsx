@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import {
   Facebook,
   Instagram,
@@ -9,10 +10,30 @@ import {
   ShieldCheck,
   Truck,
   Wrench,
-  Youtube,
   Zap,
 } from "lucide-react";
 import { Logo } from "./Header";
+
+export const socialChannels = [
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/company/page-international-ltd/",
+    icon: Linkedin,
+    hoverClass: "hover:border-[#0A66C2] hover:text-[#0A66C2] hover:bg-[#0A66C2]/10",
+  },
+  {
+    name: "Facebook",
+    href: "https://www.facebook.com/pageinternationalltd/",
+    icon: Facebook,
+    hoverClass: "hover:border-[#1877F2] hover:text-[#1877F2] hover:bg-[#1877F2]/10",
+  },
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/pageintl",
+    icon: Instagram,
+    hoverClass: "hover:border-[#E4405F] hover:text-[#E4405F] hover:bg-[#E4405F]/10",
+  },
+] as const;
 
 const cols = [
   {
@@ -74,6 +95,7 @@ const cols = [
     title: "Company",
     links: [
       { l: "About PAGE International", to: "/about" },
+      { l: "Updates & Dispatches Feed", to: "/updates" },
       { l: "Industrial Demo Hubs", to: "/service-centers" },
       { l: "Partner Brands", to: "/#brands" },
       { l: "Supply Network", to: "/about" },
@@ -150,7 +172,9 @@ export function Footer() {
           <div className="max-w-md">
             <Logo />
             <p className="mt-4 text-xs leading-relaxed text-ink-muted">
-              PAGE International Ltd. is a specialized B2B supplier and distributor of automotive garage machinery, replacement spare parts, diagnostics, and workshop solutions to professional service centers, workshops, dealerships, fleets, and EV businesses.
+              PAGE International Ltd. is a specialized B2B supplier and distributor of automotive
+              garage machinery, replacement spare parts, diagnostics, and workshop solutions to
+              professional service centers, workshops, dealerships, fleets, and EV businesses.
             </p>
             <p className="mt-2 text-xs font-bold uppercase tracking-wider text-primary">
               The Company Behind The Workshop.
@@ -171,15 +195,22 @@ export function Footer() {
               </div>
             </div>
 
-            <div className="mt-6 flex gap-2">
-              {[Facebook, Instagram, Linkedin, Youtube].map((Icon, i) => (
+            {/* Official Social Media Links */}
+            <div className="mt-6 flex items-center gap-2.5">
+              {socialChannels.map((item) => (
                 <a
-                  key={i}
-                  href="#"
-                  aria-label="Social media link"
-                  className="grid h-8 w-8 place-items-center rounded border border-ink-border text-ink-muted hover:border-primary hover:text-primary transition-colors"
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Follow PAGE International on ${item.name}`}
+                  title={`PAGE International on ${item.name}`}
+                  className={cn(
+                    "grid h-8.5 w-8.5 place-items-center rounded-lg border border-ink-border text-ink-muted transition-all duration-200 shadow-xs",
+                    item.hoverClass,
+                  )}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <item.icon className="h-4 w-4" />
                 </a>
               ))}
             </div>
@@ -195,13 +226,22 @@ export function Footer() {
                 <ul className="mt-3.5 space-y-2 text-xs">
                   {col.links.map((link) => (
                     <li key={link.l}>
-                      <Link
-                        to={link.to}
-                        search={link.search}
-                        className="text-ink-muted transition-colors hover:text-primary"
-                      >
-                        {link.l}
-                      </Link>
+                      {"search" in link && link.search ? (
+                        <Link
+                          to={link.to}
+                          search={link.search as any}
+                          className="text-ink-muted transition-colors hover:text-primary"
+                        >
+                          {link.l}
+                        </Link>
+                      ) : (
+                        <Link
+                          to={link.to}
+                          className="text-ink-muted transition-colors hover:text-primary"
+                        >
+                          {link.l}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -215,7 +255,8 @@ export function Footer() {
       <div className="border-t border-ink-border/70 bg-black/40">
         <div className="container-page flex flex-col gap-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} PAGE International Ltd. All rights reserved. B2B Automotive Equipment & Spare Parts Distributor.
+            © {new Date().getFullYear()} PAGE International Ltd. All rights reserved. B2B Automotive
+            Equipment & Spare Parts Distributor.
           </p>
           <div className="flex flex-wrap items-center gap-5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-primary">

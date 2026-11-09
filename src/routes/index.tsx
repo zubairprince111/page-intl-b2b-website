@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   CheckCircle2,
   ShieldCheck,
-  Star,
   Wrench,
   Zap,
   Calendar,
@@ -14,7 +13,6 @@ import {
 } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { CinematicIntro } from "@/components/site/CinematicIntro";
 import { MobilityScrollStack } from "@/components/site/MobilityScrollStack";
 import { BrandPartners } from "@/components/site/BrandPartners";
 import { ReviewCard } from "@/components/site/ReviewCard";
@@ -30,20 +28,14 @@ import {
 } from "@/components/icons/EngineeringIcons";
 import { ProductCard } from "@/components/site/ProductCard";
 import { QuoteModal } from "@/components/site/QuoteModal";
-import { reviewsData } from "@/lib/reviews";
-import {
-  images,
-  products,
-  taka,
-  type Product,
-} from "@/lib/data";
+import { getPublishedReviews, addPublishedReview, type Review } from "@/lib/reviews";
+import { images, products, taka, type Product } from "@/lib/data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title:
-          "PAGE International — Automotive Equipment, Parts & Workshop Solutions",
+        title: "PAGE International — Automotive Equipment, Parts & Workshop Solutions",
       },
       {
         name: "description",
@@ -52,8 +44,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content:
-          "PAGE International — Automotive Equipment, Parts & Workshop Solutions",
+        content: "PAGE International — Automotive Equipment, Parts & Workshop Solutions",
       },
       {
         property: "og:description",
@@ -126,11 +117,25 @@ function Home() {
     return () => clearInterval(timer);
   }, []);
 
-
   // Active product for quotation modal
   const [activeQuoteProduct, setActiveQuoteProduct] = useState<Product | null>(null);
 
-  // Review modal state (sent to admin panel)
+  // Published reviews state (live dynamic)
+  const [publishedReviews, setPublishedReviews] = useState<Review[]>(() => getPublishedReviews());
+
+  useEffect(() => {
+    const handleReviewsUpdate = () => {
+      setPublishedReviews(getPublishedReviews());
+    };
+    window.addEventListener("reviews_updated", handleReviewsUpdate);
+    window.addEventListener("storage", handleReviewsUpdate);
+    return () => {
+      window.removeEventListener("reviews_updated", handleReviewsUpdate);
+      window.removeEventListener("storage", handleReviewsUpdate);
+    };
+  }, []);
+
+  // Review modal state
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [revRating, setRevRating] = useState(5);
@@ -144,25 +149,16 @@ function Home() {
     e.preventDefault();
     if (!revName || !revWorkshop || !revComment) return;
 
-    const newPendingReview = {
-      id: `rev-pending-${Date.now()}`,
-      name: revName,
-      role: revRole || "Workshop Proprietor",
-      workshop: revWorkshop,
-      equipment: revEquipment || "Commercial Workshop Equipment",
-      rating: revRating,
-      comment: revComment,
-      date: "October 2026",
-      status: "PENDING_ADMIN_APPROVAL",
-      submittedAt: new Date().toISOString(),
-    };
-
-    try {
-      const existing = JSON.parse(localStorage.getItem("page_pending_reviews") || "[]");
-      localStorage.setItem("page_pending_reviews", JSON.stringify([newPendingReview, ...existing]));
-    } catch {
-      // fallback
-    }
+    addPublishedReview({
+      name: revName.trim(),
+      role: revRole.trim() || "Workshop Managing Director",
+      workshop: revWorkshop.trim(),
+      equipment: revEquipment.trim() || "Commercial Workshop Equipment",
+      comment: revComment.trim(),
+      title: revEquipment.trim()
+        ? `Review on ${revEquipment.trim()}`
+        : "Verified Workshop Experience",
+    });
 
     setReviewSubmitted(true);
     setRevName("");
@@ -172,20 +168,21 @@ function Home() {
     setRevComment("");
   };
 
-  // 4 Featured High-Impact Products
-  const featuredItems = [
-    products.find((p) => p.slug === "heavy-duty-2-post-lift-4t") || products[0],
-    products.find((p) => p.slug === "pro-tyre-changer-assist-arm") || products[1],
-    products.find((p) => p.slug === "digital-wheel-balancer-laser") || products[2],
-    products.find((p) => p.slug === "rotary-screw-air-compressor-10hp") || products[3],
-  ];
+  function handleOpenReviewModal() {
+    setReviewSubmitted(false);
+    setIsReviewModalOpen(true);
+  }
 
+  // 4 Featured High-Impact Products
+  const featuredItems: Product[] = [
+    products.find((p) => p.slug === "heavy-duty-2-post-lift-4t") ?? products[0]!,
+    products.find((p) => p.slug === "pro-tyre-changer-assist-arm") ?? products[1]!,
+    products.find((p) => p.slug === "digital-wheel-balancer-laser") ?? products[2]!,
+    products.find((p) => p.slug === "rotary-screw-air-compressor-10hp") ?? products[3]!,
+  ].filter((p): p is Product => Boolean(p));
 
   return (
     <div className="bg-background text-foreground selection:bg-primary selection:text-white">
-      {/* 00 — SIGNATURE WEBSITE OPENING ANIMATION: FROM THE ROAD TO THE WORKSHOP */}
-      <CinematicIntro />
-
       {/* ======================================================== */}
       {/* 01 — HERO: FULL-SCREEN CINEMATIC WORKSHOP ENVIRONMENT     */}
       {/* ======================================================== */}
@@ -202,13 +199,16 @@ function Home() {
                 key={heroLineIndex}
                 className="font-display font-extrabold text-xl sm:text-3xl md:text-4xl lg:text-5xl tracking-tight text-white uppercase drop-shadow-[0_2px_14px_rgba(0,0,0,0.6)] animate-in fade-in slide-in-from-bottom-2 duration-500 whitespace-nowrap"
               >
-                <span>{heroLines[heroLineIndex].prefix} </span>
-                <span className="text-primary">{heroLines[heroLineIndex].highlight}</span>
+                <span>{(heroLines[heroLineIndex] ?? heroLines[0]!).prefix} </span>
+                <span className="text-primary">
+                  {(heroLines[heroLineIndex] ?? heroLines[0]!).highlight}
+                </span>
               </h1>
             </div>
 
             <p className="mt-3 max-w-xl mx-auto text-xs sm:text-sm md:text-base text-zinc-100 leading-relaxed font-sans drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">
-              Professional equipment, parts and workshop solutions for the businesses that keep vehicles moving.
+              Professional equipment, parts and workshop solutions for the businesses that keep
+              vehicles moving.
             </p>
           </div>
         </div>
@@ -222,9 +222,7 @@ function Home() {
           {/* Upper side of that ad card */}
           <div className="mb-6 sm:mb-8">
             <span className="eyebrow text-primary">Commercial Machinery</span>
-            <h2 className="display-lg mt-1 text-foreground">
-              FEATURED EQUIPMENT
-            </h2>
+            <h2 className="display-lg mt-1 text-foreground">FEATURED EQUIPMENT</h2>
           </div>
 
           {/* That Ad Card */}
@@ -232,27 +230,30 @@ function Home() {
             <MobilityScrollStack />
           </div>
 
-          {/* Top of the product cards */}
-          <div className="flex items-center justify-end mb-4 sm:mb-6">
-            <Link
-              to="/shop"
-              search={{ cat: "Garage Equipment" }}
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors group"
-            >
-              <span>Explore All Machinery</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-
           {/* 4 Strong Products matching /shop card design */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {featuredItems.map((p) => (
-              <ProductCard
-                key={p.slug}
-                p={p}
-                onQuote={(prod) => setActiveQuoteProduct(prod)}
-              />
+              <ProductCard key={p.slug} p={p} onQuote={(prod) => setActiveQuoteProduct(prod)} />
             ))}
+          </div>
+
+          {/* Bottom Toggle Control — Explore All Machinery in Shop */}
+          <div className="mt-8 sm:mt-10 flex justify-center">
+            <div className="inline-flex items-center p-1 sm:p-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 shadow-xs">
+              <span className="px-3.5 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-500 select-none">
+                Featured (4)
+              </span>
+              <Link
+                to="/shop"
+                search={{ cat: "Garage Equipment" }}
+                className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-white dark:bg-zinc-900 hover:bg-primary dark:hover:bg-primary text-zinc-900 dark:text-zinc-100 hover:text-white dark:hover:text-white font-bold text-[11px] sm:text-xs uppercase tracking-wider shadow-sm hover:shadow transition-all group cursor-pointer"
+              >
+                <span>Explore All Machinery</span>
+                <span className="h-5 w-5 rounded-full bg-primary group-hover:bg-white text-white group-hover:text-primary flex items-center justify-center transition-colors">
+                  <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -272,7 +273,10 @@ function Home() {
       {/* ======================================================== */}
       {/* 08B — WHY CHOOSE US: THE PAGE ADVANTAGE                  */}
       {/* ======================================================== */}
-      <section id="why-choose-us" className="py-16 sm:py-20 bg-zinc-50 border-b border-border scroll-mt-20">
+      <section
+        id="why-choose-us"
+        className="py-16 sm:py-20 bg-zinc-50 border-b border-border scroll-mt-20"
+      >
         <div className="container-page">
           {/* Header Row */}
           <div className="pb-8 border-b border-border">
@@ -282,7 +286,9 @@ function Home() {
                 BUILT TO PERFORM. CERTIFIED TO LAST.
               </h2>
               <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                PAGE International Limited boasts a nationwide footprint of over 500 workshops, official industry affiliations, and dedicated on-site technical teams across Bangladesh.
+                PAGE International Limited boasts a nationwide footprint of over 500 workshops,
+                official industry affiliations, and dedicated on-site technical teams across
+                Bangladesh.
               </p>
             </div>
           </div>
@@ -369,10 +375,7 @@ function Home() {
 
             <button
               type="button"
-              onClick={() => {
-                setReviewSubmitted(false);
-                setIsReviewModalOpen(true);
-              }}
+              onClick={handleOpenReviewModal}
               className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-zinc-100 hover:bg-zinc-200/80 text-zinc-500 hover:text-zinc-800 text-xs font-medium transition-colors self-start sm:self-auto cursor-pointer"
             >
               <PenSquare className="w-3.5 h-3.5 text-zinc-400" />
@@ -385,12 +388,8 @@ function Home() {
         <div className="relative w-full overflow-hidden py-2">
           {/* Continuous Left-to-Right Moving Track */}
           <div className="animate-reviews-ltr flex items-center gap-5 sm:gap-6">
-            {[...reviewsData, ...reviewsData].map((rev, index) => (
-              <ReviewCard
-                key={`${rev.id}-${index}`}
-                review={rev}
-                index={index}
-              />
+            {[...publishedReviews, ...publishedReviews].map((rev, index) => (
+              <ReviewCard key={`${rev.id}-${index}`} review={rev} index={index} />
             ))}
           </div>
         </div>
@@ -440,15 +439,16 @@ function Home() {
                 <div className="h-14 w-14 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center mx-auto mb-3">
                   <ShieldCheck className="w-7 h-7" />
                 </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-[11px] font-mono font-bold uppercase tracking-wider mb-2">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Sent To Admin Panel For Approval</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-[11px] font-mono font-bold uppercase tracking-wider mb-2">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Published Immediately</span>
                 </div>
                 <h3 className="font-display text-xl font-bold uppercase text-foreground">
-                  Review Submitted Successfully
+                  Review Published Successfully
                 </h3>
                 <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
-                  Thank you! Your feedback has been forwarded to our admin panel for verification. Once approved, it will be published to the frontend.
+                  Thank you! Your feedback has been published and is now live in the verified
+                  workshop testimonials carousel.
                 </p>
                 <div className="mt-6 flex justify-center">
                   <button
@@ -470,42 +470,15 @@ function Home() {
                     Verified B2B Review Submission
                   </span>
                   <h3 className="font-display text-xl font-black uppercase text-zinc-900 mt-1">
-                    Rate Your Machinery & Experience
+                    Share Your Workshop Machinery Experience
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Your feedback will be sent to the admin panel for verification before being displayed.
+                    Your feedback will be published directly to our community of 500+ workshop
+                    owners across Bangladesh.
                   </p>
                 </div>
 
                 <form onSubmit={handleReviewSubmit} className="space-y-3.5">
-                  {/* Star Rating Picker */}
-                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3.5">
-                    <label className="block text-xs font-bold uppercase text-zinc-900 mb-1">
-                      Overall Rating *
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => setRevRating(s)}
-                          className="p-1 focus:outline-none cursor-pointer"
-                        >
-                          <Star
-                            className={`w-6 h-6 transition-colors ${
-                              s <= revRating
-                                ? "fill-amber-400 text-amber-400 scale-105"
-                                : "fill-zinc-200 text-zinc-300"
-                            }`}
-                          />
-                        </button>
-                      ))}
-                      <span className="text-xs font-mono font-bold ml-2 text-zinc-900">
-                        {revRating}.0 / 5.0
-                      </span>
-                    </div>
-                  </div>
-
                   {/* Name and Role */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -596,10 +569,7 @@ function Home() {
 
       {/* Direct Product Quotation Modal */}
       {activeQuoteProduct && (
-        <QuoteModal
-          product={activeQuoteProduct}
-          onClose={() => setActiveQuoteProduct(null)}
-        />
+        <QuoteModal product={activeQuoteProduct} onClose={() => setActiveQuoteProduct(null)} />
       )}
     </div>
   );

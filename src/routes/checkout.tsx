@@ -28,7 +28,7 @@ export const Route = createFileRoute("/checkout")({
 });
 
 export function Checkout() {
-  const { lines, subtotal, clear } = useCart();
+  const { lines, subtotal, clear, isLoaded } = useCart();
   const [done, setDone] = useState(false);
   const [pay, setPay] = useState("cod");
   const [isBusiness, setIsBusiness] = useState(false);
@@ -42,20 +42,56 @@ export function Checkout() {
     setDone(true);
   };
 
+  if (!isLoaded) {
+    return (
+      <div className="container-page flex min-h-[60vh] flex-col items-center justify-center py-32 text-center bg-background">
+        <div className="animate-spin h-7 w-7 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+        <p className="text-xs text-muted-foreground font-mono">
+          Restoring your checkout session...
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoaded && lines.length === 0 && !done) {
+    return (
+      <div className="container-page flex min-h-[60vh] flex-col items-center justify-center py-32 text-center bg-background">
+        <h2 className="display-md text-foreground">Your Checkout Cart is Empty</h2>
+        <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+          Please add items to your cart before proceeding to checkout.
+        </p>
+        <div className="mt-8 flex justify-center gap-3">
+          <Link
+            to="/shop"
+            className="btn btn-primary h-11 px-7 text-xs font-bold uppercase tracking-wider rounded-full shadow-sm"
+          >
+            Browse Products
+          </Link>
+          <Link
+            to="/"
+            className="btn btn-outline h-11 px-7 text-xs font-bold uppercase tracking-wider rounded-full"
+          >
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (done) {
     return (
       <div className="container-page flex min-h-screen flex-col items-center justify-center py-32 text-center bg-background">
         <div className="rounded-full bg-success/15 p-4 text-success mb-2">
           <CheckCircle2 className="h-16 w-16" strokeWidth={1.75} />
         </div>
-        <h1 className="display-lg mt-4 text-foreground font-bold">
-          Order Confirmed & Placed
-        </h1>
+        <h1 className="display-lg mt-4 text-foreground font-bold">Order Confirmed & Placed</h1>
         <p className="mt-2 text-xs font-mono font-bold uppercase tracking-widest text-primary">
           Order Reference: #{orderId}
         </p>
         <p className="mt-3 max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          Thank you for choosing PAGE International Ltd. Our commercial logistics desk has received your job card. We will contact you via phone within 2 hours to confirm delivery dispatch details.
+          Thank you for choosing PAGE International Ltd. Our commercial logistics desk has received
+          your job card. We will contact you via phone within 2 hours to confirm delivery dispatch
+          details.
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -74,10 +110,17 @@ export function Checkout() {
     <div className="bg-background text-foreground min-h-screen pt-24 lg:pt-32 pb-20">
       {/* Breadcrumb */}
       <div className="border-b border-border bg-secondary/40 py-3">
-        <nav aria-label="Breadcrumb" className="container-page text-xs text-muted-foreground flex items-center gap-1.5">
-          <Link to="/" className="hover:text-foreground">Home</Link>
+        <nav
+          aria-label="Breadcrumb"
+          className="container-page text-xs text-muted-foreground flex items-center gap-1.5"
+        >
+          <Link to="/" className="hover:text-foreground">
+            Home
+          </Link>
           <span>/</span>
-          <Link to="/cart" className="hover:text-foreground">Cart</Link>
+          <Link to="/cart" className="hover:text-foreground">
+            Cart
+          </Link>
           <span>/</span>
           <span className="font-semibold text-foreground">Checkout</span>
         </nav>
@@ -136,14 +179,25 @@ export function Checkout() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                     Full Name *
                   </label>
-                  <input required placeholder="Your full legal name" className="field" autoComplete="name" />
+                  <input
+                    required
+                    placeholder="Your full legal name"
+                    className="field"
+                    autoComplete="name"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                     Phone Number *
                   </label>
-                  <input required type="tel" placeholder="+880 1..." className="field" autoComplete="tel" />
+                  <input
+                    required
+                    type="tel"
+                    placeholder="+880 1..."
+                    className="field"
+                    autoComplete="tel"
+                  />
                 </div>
 
                 {isBusiness && (
@@ -179,14 +233,24 @@ export function Checkout() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                     City / District *
                   </label>
-                  <input required defaultValue="Dhaka" className="field" autoComplete="address-level2" />
+                  <input
+                    required
+                    defaultValue="Dhaka"
+                    className="field"
+                    autoComplete="address-level2"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-foreground mb-1">
                     Email Address (For Invoicing)
                   </label>
-                  <input type="email" placeholder="billing@domain.com" className="field" autoComplete="email" />
+                  <input
+                    type="email"
+                    placeholder="billing@domain.com"
+                    className="field"
+                    autoComplete="email"
+                  />
                 </div>
 
                 <div className="sm:col-span-2">
@@ -237,7 +301,9 @@ export function Checkout() {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <p.icon className={`h-5 w-5 ${pay === p.id ? "text-primary" : "text-muted-foreground"}`} />
+                      <p.icon
+                        className={`h-5 w-5 ${pay === p.id ? "text-primary" : "text-muted-foreground"}`}
+                      />
                       <input
                         type="radio"
                         name="pay"
@@ -268,7 +334,10 @@ export function Checkout() {
 
             <ul className="mt-4 space-y-3 divide-y divide-border/60 max-h-72 overflow-y-auto pr-1 text-xs">
               {lines.map((l) => (
-                <li key={l.slug} className="pt-3 first:pt-0 flex items-center justify-between gap-3">
+                <li
+                  key={l.slug}
+                  className="pt-3 first:pt-0 flex items-center justify-between gap-3"
+                >
                   <div className="flex items-center gap-2.5">
                     <img
                       src={l.product.image}
@@ -277,7 +346,9 @@ export function Checkout() {
                     />
                     <div>
                       <p className="font-semibold text-foreground line-clamp-1">{l.product.name}</p>
-                      <p className="text-[11px] text-muted-foreground">Qty: {l.qty} × {taka(l.product.price)}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Qty: {l.qty} × {taka(l.product.price)}
+                      </p>
                     </div>
                   </div>
                   <span className="font-display text-base font-bold text-foreground shrink-0">

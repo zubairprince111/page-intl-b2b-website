@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Clock,
+  Facebook,
+  Instagram,
+  Linkedin,
   Mail,
   MapPin,
   Phone,
@@ -19,8 +22,7 @@ export const Route = createFileRoute("/support")({
   head: () => ({
     meta: [
       {
-        title:
-          "Commercial Support, B2B Quotations & Product Guides — PAGE International",
+        title: "Commercial Support, B2B Quotations & Product Guides — PAGE International",
       },
       {
         name: "description",
@@ -30,8 +32,7 @@ export const Route = createFileRoute("/support")({
       { property: "og:title", content: "PAGE B2B Support & Quotes" },
       {
         property: "og:description",
-        content:
-          "Direct technical assistance, commercial quotations and equipment datasheets.",
+        content: "Direct technical assistance, commercial quotations and equipment datasheets.",
       },
     ],
   }),
@@ -74,7 +75,6 @@ export function Support() {
         intro="Have questions regarding equipment dimensions, vehicle compatibility, or volume supply terms? Our technical applications engineers and B2B commercial advisors are ready to assist."
       />
 
-
       {/* Main Section: Custom Quotation Desk (Call / Email Direct) */}
       <section className="container-page py-14 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
@@ -86,7 +86,9 @@ export function Support() {
               <span className="text-primary">NOT IN OUR SHOP?</span>
             </h2>
             <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-              Looking for specialized garage machinery, unlisted OEM replacement parts, diagnostics, or turnkey workshop projects? Our commercial procurement desk sources directly from authorized global manufacturers.
+              Looking for specialized garage machinery, unlisted OEM replacement parts, diagnostics,
+              or turnkey workshop projects? Our commercial procurement desk sources directly from
+              authorized global manufacturers.
             </p>
 
             {/* 3 Value Pillars */}
@@ -100,7 +102,8 @@ export function Support() {
                     Fast Quotation Turnaround
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Official pro-forma invoices, technical datasheets, and delivery timelines within 2–4 business hours.
+                    Official pro-forma invoices, technical datasheets, and delivery timelines within
+                    2–4 business hours.
                   </p>
                 </div>
               </div>
@@ -114,7 +117,8 @@ export function Support() {
                     Custom Technical Sizing & Power Specs
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Machinery configured for your workshop ceiling height, electrical load (3-phase/single-phase), and vehicle mix.
+                    Machinery configured for your workshop ceiling height, electrical load
+                    (3-phase/single-phase), and vehicle mix.
                   </p>
                 </div>
               </div>
@@ -128,7 +132,8 @@ export function Support() {
                     Official Warranty & On-Site Installation
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Foundation chemical anchoring, hydraulic synchronization, and certified technician operation training.
+                    Foundation chemical anchoring, hydraulic synchronization, and certified
+                    technician operation training.
                   </p>
                 </div>
               </div>
@@ -138,11 +143,17 @@ export function Support() {
             <div className="mt-8 p-3.5 rounded-lg border border-border/80 bg-muted/40 text-xs text-muted-foreground flex items-center justify-between gap-2">
               <span>
                 Looking for products in our catalog? Explore our{" "}
-                <Link to="/shop" className="text-primary font-semibold underline hover:text-primary/80">
+                <Link
+                  to="/shop"
+                  className="text-primary font-semibold underline hover:text-primary/80"
+                >
                   Shop Catalogue
                 </Link>{" "}
                 or{" "}
-                <Link to="/cart" className="text-primary font-semibold underline hover:text-primary/80">
+                <Link
+                  to="/cart"
+                  className="text-primary font-semibold underline hover:text-primary/80"
+                >
                   Quotation Cart
                 </Link>
                 .
@@ -161,7 +172,8 @@ export function Support() {
                 Need a Custom Quotation?
               </h3>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                If custom quotation is needed, please call us or email our commercial desk directly. Our applications engineers prepare itemized formal quotes with technical drawings.
+                If custom quotation is needed, please call us or email our commercial desk directly.
+                Our applications engineers prepare itemized formal quotes with technical drawings.
               </p>
             </div>
 
@@ -263,7 +275,8 @@ export function Support() {
               Need an In-Person Equipment Consultation & Trial?
             </h3>
             <p className="text-xs sm:text-sm text-white/90 max-w-xl">
-              Schedule a 1-on-1 session with our certified machinery engineers at our Tejgaon Hub or have our team audit your workshop premises.
+              Schedule a 1-on-1 session with our certified machinery engineers at our Tejgaon Hub or
+              have our team audit your workshop premises.
             </p>
           </div>
           <Link
@@ -287,7 +300,9 @@ export function Support() {
                   DHAKA DEMONSTRATION HUB & OFFICE
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
-                  Visit our regional headquarters and equipment testing showroom in Tejgaon Industrial Area, Dhaka to inspect operational vehicle lifts, tyre changers, and diagnostic machinery in person.
+                  Visit our regional headquarters and equipment testing showroom in Tejgaon
+                  Industrial Area, Dhaka to inspect operational vehicle lifts, tyre changers, and
+                  diagnostic machinery in person.
                 </p>
               </div>
 
@@ -340,6 +355,45 @@ export function Support() {
                   Call Office Reception
                 </a>
               </div>
+
+              {/* Official Social Channels */}
+              <div className="pt-3 border-t border-border/80 flex flex-wrap items-center gap-3">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Official Channels:
+                </span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://www.linkedin.com/company/page-international-ltd/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="PAGE International on LinkedIn"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:border-[#0A66C2] hover:text-[#0A66C2] hover:bg-[#0A66C2]/10 transition-colors"
+                  >
+                    <Linkedin className="h-3.5 w-3.5" />
+                    <span>LinkedIn</span>
+                  </a>
+                  <a
+                    href="https://www.facebook.com/pageinternationalltd/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="PAGE International on Facebook"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:border-[#1877F2] hover:text-[#1877F2] hover:bg-[#1877F2]/10 transition-colors"
+                  >
+                    <Facebook className="h-3.5 w-3.5" />
+                    <span>Facebook</span>
+                  </a>
+                  <a
+                    href="https://www.instagram.com/pageintl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="PAGE International on Instagram"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:border-[#E4405F] hover:text-[#E4405F] hover:bg-[#E4405F]/10 transition-colors"
+                  >
+                    <Instagram className="h-3.5 w-3.5" />
+                    <span>Instagram</span>
+                  </a>
+                </div>
+              </div>
             </div>
 
             {/* Google Maps Embed */}
@@ -365,11 +419,10 @@ export function Support() {
         <div className="container-page max-w-4xl">
           <div className="mb-10 text-center">
             <span className="eyebrow text-primary">Support & Documentation</span>
-            <h2 className="display-md text-foreground mt-1">
-              FREQUENTLY ASKED QUESTIONS
-            </h2>
+            <h2 className="display-md text-foreground mt-1">FREQUENTLY ASKED QUESTIONS</h2>
             <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
-              Common questions regarding equipment delivery, installation, warranty claims, and commercial supply terms.
+              Common questions regarding equipment delivery, installation, warranty claims, and
+              commercial supply terms.
             </p>
           </div>
 

@@ -29,19 +29,22 @@ export function WhyChooseUsCard({ className = "" }: WhyChooseUsCardProps) {
         <div className="flex items-start gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
           <p className="text-[11px] sm:text-xs text-zinc-300 leading-tight">
-            <strong className="text-white font-semibold">Turnkey Bays:</strong> Certified foundation & hydraulic setup
+            <strong className="text-white font-semibold">Turnkey Bays:</strong> Certified foundation
+            & hydraulic setup
           </p>
         </div>
         <div className="flex items-start gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
           <p className="text-[11px] sm:text-xs text-zinc-300 leading-tight">
-            <strong className="text-white font-semibold">Genuine Spares:</strong> 100% in-stock OEM parts
+            <strong className="text-white font-semibold">Genuine Spares:</strong> 100% in-stock OEM
+            parts
           </p>
         </div>
         <div className="flex items-start gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
           <p className="text-[11px] sm:text-xs text-zinc-300 leading-tight">
-            <strong className="text-white font-semibold">Field Support:</strong> Direct on-site certified engineers
+            <strong className="text-white font-semibold">Field Support:</strong> Direct on-site
+            certified engineers
           </p>
         </div>
       </div>

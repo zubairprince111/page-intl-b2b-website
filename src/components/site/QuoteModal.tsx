@@ -1,17 +1,5 @@
-import { useState } from "react";
-import {
-  CheckCircle2,
-  FileSpreadsheet,
-  Mail,
-  Minus,
-  Phone,
-  Plus,
-  ShieldCheck,
-  Truck,
-  User,
-  Wrench,
-  X,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckCircle2, FileSpreadsheet, Minus, Plus, X } from "lucide-react";
 import type { Product } from "@/lib/data";
 import { addQuote } from "@/lib/admin-data";
 
@@ -23,6 +11,7 @@ export interface QuoteModalProps {
 export function QuoteModal({ product, onClose }: QuoteModalProps) {
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+
   const [formData, setFormData] = useState({
     companyName: "",
     contactName: "",
@@ -32,6 +21,31 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
     city: "Dhaka",
     notes: "",
   });
+
+  // Prevent background body scrolling when quotation modal is opened
+  useEffect(() => {
+    if (!product) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [product, onClose]);
 
   if (!product) return null;
 
@@ -68,12 +82,12 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-lg rounded-2xl bg-card border border-border/80 shadow-2xl p-6 sm:p-7 text-foreground overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-lg rounded-2xl bg-card border border-border/80 shadow-2xl p-6 sm:p-7 text-foreground overflow-hidden max-h-[92vh] flex flex-col">
         {/* Close Button */}
         <button
           onClick={onClose}
           aria-label="Close quote dialog"
-          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>
@@ -87,21 +101,28 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
               Quotation Request Received
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
-              Your inquiry for <strong className="text-foreground">{qty}x {product.name}</strong> has been logged under Reference ID:{" "}
-              <span className="font-mono font-bold text-primary">#RFQ-{Math.floor(100000 + Math.random() * 900000)}</span>.
+              Your inquiry for{" "}
+              <strong className="text-foreground">
+                {qty}x {product.name}
+              </strong>{" "}
+              has been logged under Reference ID:{" "}
+              <span className="font-mono font-bold text-primary">
+                #RFQ-{Math.floor(100000 + Math.random() * 900000)}
+              </span>
+              .
             </p>
             <div className="rounded-xl border border-border bg-secondary/50 p-4 text-xs text-left space-y-1.5 text-muted-foreground">
               <div className="flex justify-between">
                 <span>Product:</span>
-                <span className="font-semibold text-foreground truncate max-w-[220px]">{product.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>SKU & Brand:</span>
-                <span className="font-mono text-foreground">{product.sku} ({product.brand})</span>
+                <span className="font-semibold text-foreground truncate max-w-[220px]">
+                  {product.name}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Company:</span>
-                <span className="font-semibold text-foreground">{formData.companyName}</span>
+                <span className="font-semibold text-foreground truncate max-w-[220px]">
+                  {formData.companyName}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Contact Phone:</span>
@@ -109,11 +130,12 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Our commercial engineering team will prepare your formal price quotation and pro-forma invoice within 2–4 business hours.
+              Our commercial engineering team will prepare your formal price quotation and pro-forma
+              invoice within 2–4 business hours.
             </p>
             <button
               onClick={handleReset}
-              className="btn btn-primary h-10 px-8 text-xs font-bold uppercase tracking-wider rounded-full shadow-md"
+              className="btn btn-primary h-10 px-8 text-xs font-bold uppercase tracking-wider rounded-full shadow-md cursor-pointer"
             >
               Done
             </button>
@@ -121,24 +143,18 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
         ) : (
           <>
             {/* Header */}
-            <div className="border-b border-border pb-4 pr-8">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-primary">
-                  Official Commercial RFQ
-                </span>
-              </div>
+            <div className="border-b border-border pb-3 pr-8">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-primary">
+                Commercial RFQ & Wholesale
+              </span>
               <h2 className="text-lg sm:text-xl font-display font-bold uppercase tracking-tight text-foreground mt-0.5">
                 Request Price Quotation
               </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Get certified trade pricing, tax invoices & freight estimates from our engineers.
-              </p>
             </div>
 
             {/* Product Summary Box */}
-            <div className="my-4 flex items-center gap-3.5 rounded-xl border border-border/80 bg-secondary/40 p-3 shrink-0">
-              <div className="h-14 w-14 shrink-0 rounded-lg border border-border bg-white p-1 flex items-center justify-center">
+            <div className="my-3 flex items-center gap-3.5 rounded-xl border border-border/80 bg-secondary/40 p-2.5 shrink-0">
+              <div className="h-12 w-12 shrink-0 rounded-lg border border-border bg-white p-1 flex items-center justify-center">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -146,17 +162,12 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  <span className="text-primary font-bold">{product.brand}</span>
-                  <span>•</span>
-                  <span className="font-mono">{product.sku}</span>
-                </div>
                 <h4 className="text-xs sm:text-sm font-semibold text-foreground truncate">
                   {product.name}
                 </h4>
-                <div className="mt-1 flex items-center justify-between">
-                  <span className="text-[11px] font-mono font-semibold text-primary">
-                    Price: On Official Quotation
+                <div className="mt-0.5 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-primary font-semibold">
+                    {product.brand} · {product.sku}
                   </span>
 
                   {/* Quantity Stepper */}
@@ -164,7 +175,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                     <button
                       type="button"
                       onClick={() => setQty(Math.max(1, qty - 1))}
-                      className="px-2 text-xs hover:bg-secondary text-muted-foreground hover:text-foreground"
+                      className="px-2 text-xs hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
@@ -172,7 +183,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                     <button
                       type="button"
                       onClick={() => setQty(qty + 1)}
-                      className="px-2 text-xs hover:bg-secondary text-muted-foreground hover:text-foreground"
+                      className="px-2 text-xs hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
@@ -182,19 +193,19 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-3.5 pr-1">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-3 pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                    Company / Workshop Name *
+                    Company / Workshop *
                   </label>
                   <input
                     required
                     type="text"
                     value={formData.companyName}
+                    placeholder="e.g. Master Motors Ltd."
                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    placeholder="e.g. Apex Auto Care Ltd."
-                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div>
@@ -204,14 +215,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   <input
                     type="text"
                     value={formData.contactName}
+                    placeholder="e.g. Engr. Tanvir Ahmed"
                     onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                    placeholder="Engr. / Manager Name"
-                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                     Mobile Phone *
@@ -220,9 +231,9 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                     required
                     type="tel"
                     value={formData.phone}
+                    placeholder="+880 1711-XXXXXX"
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+880 1700-000000"
-                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div>
@@ -232,14 +243,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   <input
                     type="email"
                     value={formData.email}
+                    placeholder="contact@workshop.com"
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="procurement@company.com"
-                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                     Business Sector
@@ -247,7 +258,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   <select
                     value={formData.businessType}
                     onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                    className="w-full h-9 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
+                    className="w-full h-8 rounded-lg border border-input bg-card px-2 text-xs text-foreground focus:border-primary focus:outline-none"
                   >
                     <option value="Workshop / Garage">Independent Garage / Service Center</option>
                     <option value="Dealership 3S">Authorized Dealership (3S / 4S)</option>
@@ -258,14 +269,14 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                    Delivery Region / City
+                    Region / City
                   </label>
                   <input
                     type="text"
                     value={formData.city}
+                    placeholder="Dhaka"
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    placeholder="e.g. Dhaka, Chittagong..."
-                    className="w-full h-9 rounded-lg border border-input bg-card px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -278,16 +289,16 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   rows={2}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Need floor anchoring, 3-phase electrical verification, or expedited delivery..."
-                  className="w-full rounded-lg border border-input bg-card p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  placeholder="Need floor anchoring, 3-phase power verification, or expedited delivery..."
+                  className="w-full rounded-lg border border-input bg-card p-2 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 />
               </div>
 
               {/* Submit CTA */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="submit"
-                  className="btn btn-primary w-full h-11 text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:shadow-primary/30 transition-all"
+                  className="btn btn-primary w-full h-10 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <FileSpreadsheet className="h-4 w-4" />
                   <span>Submit Price Quotation Request</span>

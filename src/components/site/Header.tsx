@@ -2,6 +2,9 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   ChevronDown,
   ChevronRight,
+  Facebook,
+  Instagram,
+  Linkedin,
   Menu,
   ShoppingBag,
   Wrench,
@@ -35,6 +38,7 @@ const shopLinks = [
 ] as const;
 
 const navLinks = [
+  { to: "/updates", label: "Updates" },
   { to: "/solutions", label: "Solutions" },
   { to: "/support", label: "Support" },
   { to: "/about", label: "About" },
@@ -42,7 +46,11 @@ const navLinks = [
 
 export function Logo({ className = "" }: { className?: string; scrolled?: boolean }) {
   return (
-    <Link to="/" aria-label="PAGE International Ltd." className={`group flex items-center ${className}`}>
+    <Link
+      to="/"
+      aria-label="PAGE International Ltd."
+      className={`group flex items-center ${className}`}
+    >
       <img
         src="/page logo.png"
         alt="PAGE International Ltd."
@@ -131,9 +139,7 @@ export function Header() {
                 to="/shop"
                 onClick={() => setShopDropdownOpen(false)}
                 className={`relative flex items-center gap-1.5 py-2 text-xs xl:text-[13px] font-bold uppercase tracking-wider transition-colors ${
-                  isGlass
-                    ? "text-zinc-700 hover:text-primary"
-                    : "text-white/85 hover:text-white"
+                  isGlass ? "text-zinc-700 hover:text-primary" : "text-white/85 hover:text-white"
                 } ${
                   path.startsWith("/shop")
                     ? isGlass
@@ -190,9 +196,7 @@ export function Header() {
                 key={n.label}
                 to={n.to}
                 className={`relative py-2 text-xs xl:text-[13px] font-bold uppercase tracking-wider transition-colors ${
-                  isGlass
-                    ? "text-zinc-700 hover:text-primary"
-                    : "text-white/85 hover:text-white"
+                  isGlass ? "text-zinc-700 hover:text-primary" : "text-white/85 hover:text-white"
                 }`}
                 activeProps={{
                   className: `${
@@ -308,6 +312,27 @@ export function Header() {
                   )}
                 </div>
 
+                {/* Updates / Dispatches Feed */}
+                <div className="py-1">
+                  <Link
+                    to="/updates"
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center justify-between py-3 text-base font-bold uppercase tracking-wider transition-colors ${
+                      path.startsWith("/updates")
+                        ? "text-primary"
+                        : "text-zinc-900 hover:text-primary"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>Updates & Dispatches</span>
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase">
+                        Live
+                      </span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-zinc-300" />
+                  </Link>
+                </div>
+
                 {/* Solutions */}
                 <div className="py-1">
                   <Link
@@ -379,6 +404,42 @@ export function Header() {
                   </div>
                   <ChevronRight className="h-4 w-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
+              </div>
+
+              {/* Social Channels in Mobile Menu */}
+              <div className="pt-3 flex items-center justify-between text-xs text-zinc-500">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                  Connect With Us
+                </span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://www.linkedin.com/company/page-international-ltd/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="PAGE International on LinkedIn"
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-zinc-200 text-zinc-600 hover:text-[#0A66C2] hover:border-[#0A66C2] hover:bg-[#0A66C2]/10 transition-colors"
+                  >
+                    <Linkedin className="h-3.5 w-3.5" />
+                  </a>
+                  <a
+                    href="https://www.facebook.com/pageinternationalltd/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="PAGE International on Facebook"
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-zinc-200 text-zinc-600 hover:text-[#1877F2] hover:border-[#1877F2] hover:bg-[#1877F2]/10 transition-colors"
+                  >
+                    <Facebook className="h-3.5 w-3.5" />
+                  </a>
+                  <a
+                    href="https://www.instagram.com/pageintl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="PAGE International on Instagram"
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-zinc-200 text-zinc-600 hover:text-[#E4405F] hover:border-[#E4405F] hover:bg-[#E4405F]/10 transition-colors"
+                  >
+                    <Instagram className="h-3.5 w-3.5" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>

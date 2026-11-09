@@ -3,20 +3,21 @@ export interface Review {
   name: string;
   role: string;
   workshop: string;
-  location: string;
-  rating: number;
+  location?: string;
+  rating?: number;
   date: string;
-  verifiedBuyer: boolean;
-  equipment: string;
-  category: "Garage Equipment" | "Diagnostics" | "Tyre & Wheel" | "EV Solutions" | "Spare Parts";
-  title: string;
+  verifiedBuyer?: boolean;
+  equipment?: string;
+  category?:
+    "Garage Equipment" | "Diagnostics" | "Tyre & Wheel" | "EV Solutions" | "Spare Parts" | string;
+  title?: string;
   comment: string;
-  badge: string;
-  avatarInitials: string;
-  avatarColor: string;
-  highlights: string[];
-  installationTag: string;
-  helpfulCount: number;
+  badge?: string;
+  avatarInitials?: string;
+  avatarColor?: string;
+  highlights?: string[];
+  installationTag?: string;
+  helpfulCount?: number;
   operationalMetric?: string;
   audioDuration?: string;
   inspectionPass?: string;
@@ -136,7 +137,7 @@ export const reviewsData: Review[] = [
     helpfulCount: 19,
     operationalMetric: "0 Rim Scratches on 22-Inch",
     audioDuration: "0:21",
-    inspectionPass: "Pneumatic Clamping 26\" · Pass",
+    inspectionPass: 'Pneumatic Clamping 26" · Pass',
   },
   {
     id: "rev-5",
@@ -260,4 +261,44 @@ export const reviewsData: Review[] = [
   },
 ];
 
+const LS_KEY_REVIEWS = "page_published_reviews";
 
+export function getPublishedReviews(): Review[] {
+  if (typeof window === "undefined") return reviewsData;
+  try {
+    const raw = localStorage.getItem(LS_KEY_REVIEWS);
+    if (!raw) return reviewsData;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : reviewsData;
+  } catch {
+    return reviewsData;
+  }
+}
+
+export function addPublishedReview(
+  data: Omit<Review, "id" | "date"> & { id?: string; date?: string },
+): Review {
+  const current = getPublishedReviews();
+  const initials = data.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const newReview: Review = {
+    ...data,
+    id: data.id || `rev-${Date.now()}`,
+    date: data.date || "Just now",
+    avatarInitials: data.avatarInitials || initials,
+    verifiedBuyer: data.verifiedBuyer ?? true,
+    badge: data.badge || "Verified Workshop",
+  };
+
+  const updated = [newReview, ...current];
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LS_KEY_REVIEWS, JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent("reviews_updated", { detail: updated }));
+  }
+  return newReview;
+}

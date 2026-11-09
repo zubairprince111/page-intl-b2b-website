@@ -15,7 +15,6 @@ import appCss from "../styles.css?url";
 import { CartProvider, useCart } from "../lib/cart";
 import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
-import { SplashScreen } from "../components/site/SplashScreen";
 import { Check } from "lucide-react";
 
 function NotFoundComponent() {
@@ -81,7 +80,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "PAGE International — Automotive Equipment, Spare Parts & Workshop Solutions" },
-      { name: "description", content: "PAGE International is a specialized B2B supplier and distributor of automotive garage machinery, spare parts, diagnostics, tools, and workshop solutions to service centers, workshops, dealerships, and EV businesses." },
+      {
+        name: "description",
+        content:
+          "PAGE International is a specialized B2B supplier and distributor of automotive garage machinery, spare parts, diagnostics, tools, and workshop solutions to service centers, workshops, dealerships, and EV businesses.",
+      },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "/page logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -135,9 +138,7 @@ function Toast() {
         <Check className="h-4 w-4 stroke-[2.5]" />
       </div>
       <div className="flex flex-col min-w-0 pr-1 text-left">
-        <span className="text-xs font-bold text-white">
-          Added to Cart
-        </span>
+        <span className="text-xs font-bold text-white">Added to Cart</span>
         <span className="text-[11px] text-zinc-300 truncate max-w-[190px] sm:max-w-[240px]">
           {toast}
         </span>
@@ -164,8 +165,12 @@ function RootComponent() {
           <Outlet />
         ) : (
           <>
-            <SplashScreen />
-            <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">Skip to content</a>
+            <a
+              href="#main"
+              className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+            >
+              Skip to content
+            </a>
             <Header />
             <main id="main">
               <Outlet />
@@ -178,4 +183,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

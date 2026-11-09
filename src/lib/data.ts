@@ -388,11 +388,7 @@ export const centers: Center[] = [
     address: "Sherpur Road Industrial Belt, Bogura",
     rating: 4.7,
     hours: "Sat–Thu 9:00–18:00",
-    services: [
-      "Tyre Changers & Balancers",
-      "Commercial Fleet Spares",
-      "Lift Anchoring Support",
-    ],
+    services: ["Tyre Changers & Balancers", "Commercial Fleet Spares", "Lift Anchoring Support"],
     x: 38,
     y: 32,
   },
@@ -481,7 +477,6 @@ export const guides = [
   },
 ];
 
-
 export const products: Product[] = [
   // Commercial Garage Equipment & Lifts
   {
@@ -498,7 +493,8 @@ export const products: Product[] = [
     image: lift,
     fits: ["Commercial Workshop Bay", "Passenger Cars, SUVs & Light Vans"],
     sku: "TQ-LIFT-4000",
-    description: "Clear-floor electro-hydraulic 2-post lift with 4,000 kg capacity. Features automatic arm restraint locks, dual hydraulic synchronization cylinders, and CE-certified electromagnetic release safety latches for heavy commercial workshop use.",
+    description:
+      "Clear-floor electro-hydraulic 2-post lift with 4,000 kg capacity. Features automatic arm restraint locks, dual hydraulic synchronization cylinders, and CE-certified electromagnetic release safety latches for heavy commercial workshop use.",
     specs: [
       ["Lifting Capacity", "4,000 kg (4.0 Ton)"],
       ["Max Lifting Height", "1,900 mm"],
@@ -526,7 +522,8 @@ export const products: Product[] = [
     image: motoLift,
     fits: ["Two-Wheeler Garages", "Motorcycles, Scooters & E-Bikes"],
     sku: "TQ-ML-500",
-    description: "Heavy-duty 2-wheeler workshop scissor lift table with pneumatic foot pedal control, integrated mechanical wheel vise, and drop-out tail plate for rear wheel servicing on motorcycles and scooters.",
+    description:
+      "Heavy-duty 2-wheeler workshop scissor lift table with pneumatic foot pedal control, integrated mechanical wheel vise, and drop-out tail plate for rear wheel servicing on motorcycles and scooters.",
     specs: [
       ["Lifting Capacity", "500 kg"],
       ["Max Lifting Height", "1,200 mm"],
@@ -551,13 +548,14 @@ export const products: Product[] = [
     reviews: 29,
     stock: "In stock",
     image: tyreChanger,
-    fits: ["Tyre Service Centers", "10\"–24\" Passenger & Commercial Rims"],
+    fits: ["Tyre Service Centers", '10"–24" Passenger & Commercial Rims'],
     sku: "TQ-TC-9000",
-    description: "Heavy-duty commercial tyre changer equipped with pneumatic tilt-back column and dual power assist arms for effortless demounting of stiff run-flat and ultra-low-profile tyres without rim scratch.",
+    description:
+      "Heavy-duty commercial tyre changer equipped with pneumatic tilt-back column and dual power assist arms for effortless demounting of stiff run-flat and ultra-low-profile tyres without rim scratch.",
     specs: [
-      ["Clamping Range", "10\"–24\" (Internal/External)"],
+      ["Clamping Range", '10"–24" (Internal/External)'],
       ["Max Wheel Diameter", "1,040 mm"],
-      ["Max Wheel Width", "355 mm (14\")"],
+      ["Max Wheel Width", '355 mm (14")'],
       ["Working Pressure", "8–10 bar (115–145 psi)"],
       ["Motor Power", "1.1 kW / 220V or 380V"],
       ["Bead Breaker Force", "2,500 kg"],
@@ -579,9 +577,10 @@ export const products: Product[] = [
     image: wheelBalancer,
     fits: ["Automotive Workshop Tyre Bays", "Light Commercial & Passenger Wheels"],
     sku: "AX-WB-900",
-    description: "High-precision digital wheel balancing system featuring automatic 3D distance and rim diameter sensor input, multi-mode alloy balancing cycles, and laser beam pointer for adhesive weight positioning.",
+    description:
+      "High-precision digital wheel balancing system featuring automatic 3D distance and rim diameter sensor input, multi-mode alloy balancing cycles, and laser beam pointer for adhesive weight positioning.",
     specs: [
-      ["Rim Diameter", "10\"–24\""],
+      ["Rim Diameter", '10"–24"'],
       ["Balancing Accuracy", "±1 g"],
       ["Cycle Time", "7 seconds"],
       ["Max Wheel Weight", "65 kg"],
@@ -594,7 +593,7 @@ export const products: Product[] = [
   },
   {
     slug: "commercial-truck-bus-tyre-changer-56in",
-    name: "Heavy-Duty Commercial Truck & Bus Tyre Changer 14\"–56\"",
+    name: 'Heavy-Duty Commercial Truck & Bus Tyre Changer 14"–56"',
     brand: "Axion",
     category: "Tyre & Wheel",
     mobility: ["4-Wheeler"],
@@ -606,9 +605,10 @@ export const products: Product[] = [
     image: tyreChanger,
     fits: ["Commercial Fleet Depots", "Truck, Bus, Tractor & Earthmover Wheels"],
     sku: "AX-TC-5600",
-    description: "Universal electro-hydraulic commercial tyre changer designed for demounting and mounting tubed and tubeless truck, bus, agricultural, and industrial wheels up to 56 inches in diameter.",
+    description:
+      "Universal electro-hydraulic commercial tyre changer designed for demounting and mounting tubed and tubeless truck, bus, agricultural, and industrial wheels up to 56 inches in diameter.",
     specs: [
-      ["Clamping Rim Capacity", "14\"–56\" with extension clamps"],
+      ["Clamping Rim Capacity", '14"–56" with extension clamps'],
       ["Max Wheel Weight", "1,500 kg"],
       ["Max Wheel Diameter", "2,300 mm"],
       ["Max Wheel Width", "1,050 mm"],
@@ -632,13 +632,14 @@ export const products: Product[] = [
     image: wheelBalancer,
     fits: ["Precision Alignment Bays", "All Passenger & Light Commercial Vehicles"],
     sku: "AX-WA-3DPRO",
-    description: "Industrial high-definition dual-camera 3D wheel alignment system with passive target reflectors, automatic vehicle tracking beam, and comprehensive global OEM vehicle database.",
+    description:
+      "Industrial high-definition dual-camera 3D wheel alignment system with passive target reflectors, automatic vehicle tracking beam, and comprehensive global OEM vehicle database.",
     specs: [
       ["Camera Resolution", "Dual 5.0 Megapixel Industrial CMOS Sensors"],
       ["Measuring Accuracy", "Camber: ±0.02°, Caster: ±0.04°, Toe: ±0.02°"],
-      ["Target Clamps", "Non-contact rim-grip target clamps (11\"–25\")"],
+      ["Target Clamps", 'Non-contact rim-grip target clamps (11"–25")'],
       ["Database", "Over 45,000 OEM vehicle chassis specifications with annual updates"],
-      ["Software", "3D animated alignment adjustment wizard on 32\" LED display"],
+      ["Software", '3D animated alignment adjustment wizard on 32" LED display'],
       ["Warranty", "24 months warranty with calibration certificate"],
     ],
     isEquipment: true,
@@ -657,7 +658,8 @@ export const products: Product[] = [
     image: compressor,
     fits: ["Full Workshop Air Line Supply", "Pneumatic Tools, Lifts & Changers"],
     sku: "KW-SC-10HP",
-    description: "Continuous-duty rotary screw compressor unit mounted on a 300L air receiver vessel with integrated refrigerated dryer and inline filtration. Engineered for 100% duty cycle commercial workshop pneumatic demands.",
+    description:
+      "Continuous-duty rotary screw compressor unit mounted on a 300L air receiver vessel with integrated refrigerated dryer and inline filtration. Engineered for 100% duty cycle commercial workshop pneumatic demands.",
     specs: [
       ["Motor Power", "7.5 kW / 10 HP"],
       ["Working Pressure", "10 bar (145 psi)"],
@@ -683,7 +685,8 @@ export const products: Product[] = [
     image: lift,
     fits: ["Commercial Alignment Bays", "Passenger Cars, SUVs & Light Trucks"],
     sku: "TQ-4PL-5000",
-    description: "Precision 4-post commercial vehicle hoist with integrated slip plates, turntable recesses, and secondary pneumatic scissor jack beam for heavy-duty 3D wheel alignment operations.",
+    description:
+      "Precision 4-post commercial vehicle hoist with integrated slip plates, turntable recesses, and secondary pneumatic scissor jack beam for heavy-duty 3D wheel alignment operations.",
     specs: [
       ["Lifting Capacity", "5,000 kg (5.0 Ton)"],
       ["Runway Length", "5,100 mm"],
@@ -712,13 +715,17 @@ export const products: Product[] = [
     image: evTools,
     fits: ["EV Workshops", "Electric Cars, E-Bikes, E-Rickshaws & Hybrids"],
     sku: "KW-EV-1000V",
-    description: "Certified IEC 60900 / DIN EN 60900 1000V insulated hand tool set in a heavy-duty IP67 protective case. Crucial safety equipment for mechanics and technicians working on high-voltage battery disconnects, inverters, and EV wiring.",
+    description:
+      "Certified IEC 60900 / DIN EN 60900 1000V insulated hand tool set in a heavy-duty IP67 protective case. Crucial safety equipment for mechanics and technicians working on high-voltage battery disconnects, inverters, and EV wiring.",
     specs: [
       ["Insulation Rating", "1000V AC / 1500V DC tested"],
       ["Standard Compliance", "IEC 60900:2018 / VDE GS"],
       ["Tool Count", "42 precision insulated tools"],
       ["Case", "Heavy-duty impact-resistant foam cut organizer"],
-      ["Included", "Insulated ratchet, sockets (8-22mm), open wrenches, screwdrivers, pliers, torque wrench"],
+      [
+        "Included",
+        "Insulated ratchet, sockets (8-22mm), open wrenches, screwdrivers, pliers, torque wrench",
+      ],
       ["Warranty", "Lifetime warranty on steel forging"],
     ],
     isEquipment: false,
@@ -737,12 +744,13 @@ export const products: Product[] = [
     image: evBatteryAnalyzer,
     fits: ["EV Repair Centers", "Lithium-ion Battery Modules & Packs"],
     sku: "DT-EV-BT950",
-    description: "Mobile commercial testing workstation for high-voltage traction batteries. Measures module State of Health (SOH), individual cell voltage consistency, internal resistance, and automated cell equalization balancing for 4W and 3W electric vehicles.",
+    description:
+      "Mobile commercial testing workstation for high-voltage traction batteries. Measures module State of Health (SOH), individual cell voltage consistency, internal resistance, and automated cell equalization balancing for 4W and 3W electric vehicles.",
     specs: [
       ["Voltage Range", "0–800V DC High Voltage"],
       ["Cell Measurement", "Up to 32S simultaneously with CAN/RS485 logging"],
       ["Max Current", "100A Charge / Discharge Testing"],
-      ["Interface", "10.1\" Rugged Industrial Touchscreen"],
+      ["Interface", '10.1" Rugged Industrial Touchscreen'],
       ["Protocols", "CAN Bus, OBD2, K-Line, UDS EV Protocol"],
       ["Safety", "Emergency shutoff, reverse polarity, overtemp interlock"],
       ["Warranty", "24 months manufacturer warranty"],
@@ -763,7 +771,8 @@ export const products: Product[] = [
     image: evBatteryAnalyzer,
     fits: ["EV Battery Service Garages", "NMC, LFP & LTO Lithium Modules"],
     sku: "VT-EQ-800",
-    description: "Professional high-precision multi-channel battery cell equalizer designed for workshop battery reconditioning, cell replacement matching, and active pack balancing.",
+    description:
+      "Professional high-precision multi-channel battery cell equalizer designed for workshop battery reconditioning, cell replacement matching, and active pack balancing.",
     specs: [
       ["Channels", "16 independent bi-directional balancing channels"],
       ["Equalization Current", "Up to 10A per channel programmable"],
@@ -789,7 +798,8 @@ export const products: Product[] = [
     image: evTools,
     fits: ["EV Powertrain Diagnostic Bays", "Permanent Magnet AC & Induction Traction Motors"],
     sku: "DT-HV-5KV",
-    description: "High-voltage diagnostic insulation resistance tester certified for testing stator windings, inverter DC bus isolation, and chassis leak resistance up to 5kV DC.",
+    description:
+      "High-voltage diagnostic insulation resistance tester certified for testing stator windings, inverter DC bus isolation, and chassis leak resistance up to 5kV DC.",
     specs: [
       ["Test Voltages", "250V, 500V, 1000V, 2500V, 5000V DC"],
       ["Resistance Range", "0.01 MΩ to 10.0 TΩ"],
@@ -817,9 +827,10 @@ export const products: Product[] = [
     image: scanner,
     fits: ["Automotive Workshop Diagnostics", "1996+ OBD2 / CAN / EOBD Vehicles"],
     sku: "DT-PRO-5",
-    description: "Multi-brand workshop diagnostic tool with 5\" touchscreen. Read and clear manufacturer DTCs, live PID data graphing, automated service resets, EPB calibration, battery registration, and bi-directional component actuation.",
+    description:
+      'Multi-brand workshop diagnostic tool with 5" touchscreen. Read and clear manufacturer DTCs, live PID data graphing, automated service resets, EPB calibration, battery registration, and bi-directional component actuation.',
     specs: [
-      ["Screen", "5.0\" IPS Color Touchscreen"],
+      ["Screen", '5.0" IPS Color Touchscreen'],
       ["Coverage", "90+ Global vehicle manufacturers"],
       ["Updates", "2 Years Free Wi-Fi Software Updates"],
       ["Protocols", "CAN-FD, DoIP, ISO9141, KWP2000, J1850"],
@@ -841,7 +852,8 @@ export const products: Product[] = [
     image: scanner,
     fits: ["Technicians & Quick Diagnostics", "Universal OBD2 Vehicles"],
     sku: "DT-BT-1",
-    description: "Pocket wireless adapter connecting vehicle OBD port directly to Android/iOS tablet or smartphone for rapid bay triage, readiness monitors, and fault code scanning.",
+    description:
+      "Pocket wireless adapter connecting vehicle OBD port directly to Android/iOS tablet or smartphone for rapid bay triage, readiness monitors, and fault code scanning.",
     specs: [
       ["Connection", "Bluetooth 5.0 Low Energy"],
       ["Compatibility", "Android / iOS / Windows PC"],
@@ -864,7 +876,8 @@ export const products: Product[] = [
     image: scanner,
     fits: ["Collision Repair Centers & Windshield Replacement Hubs", "Camera & Radar ADAS Systems"],
     sku: "DT-ADAS-CAL",
-    description: "Multi-target optical and millimeter-wave radar calibration rig for Lane Departure Warning (LDW), Adaptive Cruise Control (ACC), and Around View Monitoring (AVM) sensor calibration.",
+    description:
+      "Multi-target optical and millimeter-wave radar calibration rig for Lane Departure Warning (LDW), Adaptive Cruise Control (ACC), and Around View Monitoring (AVM) sensor calibration.",
     specs: [
       ["Target Coverage", "Toyota, Honda, Nissan, Hyundai, VAG, Mercedes, BMW"],
       ["Laser Alignment", "High-accuracy dual millimeter laser centering"],
@@ -877,7 +890,7 @@ export const products: Product[] = [
   },
   {
     slug: "heavy-duty-fleet-commercial-scanner-tablet",
-    name: "Commercial Fleet Heavy Truck & Bus Diagnostic Scanner 10\"",
+    name: 'Commercial Fleet Heavy Truck & Bus Diagnostic Scanner 10"',
     brand: "Diagtek",
     category: "Diagnostic Equipment",
     mobility: ["4-Wheeler"],
@@ -887,13 +900,20 @@ export const products: Product[] = [
     reviews: 35,
     stock: "In stock",
     image: scanner,
-    fits: ["Commercial Fleets, Bus Depots & Heavy Transport Garages", "J1939, J1708, OBD Heavy Duty"],
+    fits: [
+      "Commercial Fleets, Bus Depots & Heavy Transport Garages",
+      "J1939, J1708, OBD Heavy Duty",
+    ],
     sku: "DT-HD-10",
-    description: "Ruggedized IP65 industrial 10-inch Android diagnostic tablet with full bi-directional actuation, DPF regeneration, SCR/AdBlue reset, cylinder cut-out, and injector coding for commercial diesel engines.",
+    description:
+      "Ruggedized IP65 industrial 10-inch Android diagnostic tablet with full bi-directional actuation, DPF regeneration, SCR/AdBlue reset, cylinder cut-out, and injector coding for commercial diesel engines.",
     specs: [
-      ["Hardware", "10.1\" Sunlight-Readable Gorilla Glass Display, 8-Core CPU"],
+      ["Hardware", '10.1" Sunlight-Readable Gorilla Glass Display, 8-Core CPU'],
       ["Protocols", "SAE J1939, SAE J1708, J1587, ISO 15765-4, CAN 2.0"],
-      ["Engine Coverage", "Cummins, Isuzu, Hino, Mitsubishi Fuso, Caterpillar, Detroit Diesel, Volvo"],
+      [
+        "Engine Coverage",
+        "Cummins, Isuzu, Hino, Mitsubishi Fuso, Caterpillar, Detroit Diesel, Volvo",
+      ],
       ["Battery Life", "12,000 mAh rechargeable lithium pack (10+ hours continuous use)"],
       ["Warranty", "24 months commercial warranty + 2 years free software updates"],
     ],
@@ -916,7 +936,8 @@ export const products: Product[] = [
     image: brakepads,
     fits: ["Toyota Corolla 2014–2022", "Toyota Axio 2015–2023", "Toyota Allion"],
     sku: "SL-BP-2210",
-    description: "Low-dust, high-temperature ceramic friction compound formulated for long rotor life and consistent coefficient of friction under heavy stop-and-go fleet driving. Chamfered with multi-layer noise damping shims.",
+    description:
+      "Low-dust, high-temperature ceramic friction compound formulated for long rotor life and consistent coefficient of friction under heavy stop-and-go fleet driving. Chamfered with multi-layer noise damping shims.",
     specs: [
       ["Compound", "High-Friction Ceramic Formulation"],
       ["Position", "Front Axle"],
@@ -940,7 +961,8 @@ export const products: Product[] = [
     image: brakepads,
     fits: ["Honda Civic 2016–2021", "Honda CR-V 2017–2022"],
     sku: "SL-BP-2280",
-    description: "Rear-axle ceramic pads engineered for passenger cars and light commercial applications. Minimum dust and zero rotor scoring.",
+    description:
+      "Rear-axle ceramic pads engineered for passenger cars and light commercial applications. Minimum dust and zero rotor scoring.",
     specs: [
       ["Compound", "Ceramic Low-Metallic"],
       ["Position", "Rear Axle"],
@@ -964,7 +986,8 @@ export const products: Product[] = [
     image: brakepads,
     fits: ["Toyota HiAce 2010–2023", "Toyota Premio / Allion", "Nissan NV200"],
     sku: "SL-DR-4100",
-    description: "High-carbon grey cast iron brake disc pair engineered with directional cooling vanes for thermal warp resistance, noise suppression, and long service life in commercial delivery fleets.",
+    description:
+      "High-carbon grey cast iron brake disc pair engineered with directional cooling vanes for thermal warp resistance, noise suppression, and long service life in commercial delivery fleets.",
     specs: [
       ["Material", "High-Carbon G3000 Grey Cast Iron"],
       ["Vane Type", "Curved Directional Ventilation Vanes"],
@@ -988,7 +1011,8 @@ export const products: Product[] = [
     image: oil,
     fits: ["All Hydraulic Disc & Drum Brake Systems", "ABS, ESP & TCS Equipped Fleets"],
     sku: "SL-BF-DOT4-12",
-    description: "Premium glycol-ether synthetic hydraulic brake fluid with high dry and wet boiling points to prevent vapor lock and pedal fade under severe braking conditions in commercial service.",
+    description:
+      "Premium glycol-ether synthetic hydraulic brake fluid with high dry and wet boiling points to prevent vapor lock and pedal fade under severe braking conditions in commercial service.",
     specs: [
       ["Standard", "DOT 4 / SAE J1704 / ISO 4925 Class 4"],
       ["Dry Boiling Point", "265°C (509°F) minimum"],
@@ -1012,7 +1036,8 @@ export const products: Product[] = [
     image: battery,
     fits: ["Honda Vezel Hybrid", "Toyota Premio", "European Start-Stop Models"],
     sku: "VT-AGM-70",
-    description: "Absorbent Glass Mat (AGM) battery engineered for commercial vehicles, start-stop regenerative braking systems, and high electronic accessory loads.",
+    description:
+      "Absorbent Glass Mat (AGM) battery engineered for commercial vehicles, start-stop regenerative braking systems, and high electronic accessory loads.",
     specs: [
       ["Capacity", "70 Ah"],
       ["Cold Cranking Amps (CCA)", "760 A (EN standard)"],
@@ -1036,7 +1061,8 @@ export const products: Product[] = [
     image: battery,
     fits: ["Toyota Corolla", "Commercial 3-Wheelers", "Passenger Cars"],
     sku: "VT-EFB-60",
-    description: "Enhanced flooded battery designed for entry-level start-stop vehicles, commercial delivery fleets, and high-temperature operating conditions.",
+    description:
+      "Enhanced flooded battery designed for entry-level start-stop vehicles, commercial delivery fleets, and high-temperature operating conditions.",
     specs: [
       ["Capacity", "60 Ah"],
       ["Cold Cranking Amps (CCA)", "560 A"],
@@ -1058,9 +1084,13 @@ export const products: Product[] = [
     reviews: 77,
     stock: "In stock",
     image: battery,
-    fits: ["Commercial Buses, Heavy Cargo Haulers & Generators", "Hino, Isuzu, Tata, Ashok Leyland"],
+    fits: [
+      "Commercial Buses, Heavy Cargo Haulers & Generators",
+      "Hino, Isuzu, Tata, Ashok Leyland",
+    ],
     sku: "VT-HD-200",
-    description: "Commercial heavy-duty lead-calcium battery with vibration-resistant anchor bonded plates and reinforced labyrinth lid designed for long service life in extreme tropical operating climates.",
+    description:
+      "Commercial heavy-duty lead-calcium battery with vibration-resistant anchor bonded plates and reinforced labyrinth lid designed for long service life in extreme tropical operating climates.",
     specs: [
       ["Capacity", "200 Ah @ 20Hr Rate"],
       ["Cold Cranking Amps (CCA)", "1,200 A (EN)"],
@@ -1084,7 +1114,8 @@ export const products: Product[] = [
     image: battery,
     fits: ["Electric 3-Wheelers, Workshop Test Benches & Service Shuttles"],
     sku: "VT-LFP-100",
-    description: "Grade-A prismatic lithium iron phosphate auxiliary battery with built-in 100A smart Bluetooth BMS for cell monitoring, thermal protection, and 4,000+ deep-discharge cycles.",
+    description:
+      "Grade-A prismatic lithium iron phosphate auxiliary battery with built-in 100A smart Bluetooth BMS for cell monitoring, thermal protection, and 4,000+ deep-discharge cycles.",
     specs: [
       ["Nominal Voltage", "12.8V DC"],
       ["Capacity", "100 Ah (1,280 Wh)"],
@@ -1109,7 +1140,8 @@ export const products: Product[] = [
     image: oil,
     fits: ["Petrol & Turbo Diesel Engines", "Toyota, Honda, Nissan, Mitsubishi"],
     sku: "LX-5W30-4",
-    description: "Advanced PAO full synthetic formulation engineered for thermal stability, anti-wear valve-train protection, and sludge control in commercial service operations.",
+    description:
+      "Advanced PAO full synthetic formulation engineered for thermal stability, anti-wear valve-train protection, and sludge control in commercial service operations.",
     specs: [
       ["Viscosity Grade", "SAE 5W-30"],
       ["Specifications", "API SP / ILSAC GF-6A / ACEA C3"],
@@ -1132,7 +1164,8 @@ export const products: Product[] = [
     image: oil,
     fits: ["Toyota Aqua, Prius, Honda Hybrid Platforms"],
     sku: "LX-0W20-4",
-    description: "Ultra-low viscosity synthetic fluid tailored for hybrid electric powertrains with frequent cold stop-start ignition cycles.",
+    description:
+      "Ultra-low viscosity synthetic fluid tailored for hybrid electric powertrains with frequent cold stop-start ignition cycles.",
     specs: [
       ["Viscosity Grade", "SAE 0W-20"],
       ["Standard", "API SP Resource Conserving"],
@@ -1155,7 +1188,8 @@ export const products: Product[] = [
     image: oil,
     fits: ["Commercial Fleet Vans, Light Trucks, Buses & Heavy Equipment"],
     sku: "LX-15W40-20",
-    description: "Heavy-duty diesel engine oil formulated with high soot-dispersancy additives and shear-stable polymers for extended oil-drain intervals in commercial transport operations.",
+    description:
+      "Heavy-duty diesel engine oil formulated with high soot-dispersancy additives and shear-stable polymers for extended oil-drain intervals in commercial transport operations.",
     specs: [
       ["Viscosity Grade", "SAE 15W-40"],
       ["Specifications", "API CK-4 / CJ-4 / CI-4 PLUS / ACEA E9"],
@@ -1179,7 +1213,8 @@ export const products: Product[] = [
     image: oil,
     fits: ["Toyota, Honda, Nissan, Mitsubishi Automatic & CVT Transmissions"],
     sku: "LX-ATFCVT-4",
-    description: "Universal full synthetic transmission fluid engineered with friction-durability modifiers for smooth torque-converter lockup and anti-shudder belt grip in modern automatic and CVT gearboxes.",
+    description:
+      "Universal full synthetic transmission fluid engineered with friction-durability modifiers for smooth torque-converter lockup and anti-shudder belt grip in modern automatic and CVT gearboxes.",
     specs: [
       ["Compatibility", "Toyota WS/T-IV, Honda ATF-Z1/DW-1, Nissan Matic-D/J/S & CVT NS-2/NS-3"],
       ["Base Stock", "Full Synthetic Group IV PAO"],
@@ -1256,10 +1291,7 @@ export const b2bSolutions = [
 ];
 
 // Multi-mobility platform data structure for vehicle/fleet compatibility finder
-export const vehiclePlatformData: Record<
-  MobilityType,
-  Record<string, Record<string, string[]>>
-> = {
+export const vehiclePlatformData: Record<MobilityType, Record<string, Record<string, string[]>>> = {
   "4-Wheeler": {
     Toyota: {
       Corolla: ["1.5 Petrol", "1.8 Hybrid", "2.0 Diesel"],
@@ -1321,7 +1353,7 @@ export const vehiclePlatformData: Record<
       Cargo_3W: ["60V 1200W Electric Carrier"],
     },
   },
-  "EV": {
+  EV: {
     BYD: {
       Atto_3: ["60.48 kWh Blade Battery 150kW"],
       Dolphin: ["44.9 kWh Blade Battery 70kW"],

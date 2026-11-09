@@ -35,8 +35,10 @@ import {
   Calculator,
   Mail,
   Eye,
+  RefreshCw,
 } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
+import { uploadMediaFile, deleteMediaFile } from "@/lib/client-media";
 import {
   QuotationEmailModal,
   generateQuotationEmailHtml,
@@ -74,6 +76,7 @@ function AdminInventory() {
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [imageTab, setImageTab] = useState<"presets" | "upload" | "url">("presets");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Quote reply modal state
@@ -103,7 +106,12 @@ function AdminInventory() {
     description: "",
     image: images.lift,
   });
-  const [editData, setEditData] = useState<{ price: number; warehouseQty: number; reorderLevel: number; stock: string }>({
+  const [editData, setEditData] = useState<{
+    price: number;
+    warehouseQty: number;
+    reorderLevel: number;
+    stock: string;
+  }>({
     price: 0,
     warehouseQty: 0,
     reorderLevel: 5,
@@ -121,7 +129,7 @@ function AdminInventory() {
         (i) =>
           i.name.toLowerCase().includes(q) ||
           i.sku.toLowerCase().includes(q) ||
-          i.brand.toLowerCase().includes(q)
+          i.brand.toLowerCase().includes(q),
       );
     }
     if (catFilter !== "All") {
@@ -168,8 +176,16 @@ function AdminInventory() {
     setEditingSlug(null);
   }
 
-  function handleDelete(slug: string, name: string) {
+  async function handleDelete(slug: string, name: string) {
     if (!confirm(`Are you sure you want to delete "${name}" from inventory?`)) return;
+    const item = inventory.find((i) => i.slug === slug);
+    if (item && item.image && item.image.startsWith("/uploads/")) {
+      try {
+        await deleteMediaFile({ url: item.image });
+      } catch (err) {
+        console.warn("Could not delete product media file:", err);
+      }
+    }
     deleteInventoryItem(slug);
     setInventory(getInventory());
   }
@@ -179,7 +195,13 @@ function AdminInventory() {
       alert("Product name and SKU are required.");
       return;
     }
-    const slug = newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36).slice(-4);
+    const slug =
+      newProduct.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") +
+      "-" +
+      Date.now().toString(36).slice(-4);
     addInventoryItem({
       slug,
       name: newProduct.name,
@@ -189,10 +211,16 @@ function AdminInventory() {
       warehouseQty: Number(newProduct.warehouseQty) || 0,
       reorderLevel: Number(newProduct.reorderLevel) || 5,
       sku: newProduct.sku.toUpperCase(),
-      description: newProduct.description || "Commercial grade equipment distributed by PAGE International.",
+      description:
+        newProduct.description || "Commercial grade equipment distributed by PAGE International.",
       rating: 5.0,
       reviews: 1,
-      stock: Number(newProduct.warehouseQty) === 0 ? "Out of stock" : Number(newProduct.warehouseQty) <= 5 ? "Low stock" : "In stock",
+      stock:
+        Number(newProduct.warehouseQty) === 0
+          ? "Out of stock"
+          : Number(newProduct.warehouseQty) <= 5
+            ? "Low stock"
+            : "In stock",
       image: newProduct.image || images.workshop,
       fits: ["Universal Workshop Fit"],
       specs: [
@@ -217,21 +245,25 @@ function AdminInventory() {
     });
   }
 
-  function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Please select an image smaller than 5MB");
+      if (file.size > 20 * 1024 * 1024) {
+        alert("Please select an image smaller than 20MB");
         return;
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        if (dataUrl) {
-          setNewProduct((prev) => ({ ...prev, image: dataUrl }));
+      try {
+        setIsUploadingImage(true);
+        const res = await uploadMediaFile(file, "products");
+        if (res.success) {
+          setNewProduct((prev) => ({ ...prev, image: res.url }));
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (err: any) {
+        console.error("Product media upload error:", err);
+        alert(err.message || "Failed to upload product image to server storage");
+      } finally {
+        setIsUploadingImage(false);
+      }
     }
   }
 
@@ -245,7 +277,9 @@ function AdminInventory() {
       product ||
       (firstQuote
         ? inventory.find(
-            (i) => i.slug === firstQuote.productSlug || i.name.toLowerCase() === firstQuote.productName.toLowerCase()
+            (i) =>
+              i.slug === firstQuote.productSlug ||
+              i.name.toLowerCase() === firstQuote.productName.toLowerCase(),
           )
         : null) ||
       inventory[0];
@@ -257,7 +291,7 @@ function AdminInventory() {
     setQuoteMessage(
       firstQuote
         ? `Dear ${firstQuote.contactName || firstQuote.companyName}, thank you for reaching out to PAGE International. We are pleased to provide you with the formal price quotation for ${firstQuote.qty}x ${targetProduct?.name || firstQuote.productName}. Certified installation and warranty support included.`
-        : `Thank you for reaching out to PAGE International. We are pleased to provide you with this official price quotation.`
+        : `Thank you for reaching out to PAGE International. We are pleased to provide you with this official price quotation.`,
     );
     setShowQuoteModal(true);
   }
@@ -267,7 +301,8 @@ function AdminInventory() {
     const quote = quotes.find((q) => q.id === quoteId);
     if (quote) {
       const matched = inventory.find(
-        (i) => i.slug === quote.productSlug || i.name.toLowerCase() === quote.productName.toLowerCase()
+        (i) =>
+          i.slug === quote.productSlug || i.name.toLowerCase() === quote.productName.toLowerCase(),
       );
       const prod = matched || inventory[0];
       if (prod) {
@@ -275,7 +310,7 @@ function AdminInventory() {
         setQuotePrice(prod.price);
         setQuoteQty(quote.qty || 1);
         setQuoteMessage(
-          `Dear ${quote.contactName || quote.companyName}, thank you for reaching out to PAGE International. We are pleased to provide you with the formal price quotation for ${quote.qty}x ${prod.name}. Certified installation and warranty support included.`
+          `Dear ${quote.contactName || quote.companyName}, thank you for reaching out to PAGE International. We are pleased to provide you with the formal price quotation for ${quote.qty}x ${prod.name}. Certified installation and warranty support included.`,
         );
       }
     }
@@ -345,7 +380,9 @@ function AdminInventory() {
     }
   }
 
-  const lowCount = inventory.filter((i) => i.warehouseQty > 0 && i.warehouseQty <= i.reorderLevel).length;
+  const lowCount = inventory.filter(
+    (i) => i.warehouseQty > 0 && i.warehouseQty <= i.reorderLevel,
+  ).length;
   const outCount = inventory.filter((i) => i.warehouseQty === 0).length;
   const pendingQuotesCount = quotes.filter((q) => q.status === "pending").length;
 
@@ -403,7 +440,9 @@ function AdminInventory() {
           >
             <option value="All">All Categories</option>
             {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
 
@@ -426,27 +465,44 @@ function AdminInventory() {
               <thead>
                 <tr className="border-b border-white/[0.06]">
                   <th className="text-left px-5 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    <button onClick={() => toggleSort("name")} className="flex items-center gap-1 hover:text-zinc-300 transition-colors">
+                    <button
+                      onClick={() => toggleSort("name")}
+                      className="flex items-center gap-1 hover:text-zinc-300 transition-colors"
+                    >
                       Product
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="text-left px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">SKU</th>
-                  <th className="text-left px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Category</th>
+                  <th className="text-left px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    SKU
+                  </th>
+                  <th className="text-left px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    Category
+                  </th>
                   <th className="text-right px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    <button onClick={() => toggleSort("price")} className="flex items-center gap-1 ml-auto hover:text-zinc-300 transition-colors">
+                    <button
+                      onClick={() => toggleSort("price")}
+                      className="flex items-center gap-1 ml-auto hover:text-zinc-300 transition-colors"
+                    >
                       Price
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
                   <th className="text-right px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    <button onClick={() => toggleSort("warehouseQty")} className="flex items-center gap-1 ml-auto hover:text-zinc-300 transition-colors">
+                    <button
+                      onClick={() => toggleSort("warehouseQty")}
+                      className="flex items-center gap-1 ml-auto hover:text-zinc-300 transition-colors"
+                    >
                       Qty
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="text-center px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
-                  <th className="text-center px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Actions</th>
+                  <th className="text-center px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="text-center px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
@@ -456,10 +512,7 @@ function AdminInventory() {
                   const isOut = item.warehouseQty === 0;
 
                   return (
-                    <tr
-                      key={item.slug}
-                      className="hover:bg-white/[0.02] transition-colors"
-                    >
+                    <tr key={item.slug} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-5 py-3 max-w-[280px]">
                         <div className="flex items-center gap-3">
                           <img
@@ -486,11 +539,15 @@ function AdminInventory() {
                           <input
                             type="number"
                             value={editData.price}
-                            onChange={(e) => setEditData({ ...editData, price: Number(e.target.value) })}
+                            onChange={(e) =>
+                              setEditData({ ...editData, price: Number(e.target.value) })
+                            }
                             className="w-24 bg-white/[0.06] border border-emerald-500/50 rounded px-2 py-1 text-[12px] text-white text-right focus:outline-none"
                           />
                         ) : (
-                          <span className="text-[12px] text-zinc-200 font-medium">{taka(item.price)}</span>
+                          <span className="text-[12px] text-zinc-200 font-medium">
+                            {taka(item.price)}
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -498,11 +555,15 @@ function AdminInventory() {
                           <input
                             type="number"
                             value={editData.warehouseQty}
-                            onChange={(e) => setEditData({ ...editData, warehouseQty: Number(e.target.value) })}
+                            onChange={(e) =>
+                              setEditData({ ...editData, warehouseQty: Number(e.target.value) })
+                            }
                             className="w-16 bg-white/[0.06] border border-emerald-500/50 rounded px-2 py-1 text-[12px] text-white text-right focus:outline-none"
                           />
                         ) : (
-                          <span className={`text-[12px] font-medium ${isOut ? "text-red-400" : isLow ? "text-amber-400" : "text-zinc-200"}`}>
+                          <span
+                            className={`text-[12px] font-medium ${isOut ? "text-red-400" : isLow ? "text-amber-400" : "text-zinc-200"}`}
+                          >
                             {item.warehouseQty}
                           </span>
                         )}
@@ -597,7 +658,9 @@ function AdminInventory() {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white">Add New Product</h3>
-                    <p className="text-[11px] text-zinc-500">Create a new item in your catalog and warehouse stock</p>
+                    <p className="text-[11px] text-zinc-500">
+                      Create a new item in your catalog and warehouse stock
+                    </p>
                   </div>
                 </div>
                 <button
@@ -663,7 +726,9 @@ function AdminInventory() {
                       className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     >
                       {categories.map((c) => (
-                        <option key={c} value={c}>{c}</option>
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -674,7 +739,9 @@ function AdminInventory() {
                     <input
                       type="number"
                       value={newProduct.price}
-                      onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setNewProduct({ ...newProduct, price: Number(e.target.value) })
+                      }
                       className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
@@ -685,7 +752,9 @@ function AdminInventory() {
                     <input
                       type="number"
                       value={newProduct.warehouseQty}
-                      onChange={(e) => setNewProduct({ ...newProduct, warehouseQty: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setNewProduct({ ...newProduct, warehouseQty: Number(e.target.value) })
+                      }
                       className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
@@ -696,7 +765,9 @@ function AdminInventory() {
                     <input
                       type="number"
                       value={newProduct.reorderLevel}
-                      onChange={(e) => setNewProduct({ ...newProduct, reorderLevel: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setNewProduct({ ...newProduct, reorderLevel: Number(e.target.value) })
+                      }
                       className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
@@ -756,9 +827,7 @@ function AdminInventory() {
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[12px] font-medium text-white truncate">
-                        Selected Image
-                      </p>
+                      <p className="text-[12px] font-medium text-white truncate">Selected Image</p>
                       <p className="text-[10px] text-zinc-500 truncate mt-0.5">
                         {newProduct.image?.startsWith("data:")
                           ? "Custom Uploaded File (Base64)"
@@ -827,16 +896,34 @@ function AdminInventory() {
                         className="hidden"
                       />
                       <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-white/[0.12] hover:border-emerald-500/50 rounded-xl p-5 text-center cursor-pointer transition-colors bg-white/[0.01] hover:bg-emerald-500/[0.02]"
+                        onClick={() => !isUploadingImage && fileInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors bg-white/[0.01] ${
+                          isUploadingImage
+                            ? "border-emerald-500/50 bg-emerald-500/[0.04] cursor-wait"
+                            : "border-white/[0.12] hover:border-emerald-500/50 hover:bg-emerald-500/[0.02]"
+                        }`}
                       >
-                        <Upload className="h-6 w-6 text-emerald-400 mx-auto mb-1.5" />
-                        <p className="text-[12px] font-medium text-zinc-200">
-                          Click to browse image or drag and drop
-                        </p>
-                        <p className="text-[10px] text-zinc-500 mt-0.5">
-                          Supports PNG, JPG, WEBP, or SVG (Max 5MB)
-                        </p>
+                        {isUploadingImage ? (
+                          <div className="space-y-1.5">
+                            <RefreshCw className="h-6 w-6 text-emerald-400 mx-auto animate-spin" />
+                            <p className="text-[12px] font-semibold text-emerald-300">
+                              Uploading to server disk & indexing in PostgreSQL...
+                            </p>
+                            <p className="text-[10px] text-zinc-500">
+                              Writing persistent media file
+                            </p>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6 text-emerald-400 mx-auto mb-1.5" />
+                            <p className="text-[12px] font-medium text-zinc-200">
+                              Click to browse image or drag and drop
+                            </p>
+                            <p className="text-[10px] text-zinc-500 mt-0.5">
+                              Supports PNG, JPG, WEBP, or SVG (Saved to /uploads/products/ on disk)
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
@@ -906,7 +993,9 @@ function AdminInventory() {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white">Reply to Customer Quotation</h3>
-                    <p className="text-[11px] text-zinc-500">Configure product, custom pricing and quantity</p>
+                    <p className="text-[11px] text-zinc-500">
+                      Configure product, custom pricing and quantity
+                    </p>
                   </div>
                 </div>
                 <button
@@ -923,7 +1012,9 @@ function AdminInventory() {
                     <Check className="h-6 w-6" />
                   </div>
                   <h4 className="text-base font-bold text-white">{quoteSuccessMsg}</h4>
-                  <p className="text-xs text-zinc-400">The customer request status has been updated to Replied.</p>
+                  <p className="text-xs text-zinc-400">
+                    The customer request status has been updated to Replied.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4 max-h-[72vh] overflow-y-auto pr-1">
@@ -939,7 +1030,8 @@ function AdminInventory() {
                     >
                       {quotes.map((q) => (
                         <option key={q.id} value={q.id}>
-                          {q.companyName} ({q.contactName}) — {q.productName} [{q.status.toUpperCase()}]
+                          {q.companyName} ({q.contactName}) — {q.productName} [
+                          {q.status.toUpperCase()}]
                         </option>
                       ))}
                     </select>
@@ -953,11 +1045,15 @@ function AdminInventory() {
                       <div className="rounded-lg bg-[#1c1c1c] border border-white/[0.06] p-3 text-xs text-zinc-300 space-y-1">
                         <div className="flex justify-between">
                           <span className="text-zinc-500">Contact:</span>
-                          <span className="font-semibold text-white">{activeQuote.contactName} ({activeQuote.phone})</span>
+                          <span className="font-semibold text-white">
+                            {activeQuote.contactName} ({activeQuote.phone})
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-zinc-500">Business / City:</span>
-                          <span>{activeQuote.businessType} • {activeQuote.city}</span>
+                          <span>
+                            {activeQuote.businessType} • {activeQuote.city}
+                          </span>
                         </div>
                         {activeQuote.notes && (
                           <div className="pt-1 border-t border-white/[0.04] text-[11px] text-zinc-400 italic">
@@ -1015,7 +1111,9 @@ function AdminInventory() {
 
                   {/* Valuation Banner */}
                   <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 flex items-center justify-between">
-                    <span className="text-[12px] font-medium text-emerald-300">Total Quoted Amount</span>
+                    <span className="text-[12px] font-medium text-emerald-300">
+                      Total Quoted Amount
+                    </span>
                     <span className="text-base font-bold text-emerald-400 font-mono">
                       {taka(quotePrice * quoteQty)}
                     </span>
@@ -1038,7 +1136,10 @@ function AdminInventory() {
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/[0.06]">
                     <p className="text-[11px] text-zinc-500 flex items-center gap-1.5">
                       <Mail className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                      <span>Pressing reply logs the quotation and opens Gmail with an itemized commercial quotation report.</span>
+                      <span>
+                        Pressing reply logs the quotation and opens Gmail with an itemized
+                        commercial quotation report.
+                      </span>
                     </p>
                     <div className="flex items-center gap-2 ml-auto">
                       <button

@@ -77,12 +77,10 @@ export function ServiceCenterSolutions() {
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-primary block">
             End-To-End Supply
           </span>
-          <h2 className="display-md mt-1 text-foreground">
-            WHAT WE PROVIDE FOR SERVICE CENTERS
-          </h2>
+          <h2 className="display-md mt-1 text-foreground">WHAT WE PROVIDE FOR SERVICE CENTERS</h2>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Engineered for high daily turnover, multi-bay synchronization, and compliance
-            with Japanese, European, and EV manufacturer standards.
+            Engineered for high daily turnover, multi-bay synchronization, and compliance with
+            Japanese, European, and EV manufacturer standards.
           </p>
         </div>
 
@@ -96,8 +94,8 @@ export function ServiceCenterSolutions() {
                 Multi-Bay Lifting Systems
               </h3>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                4-tonne clear-floor electro-hydraulic 2-post lifts, in-ground scissor
-                lifts for quick-service bays, and heavy 4-post inspection platforms.
+                4-tonne clear-floor electro-hydraulic 2-post lifts, in-ground scissor lifts for
+                quick-service bays, and heavy 4-post inspection platforms.
               </p>
               <ul className="mt-4 space-y-1.5 text-xs text-foreground/80">
                 <li className="flex items-center gap-2">
@@ -128,8 +126,8 @@ export function ServiceCenterSolutions() {
                 Tyre & Wheel Service Bays
               </h3>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Pneumatic helper-arm tyre changers for alloy and run-flat wheels,
-                microprocessor laser balancers, and computerized 3D wheel alignment.
+                Pneumatic helper-arm tyre changers for alloy and run-flat wheels, microprocessor
+                laser balancers, and computerized 3D wheel alignment.
               </p>
               <ul className="mt-4 space-y-1.5 text-xs text-foreground/80">
                 <li className="flex items-center gap-2">
@@ -160,8 +158,8 @@ export function ServiceCenterSolutions() {
                 Diagnostic Computers & ADAS
               </h3>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Multi-brand OE-level diagnostic tablets with active bidirectional actuation,
-                ECU coding, oscilloscope modules, and radar/camera target frames.
+                Multi-brand OE-level diagnostic tablets with active bidirectional actuation, ECU
+                coding, oscilloscope modules, and radar/camera target frames.
               </p>
               <ul className="mt-4 space-y-1.5 text-xs text-foreground/80">
                 <li className="flex items-center gap-2">
@@ -192,8 +190,8 @@ export function ServiceCenterSolutions() {
                 Consolidated Spare Parts Supply
               </h3>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Scheduled delivery of fast-moving maintenance items: ceramic brake pads,
-                disc rotors, AGM/EFB batteries, synthetic oils, and filter packs.
+                Scheduled delivery of fast-moving maintenance items: ceramic brake pads, disc
+                rotors, AGM/EFB batteries, synthetic oils, and filter packs.
               </p>
               <ul className="mt-4 space-y-1.5 text-xs text-foreground/80">
                 <li className="flex items-center gap-2">
@@ -224,8 +222,8 @@ export function ServiceCenterSolutions() {
                 Fluid Dispensing & Compressed Air
               </h3>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Rotary screw compressors, refrigerated air dryers, overhead hose reels,
-                and digital metering guns for high-throughput oil changes.
+                Rotary screw compressors, refrigerated air dryers, overhead hose reels, and digital
+                metering guns for high-throughput oil changes.
               </p>
               <ul className="mt-4 space-y-1.5 text-xs text-foreground/80">
                 <li className="flex items-center gap-2">
@@ -256,8 +254,8 @@ export function ServiceCenterSolutions() {
                 EV Readiness Equipment
               </h3>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Equip dedicated EV bays with 1000V VDE insulated tool trolleys, battery
-                pack lifters, high-voltage PPE, and charging infrastructure.
+                Equip dedicated EV bays with 1000V VDE insulated tool trolleys, battery pack
+                lifters, high-voltage PPE, and charging infrastructure.
               </p>
               <ul className="mt-4 space-y-1.5 text-xs text-foreground/80">
                 <li className="flex items-center gap-2">
@@ -288,12 +286,10 @@ export function ServiceCenterSolutions() {
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-primary block">
               Machinery Demonstration & Stock Hubs
             </span>
-            <h2 className="display-md mt-1 text-foreground">
-              PAGE EQUIPMENT DEMONSTRATION HUBS
-            </h2>
+            <h2 className="display-md mt-1 text-foreground">PAGE EQUIPMENT DEMONSTRATION HUBS</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Service center directors and workshop operators can visit our regional
-              demonstration centers to see lifts, tyre changers, and diagnostic systems in action.
+              Service center directors and workshop operators can visit our regional demonstration
+              centers to see lifts, tyre changers, and diagnostic systems in action.
             </p>
           </div>
 
@@ -307,9 +303,7 @@ export function ServiceCenterSolutions() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">
                     {c.area} Equipment Hub
                   </span>
-                  <h3 className="font-heading text-2xl uppercase text-foreground mt-3">
-                    {c.name}
-                  </h3>
+                  <h3 className="font-heading text-2xl uppercase text-foreground mt-3">{c.name}</h3>
                   <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
                     <p className="flex items-center gap-2">
                       <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />

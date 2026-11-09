@@ -12,6 +12,7 @@ import {
   Megaphone,
   Check,
   RotateCcw,
+  Share2,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -43,6 +44,9 @@ function AdminSettings() {
       heroSubline: "Built to Perform. Certified to Last.",
       announcementBar: "🔥 Free installation on all 2-post lifts this month!",
       announcementActive: false,
+      socialLinkedin: "https://www.linkedin.com/company/page-international-ltd/",
+      socialFacebook: "https://www.facebook.com/pageinternationalltd/",
+      socialInstagram: "https://www.instagram.com/pageintl",
     };
     setSettings(defaults);
     saveSettings(defaults);
@@ -80,9 +84,7 @@ function AdminSettings() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Settings</h1>
-            <p className="text-[13px] text-zinc-500 mt-1">
-              Manage site configuration and content
-            </p>
+            <p className="text-[13px] text-zinc-500 mt-1">Manage site configuration and content</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -186,7 +188,11 @@ function AdminSettings() {
           </div>
 
           <div className="space-y-5">
-            <Field label="Hero Headline" icon={Type} hint="The main headline displayed on the homepage hero">
+            <Field
+              label="Hero Headline"
+              icon={Type}
+              hint="The main headline displayed on the homepage hero"
+            >
               <input
                 type="text"
                 value={settings.heroHeadline}
@@ -214,7 +220,9 @@ function AdminSettings() {
               <h3 className="text-[14px] font-semibold text-white">Announcement Bar</h3>
             </div>
             <button
-              onClick={() => setSettings({ ...settings, announcementActive: !settings.announcementActive })}
+              onClick={() =>
+                setSettings({ ...settings, announcementActive: !settings.announcementActive })
+              }
               className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${
                 settings.announcementActive ? "bg-emerald-600" : "bg-zinc-700"
               }`}
@@ -227,7 +235,11 @@ function AdminSettings() {
             </button>
           </div>
 
-          <Field label="Announcement Text" icon={Megaphone} hint="Displayed at the top of the website when active">
+          <Field
+            label="Announcement Text"
+            icon={Megaphone}
+            hint="Displayed at the top of the website when active"
+          >
             <textarea
               value={settings.announcementBar}
               onChange={(e) => setSettings({ ...settings, announcementBar: e.target.value })}
@@ -244,6 +256,58 @@ function AdminSettings() {
           )}
         </div>
 
+        {/* Social Media Channels */}
+        <div className="bg-[#232323] border border-white/[0.06] rounded-xl p-5 space-y-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/[0.06]">
+            <Share2 className="h-4 w-4 text-pink-400" />
+            <h3 className="text-[14px] font-semibold text-white">Social Media Channels</h3>
+          </div>
+
+          <div className="space-y-4">
+            <Field
+              label="LinkedIn Company Page"
+              icon={Share2}
+              hint="Public profile URL for PAGE International on LinkedIn"
+            >
+              <input
+                type="url"
+                value={settings.socialLinkedin || ""}
+                onChange={(e) => setSettings({ ...settings, socialLinkedin: e.target.value })}
+                placeholder="https://www.linkedin.com/company/page-international-ltd/"
+                className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 text-[13px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 font-mono"
+              />
+            </Field>
+
+            <Field
+              label="Facebook Page"
+              icon={Share2}
+              hint="Official Facebook page for customer updates & community"
+            >
+              <input
+                type="url"
+                value={settings.socialFacebook || ""}
+                onChange={(e) => setSettings({ ...settings, socialFacebook: e.target.value })}
+                placeholder="https://www.facebook.com/pageinternationalltd/"
+                className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 text-[13px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 font-mono"
+              />
+            </Field>
+
+            <Field
+              label="Instagram Profile"
+              icon={Share2}
+              hint="Instagram handle for machinery demos and gallery"
+            >
+              <input
+                type="url"
+                value={settings.socialInstagram || ""}
+                onChange={(e) => setSettings({ ...settings, socialInstagram: e.target.value })}
+                placeholder="https://www.instagram.com/pageintl"
+                className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 text-[13px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 font-mono"
+              />
+            </Field>
+          </div>
+        </div>
+
         {/* Danger Zone */}
         <div className="bg-[#232323] border border-red-500/20 rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
@@ -251,12 +315,15 @@ function AdminSettings() {
             <h3 className="text-[14px] font-semibold text-red-400">Danger Zone</h3>
           </div>
           <p className="text-[12px] text-zinc-500">
-            These actions are irreversible. Reset all settings to default values and clear stored data.
+            These actions are irreversible. Reset all settings to default values and clear stored
+            data.
           </p>
           <div className="flex gap-3">
             <button
               onClick={() => {
-                if (confirm("Reset ALL admin data (users, quotes, bookings)? This cannot be undone.")) {
+                if (
+                  confirm("Reset ALL admin data (users, quotes, bookings)? This cannot be undone.")
+                ) {
                   localStorage.removeItem("admin_users");
                   localStorage.removeItem("admin_inventory");
                   localStorage.removeItem("admin_quotes");

@@ -43,7 +43,10 @@ export function generateQuotationEmailHtml({
   message?: string | undefined;
 }): string {
   const isMulti = quote.items && quote.items.length > 1;
-  const items = isMulti && quote.items ? quote.items : [{ productSlug: quote.productSlug, productName, qty, unitPrice }];
+  const items =
+    isMulti && quote.items
+      ? quote.items
+      : [{ productSlug: quote.productSlug, productName, qty, unitPrice }];
   const grandTotal = items.reduce((acc, it) => acc + (it.unitPrice || unitPrice) * it.qty, 0);
   const dateStr = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -63,7 +66,7 @@ export function generateQuotationEmailHtml({
         <td style="padding: 12px 14px; font-size: 13px; color: #334155; text-align: center; font-weight: 600;">${it.qty}</td>
         <td style="padding: 12px 14px; font-size: 13px; color: #334155; text-align: right; font-family: monospace;">৳${(it.unitPrice || unitPrice).toLocaleString("en-BD")}</td>
         <td style="padding: 12px 14px; font-size: 13px; color: #0f172a; text-align: right; font-weight: 700; font-family: monospace;">৳${((it.unitPrice || unitPrice) * it.qty).toLocaleString("en-BD")}</td>
-      </tr>`
+      </tr>`,
     )
     .join("");
 
@@ -152,11 +155,15 @@ export function generateQuotationEmailHtml({
             <td style="padding: 4px 0; color: #64748b;">Site / Delivery City:</td>
             <td style="padding: 4px 0; color: #0f172a; font-weight: 600;">${quote.city || "Dhaka, Bangladesh"}</td>
           </tr>
-          ${quote.notes ? `
+          ${
+            quote.notes
+              ? `
           <tr>
             <td style="padding: 4px 0; color: #64748b; vertical-align: top;">Client Notes:</td>
             <td style="padding: 4px 0; color: #334155; font-style: italic;">"${quote.notes}"</td>
-          </tr>` : ""}
+          </tr>`
+              : ""
+          }
         </table>
       </div>
 
@@ -220,7 +227,9 @@ export function generateQuotationEmailHtml({
       </div>
 
       <!-- Notes from Commercial Desk -->
-      ${message ? `
+      ${
+        message
+          ? `
       <div style="background-color: #ffffff; border-left: 4px solid #dc2626; padding: 14px 18px; margin-bottom: 24px; background-color: #fff1f2;">
         <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #9f1239; margin-bottom: 4px;">
           Notes & Commercial Terms
@@ -228,7 +237,9 @@ export function generateQuotationEmailHtml({
         <p style="margin: 0; font-size: 12px; color: #4c0519; line-height: 1.5;">
           ${message}
         </p>
-      </div>` : ""}
+      </div>`
+          : ""
+      }
 
       <!-- Call to Action Box -->
       <div style="text-align: center; background-color: #0f172a; border-radius: 12px; padding: 24px; color: #ffffff; margin-bottom: 24px;">
@@ -315,7 +326,7 @@ export function downloadQuotationEml({
  */
 export async function copyQuotationHtmlToClipboard(
   html: string,
-  plainText: string
+  plainText: string,
 ): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
@@ -396,7 +407,10 @@ export function QuotationEmailModal({
   });
 
   const isMulti = quote.items && quote.items.length > 1;
-  const items = isMulti && quote.items ? quote.items : [{ productSlug: quote.productSlug, productName, qty, unitPrice }];
+  const items =
+    isMulti && quote.items
+      ? quote.items
+      : [{ productSlug: quote.productSlug, productName, qty, unitPrice }];
   const grandTotal = items.reduce((acc, it) => acc + (it.unitPrice || unitPrice) * it.qty, 0);
   const dateStr = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -434,7 +448,7 @@ ${items
     (it, idx) => `• Item ${idx + 1}: ${it.productName}
   Unit Price: ৳${(it.unitPrice || unitPrice).toLocaleString("en-BD")} BDT
   Quantity: ${it.qty} unit(s)
-  Total: ৳${((it.unitPrice || unitPrice) * it.qty).toLocaleString("en-BD")} BDT`
+  Total: ৳${((it.unitPrice || unitPrice) * it.qty).toLocaleString("en-BD")} BDT`,
   )
   .join("\n\n")}
 
@@ -484,7 +498,7 @@ Website: www.pageinternational.com
       : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} for ${productName}`;
 
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
-      quote.email
+      quote.email,
     )}&su=${encodeURIComponent(subject)}`;
 
     window.open(gmailUrl, "_blank");
@@ -511,7 +525,6 @@ Website: www.pageinternational.com
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-5 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-2xl border border-white/10 bg-[#171717] text-zinc-100 shadow-2xl overflow-hidden">
-        
         {/* Top Control Bar */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08] bg-[#1a1a1a] shrink-0">
           <div className="flex items-center gap-2.5">
@@ -598,7 +611,13 @@ Website: www.pageinternational.com
           <div className="flex items-center gap-2 text-zinc-300">
             <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
             <span>
-              <strong>1-Click Dispatch:</strong> When you click <strong>Send via Gmail</strong>, this styled template is copied to your clipboard. Gmail will open with an empty body — just press <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-[11px] font-mono text-emerald-400 font-bold border border-emerald-500/30">Ctrl + V</kbd> to paste the full design!
+              <strong>1-Click Dispatch:</strong> When you click <strong>Send via Gmail</strong>,
+              this styled template is copied to your clipboard. Gmail will open with an empty body —
+              just press{" "}
+              <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-[11px] font-mono text-emerald-400 font-bold border border-emerald-500/30">
+                Ctrl + V
+              </kbd>{" "}
+              to paste the full design!
             </span>
           </div>
           {gmailOpenedNotice && (
@@ -630,7 +649,12 @@ Website: www.pageinternational.com
           <div className="flex items-center gap-2 text-xs text-zinc-400">
             <Sparkles className="h-3.5 w-3.5 text-amber-400 shrink-0" />
             <span>
-              Opens Gmail with empty body and copies this design to your clipboard. In Gmail, just press <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-200 border border-white/10 font-mono">Ctrl+V</kbd>.
+              Opens Gmail with empty body and copies this design to your clipboard. In Gmail, just
+              press{" "}
+              <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-200 border border-white/10 font-mono">
+                Ctrl+V
+              </kbd>
+              .
             </span>
           </div>
 
@@ -644,7 +668,11 @@ Website: www.pageinternational.com
                   : "bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 border-white/[0.08]"
               }`}
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-emerald-400" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
               <span>{copied ? "Copied Rich HTML!" : "Copy Rich Template"}</span>
             </button>
 

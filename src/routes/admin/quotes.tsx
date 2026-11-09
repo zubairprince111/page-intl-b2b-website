@@ -92,15 +92,19 @@ function AdminQuotes() {
     } else {
       setExpandedId(q.id);
       const matchInv = inventory.find(
-        (i) => i.slug === q.productSlug || i.name.toLowerCase() === q.productName.toLowerCase()
+        (i) => i.slug === q.productSlug || i.name.toLowerCase() === q.productName.toLowerCase(),
       );
       const isMulti = q.items && q.items.length > 1;
-      const calculatedTotal = isMulti && q.items
-        ? q.items.reduce((acc, it) => acc + (it.unitPrice || matchInv?.price || 150000) * it.qty, 0)
-        : (q.quotedPrice || matchInv?.price || 150000);
+      const calculatedTotal =
+        isMulti && q.items
+          ? q.items.reduce(
+              (acc, it) => acc + (it.unitPrice || matchInv?.price || 150000) * it.qty,
+              0,
+            )
+          : q.quotedPrice || matchInv?.price || 150000;
 
-      const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : (matchInv?.price || 150000));
-      const qty = isMulti ? 1 : (q.qty || 1);
+      const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : matchInv?.price || 150000);
+      const qty = isMulti ? 1 : q.qty || 1;
 
       setReplyState({
         productSlug: q.productSlug || matchInv?.slug || (inventory[0]?.slug ?? ""),
@@ -165,14 +169,15 @@ function AdminQuotes() {
   async function handleOpenDirectGmail(q: QuoteRequest) {
     const isMulti = q.items && q.items.length > 1;
     const matchInv = inventory.find(
-      (i) => i.slug === q.productSlug || i.name.toLowerCase() === q.productName.toLowerCase()
+      (i) => i.slug === q.productSlug || i.name.toLowerCase() === q.productName.toLowerCase(),
     );
-    const calculatedTotal = isMulti && q.items
-      ? q.items.reduce((acc, it) => acc + (it.unitPrice || matchInv?.price || 150000) * it.qty, 0)
-      : (q.quotedPrice || matchInv?.price || 150000);
+    const calculatedTotal =
+      isMulti && q.items
+        ? q.items.reduce((acc, it) => acc + (it.unitPrice || matchInv?.price || 150000) * it.qty, 0)
+        : q.quotedPrice || matchInv?.price || 150000;
 
-    const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : (matchInv?.price || 150000));
-    const qty = isMulti ? 1 : (q.qty || 1);
+    const unitPrice = q.quotedPrice || (isMulti ? calculatedTotal : matchInv?.price || 150000);
+    const qty = isMulti ? 1 : q.qty || 1;
     const prodName = isMulti
       ? `${q.items?.length} Products (${q.items?.map((it) => it.productName).join(", ")})`
       : q.productName;
@@ -216,7 +221,9 @@ function AdminQuotes() {
       declined: <XCircle className="h-3 w-3" />,
     };
     return (
-      <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${styles[status]}`}>
+      <span
+        className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${styles[status]}`}
+      >
         {icons[status]}
         {status}
       </span>
@@ -360,7 +367,9 @@ function AdminQuotes() {
 
                     {q.notes && (
                       <div className="bg-white/[0.02] rounded-lg p-3">
-                        <p className="text-[10px] text-zinc-600 mb-1">Customer Notes / Requirements</p>
+                        <p className="text-[10px] text-zinc-600 mb-1">
+                          Customer Notes / Requirements
+                        </p>
                         <p className="text-[12px] text-zinc-300">{q.notes}</p>
                       </div>
                     )}
@@ -379,14 +388,21 @@ function AdminQuotes() {
                         </div>
                         <div className="divide-y divide-white/[0.06] overflow-hidden rounded-lg border border-white/[0.06] bg-[#1a1a1a]">
                           {q.items.map((it, idx) => (
-                            <div key={idx} className="p-3 flex items-center justify-between gap-3 text-xs">
+                            <div
+                              key={idx}
+                              className="p-3 flex items-center justify-between gap-3 text-xs"
+                            >
                               <div className="flex items-center gap-2.5 min-w-0">
                                 <span className="h-5 w-5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold flex items-center justify-center font-mono shrink-0">
                                   {idx + 1}
                                 </span>
                                 <div className="min-w-0">
-                                  <p className="font-medium text-zinc-100 truncate">{it.productName}</p>
-                                  <p className="text-[11px] text-zinc-500 font-mono">Model ID: {it.productSlug}</p>
+                                  <p className="font-medium text-zinc-100 truncate">
+                                    {it.productName}
+                                  </p>
+                                  <p className="text-[11px] text-zinc-500 font-mono">
+                                    Model ID: {it.productSlug}
+                                  </p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 text-right shrink-0">
@@ -445,7 +461,10 @@ function AdminQuotes() {
                             type="number"
                             value={replyState.unitPrice}
                             onChange={(e) =>
-                              setReplyState({ ...replyState, unitPrice: Number(e.target.value) || 0 })
+                              setReplyState({
+                                ...replyState,
+                                unitPrice: Number(e.target.value) || 0,
+                              })
                             }
                             className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-1.5 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                           />
@@ -461,7 +480,10 @@ function AdminQuotes() {
                             min="1"
                             value={replyState.qty}
                             onChange={(e) =>
-                              setReplyState({ ...replyState, qty: Math.max(1, Number(e.target.value) || 1) })
+                              setReplyState({
+                                ...replyState,
+                                qty: Math.max(1, Number(e.target.value) || 1),
+                              })
                             }
                             className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-1.5 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                           />
@@ -475,7 +497,9 @@ function AdminQuotes() {
                         </label>
                         <textarea
                           value={replyState.message}
-                          onChange={(e) => setReplyState({ ...replyState, message: e.target.value })}
+                          onChange={(e) =>
+                            setReplyState({ ...replyState, message: e.target.value })
+                          }
                           rows={3}
                           placeholder="Type your official reply, payment terms, or delivery schedule..."
                           className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none"
@@ -535,14 +559,19 @@ function AdminQuotes() {
                       </div>
                       <p className="text-[11px] text-zinc-500 flex items-center gap-1">
                         <Mail className="h-3 w-3 text-emerald-400" />
-                        <span>Clicking reply logs the status and opens Gmail with an itemized commercial quotation report addressed to {q.email}.</span>
+                        <span>
+                          Clicking reply logs the status and opens Gmail with an itemized commercial
+                          quotation report addressed to {q.email}.
+                        </span>
                       </p>
                     </div>
 
                     {q.reply && (
                       <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-[10px] text-emerald-500 font-medium">Logged Official Response</p>
+                          <p className="text-[10px] text-emerald-500 font-medium">
+                            Logged Official Response
+                          </p>
                           {q.quotedPrice && (
                             <span className="text-[10px] text-emerald-400 font-mono">
                               Quoted Total: {taka(q.quotedPrice * q.qty)}

@@ -54,9 +54,7 @@ export function SectionHeader({
         {eyebrow && <p className="eyebrow">{eyebrow}</p>}
         <h2 className="display-md mt-1.5 text-foreground">{title}</h2>
         {description && (
-          <p className="mt-1 text-xs sm:text-sm text-muted-foreground max-w-xl">
-            {description}
-          </p>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground max-w-xl">{description}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -64,17 +62,11 @@ export function SectionHeader({
   );
 }
 
-export function Chapter({
-  n,
-  label,
-  dark,
-}: {
-  n: string;
-  label: string;
-  dark?: boolean;
-}) {
+export function Chapter({ n, label, dark }: { n: string; label: string; dark?: boolean }) {
   return (
-    <p className={`chapter flex items-center gap-2 ${dark ? "text-ink-muted" : "text-muted-foreground"}`}>
+    <p
+      className={`chapter flex items-center gap-2 ${dark ? "text-ink-muted" : "text-muted-foreground"}`}
+    >
       <span className="text-primary font-bold">{n}</span>
       <span>/</span>
       <span>{label}</span>

@@ -14,16 +14,21 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ConsultationRouteImport } from './routes/consultation'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ServiceCentersRouteImport } from './routes/service-centers'
 import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as SupportRouteImport } from './routes/support'
+import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as VehiclesRouteImport } from './routes/vehicles'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminBannersRouteImport } from './routes/admin/banners'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminQuotesRouteImport } from './routes/admin/quotes'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminUpdatesRouteImport } from './routes/admin/updates'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as ServicesBookRouteImport } from './routes/services.book'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
@@ -54,6 +59,11 @@ const ConsultationRoute = ConsultationRouteImport.update({
   path: '/consultation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServiceCentersRoute = ServiceCentersRouteImport.update({
   id: '/service-centers',
   path: '/service-centers',
@@ -69,6 +79,11 @@ const SupportRoute = SupportRouteImport.update({
   path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UpdatesRoute = UpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VehiclesRoute = VehiclesRouteImport.update({
   id: '/vehicles',
   path: '/vehicles',
@@ -77,6 +92,11 @@ const VehiclesRoute = VehiclesRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminBannersRoute = AdminBannersRouteImport.update({
+  id: '/admin/banners',
+  path: '/admin/banners',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
@@ -94,6 +114,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/admin/media',
+  path: '/admin/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminQuotesRoute = AdminQuotesRouteImport.update({
   id: '/admin/quotes',
   path: '/admin/quotes',
@@ -102,6 +127,11 @@ const AdminQuotesRoute = AdminQuotesRouteImport.update({
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/admin/settings',
   path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUpdatesRoute = AdminUpdatesRouteImport.update({
+  id: '/admin/updates',
+  path: '/admin/updates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -131,15 +161,20 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
+  '/login': typeof LoginRoute
   '/service-centers': typeof ServiceCentersRoute
   '/solutions': typeof SolutionsRoute
   '/support': typeof SupportRoute
+  '/updates': typeof UpdatesRoute
   '/vehicles': typeof VehiclesRoute
+  '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/quotes': typeof AdminQuotesRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/updates': typeof AdminUpdatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/services/book': typeof ServicesBookRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -152,15 +187,20 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
+  '/login': typeof LoginRoute
   '/service-centers': typeof ServiceCentersRoute
   '/solutions': typeof SolutionsRoute
   '/support': typeof SupportRoute
+  '/updates': typeof UpdatesRoute
   '/vehicles': typeof VehiclesRoute
+  '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/quotes': typeof AdminQuotesRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/updates': typeof AdminUpdatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/services/book': typeof ServicesBookRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -174,15 +214,20 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
+  '/login': typeof LoginRoute
   '/service-centers': typeof ServiceCentersRoute
   '/solutions': typeof SolutionsRoute
   '/support': typeof SupportRoute
+  '/updates': typeof UpdatesRoute
   '/vehicles': typeof VehiclesRoute
+  '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/quotes': typeof AdminQuotesRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/updates': typeof AdminUpdatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/services/book': typeof ServicesBookRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -197,15 +242,20 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/consultation'
+    | '/login'
     | '/service-centers'
     | '/solutions'
     | '/support'
+    | '/updates'
     | '/vehicles'
+    | '/admin/banners'
     | '/admin/bookings'
     | '/admin/inventory'
     | '/admin/login'
+    | '/admin/media'
     | '/admin/quotes'
     | '/admin/settings'
+    | '/admin/updates'
     | '/admin/users'
     | '/services/book'
     | '/shop/$slug'
@@ -218,15 +268,20 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/consultation'
+    | '/login'
     | '/service-centers'
     | '/solutions'
     | '/support'
+    | '/updates'
     | '/vehicles'
+    | '/admin/banners'
     | '/admin/bookings'
     | '/admin/inventory'
     | '/admin/login'
+    | '/admin/media'
     | '/admin/quotes'
     | '/admin/settings'
+    | '/admin/updates'
     | '/admin/users'
     | '/services/book'
     | '/shop/$slug'
@@ -239,15 +294,20 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/consultation'
+    | '/login'
     | '/service-centers'
     | '/solutions'
     | '/support'
+    | '/updates'
     | '/vehicles'
+    | '/admin/banners'
     | '/admin/bookings'
     | '/admin/inventory'
     | '/admin/login'
+    | '/admin/media'
     | '/admin/quotes'
     | '/admin/settings'
+    | '/admin/updates'
     | '/admin/users'
     | '/services/book'
     | '/shop/$slug'
@@ -261,15 +321,20 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ConsultationRoute: typeof ConsultationRoute
+  LoginRoute: typeof LoginRoute
   ServiceCentersRoute: typeof ServiceCentersRoute
   SolutionsRoute: typeof SolutionsRoute
   SupportRoute: typeof SupportRoute
+  UpdatesRoute: typeof UpdatesRoute
   VehiclesRoute: typeof VehiclesRoute
+  AdminBannersRoute: typeof AdminBannersRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminMediaRoute: typeof AdminMediaRoute
   AdminQuotesRoute: typeof AdminQuotesRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminUpdatesRoute: typeof AdminUpdatesRoute
   AdminUsersRoute: typeof AdminUsersRoute
   ServicesBookRoute: typeof ServicesBookRoute
   ShopSlugRoute: typeof ShopSlugRoute
@@ -314,6 +379,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsultationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/service-centers': {
       id: '/service-centers'
       path: '/service-centers'
@@ -335,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/updates': {
+      id: '/updates'
+      path: '/updates'
+      fullPath: '/updates'
+      preLoaderRoute: typeof UpdatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/vehicles': {
       id: '/vehicles'
       path: '/vehicles'
@@ -347,6 +426,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/banners': {
+      id: '/admin/banners'
+      path: '/admin/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AdminBannersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/bookings': {
@@ -370,6 +456,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/media': {
+      id: '/admin/media'
+      path: '/admin/media'
+      fullPath: '/admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/quotes': {
       id: '/admin/quotes'
       path: '/admin/quotes'
@@ -382,6 +475,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/updates': {
+      id: '/admin/updates'
+      path: '/admin/updates'
+      fullPath: '/admin/updates'
+      preLoaderRoute: typeof AdminUpdatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -421,15 +521,20 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ConsultationRoute: ConsultationRoute,
+  LoginRoute: LoginRoute,
   ServiceCentersRoute: ServiceCentersRoute,
   SolutionsRoute: SolutionsRoute,
   SupportRoute: SupportRoute,
+  UpdatesRoute: UpdatesRoute,
   VehiclesRoute: VehiclesRoute,
+  AdminBannersRoute: AdminBannersRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminMediaRoute: AdminMediaRoute,
   AdminQuotesRoute: AdminQuotesRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminUpdatesRoute: AdminUpdatesRoute,
   AdminUsersRoute: AdminUsersRoute,
   ServicesBookRoute: ServicesBookRoute,
   ShopSlugRoute: ShopSlugRoute,

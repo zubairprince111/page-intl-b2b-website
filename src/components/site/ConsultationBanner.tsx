@@ -12,7 +12,7 @@ export function ConsultationBanner({ className }: ConsultationBannerProps) {
     <div
       className={cn(
         "relative w-full overflow-hidden py-8 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-8",
-        className
+        className,
       )}
     >
       {/* Full pure white background */}
@@ -53,7 +53,8 @@ export function ConsultationBanner({ className }: ConsultationBannerProps) {
 
             {/* Subtitle */}
             <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm md:text-[14.5px] text-zinc-500 font-sans leading-relaxed max-w-xl">
-              Speak with our certified engineering specialists for workshop bay layouts, lifting specs, or power requirements.
+              Speak with our certified engineering specialists for workshop bay layouts, lifting
+              specs, or power requirements.
             </p>
 
             {/* 3 Feature Pills */}
@@ -137,10 +138,7 @@ export function ConsultationBanner({ className }: ConsultationBannerProps) {
             {/* Floating Speech Bubble with 3 White Dots (At Junction) */}
             <div className="absolute left-6 lg:-left-6 top-6 lg:top-1/2 lg:-translate-y-1/2 flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-white shadow-xl ring-8 ring-red-50/90 z-20">
               <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-red-600 flex items-center justify-center text-white shadow-sm">
-                <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5 fill-current"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                   <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
                   <circle cx="8" cy="10" r="1.2" fill="white" />
                   <circle cx="12" cy="10" r="1.2" fill="white" />

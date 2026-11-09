@@ -9,8 +9,7 @@ export const Route = createFileRoute("/vehicles")({
   head: () => ({
     meta: [
       {
-        title:
-          "Shop by Vehicle Platform (4W · 2W · 3W · EV) — PAGE International",
+        title: "Shop by Vehicle Platform (4W · 2W · 3W · EV) — PAGE International",
       },
       {
         name: "description",
@@ -23,8 +22,7 @@ export const Route = createFileRoute("/vehicles")({
       },
       {
         property: "og:description",
-        content:
-          "Cross-platform automotive fitment directory for workshops and fleets.",
+        content: "Cross-platform automotive fitment directory for workshops and fleets.",
       },
     ],
   }),
@@ -56,12 +54,10 @@ export function Vehicles() {
         <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <p className="eyebrow">Platform Directory</p>
-            <h2 className="display-md mt-1 text-foreground">
-              MANUFACTURER & MODEL DIRECTORY
-            </h2>
+            <h2 className="display-md mt-1 text-foreground">MANUFACTURER & MODEL DIRECTORY</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Choose your platform and brand to view compatible parts catalogued by
-              powertrain and chassis code.
+              Choose your platform and brand to view compatible parts catalogued by powertrain and
+              chassis code.
             </p>
           </div>
 

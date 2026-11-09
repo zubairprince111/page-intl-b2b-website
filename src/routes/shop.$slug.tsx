@@ -63,7 +63,7 @@ export const Route = createFileRoute("/shop/$slug")({
 
 type TabType = "description" | "specs";
 
-export function ProductPage() {
+function ProductPage() {
   const { p } = Route.useLoaderData();
   const { add, vehicle, lines } = useCart();
   const [qty, setQty] = useState(1);
@@ -90,7 +90,7 @@ export function ProductPage() {
       : [];
 
   // Default option state (always pre-selected so customer can add directly to cart)
-  const [selectedVoltage, setSelectedVoltage] = useState(voltageOptions[0].id);
+  const [selectedVoltage, setSelectedVoltage] = useState(voltageOptions[0]?.id || "");
   const [selectedArmType, setSelectedArmType] = useState(armOptions[0]?.id || "standard");
 
   const inCart = lines.some((l) => l.slug === p.slug);
@@ -150,12 +150,8 @@ export function ProductPage() {
 
   // Related products from same category or complementary equipment
   const allCatalog = getShopProducts();
-  const sameCategory = allCatalog.filter(
-    (x) => x.slug !== p.slug && x.category === p.category
-  );
-  const otherItems = allCatalog.filter(
-    (x) => x.slug !== p.slug && x.category !== p.category
-  );
+  const sameCategory = allCatalog.filter((x) => x.slug !== p.slug && x.category === p.category);
+  const otherItems = allCatalog.filter((x) => x.slug !== p.slug && x.category !== p.category);
   const related = [...sameCategory, ...otherItems].slice(0, 4);
 
   // Vehicle compatibility match status
@@ -165,7 +161,7 @@ export function ProductPage() {
           f.toLowerCase().includes(vehicle.model.toLowerCase()) ||
           f.toLowerCase().includes(vehicle.make.toLowerCase()) ||
           f.toLowerCase().includes("universal") ||
-          f.toLowerCase().includes("most")
+          f.toLowerCase().includes("most"),
       )
     : false;
 
@@ -195,9 +191,7 @@ export function ProductPage() {
             {p.category}
           </Link>
           <span>/</span>
-          <span className="text-zinc-500 truncate max-w-sm">
-            {p.name}
-          </span>
+          <span className="text-zinc-500 truncate max-w-sm">{p.name}</span>
         </nav>
       </div>
 
@@ -206,7 +200,6 @@ export function ProductPage() {
       {/* ======================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
           {/* ==================================================== */}
           {/* LEFT COLUMN: Clean Minimal Product Gallery Stage     */}
           {/* ==================================================== */}
@@ -320,11 +313,7 @@ export function ProductPage() {
                 <span className="text-zinc-300">|</span>
                 <span
                   className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs ${
-                    out
-                      ? "text-destructive"
-                      : low
-                      ? "text-amber-600"
-                      : "text-emerald-600"
+                    out ? "text-destructive" : low ? "text-amber-600" : "text-emerald-600"
                   }`}
                 >
                   <span
@@ -335,9 +324,7 @@ export function ProductPage() {
                   {p.stock}
                 </span>
                 <span className="text-zinc-300">|</span>
-                <span className="text-xs font-medium text-zinc-500">
-                  Dhaka Central Hub
-                </span>
+                <span className="text-xs font-medium text-zinc-500">Dhaka Central Hub</span>
               </div>
             </div>
 
@@ -390,7 +377,7 @@ export function ProductPage() {
                 <div className="text-xs text-zinc-500 flex items-center gap-2">
                   <span className="font-semibold text-zinc-700">Specification:</span>
                   <span className="font-mono bg-zinc-100 px-2.5 py-1 rounded-md text-zinc-800">
-                    {voltageOptions[0].label} (Default)
+                    {voltageOptions[0]?.label || "Standard"} (Default)
                   </span>
                 </div>
               )}
@@ -482,11 +469,11 @@ export function ProductPage() {
                 className="w-full h-11 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 transition-all cursor-pointer"
               >
                 <FileSpreadsheet className="h-4 w-4 text-primary" />
-                <span>Request Commercial Quotation ({qty} {qty === 1 ? "Unit" : "Units"})</span>
+                <span>
+                  Request Commercial Quotation ({qty} {qty === 1 ? "Unit" : "Units"})
+                </span>
               </button>
             </div>
-
-
 
             {/* Minimal Guarantees */}
             <div className="pt-3 border-t border-zinc-200/80 grid grid-cols-3 gap-2 text-[11px] sm:text-xs text-zinc-600 font-medium text-center">
@@ -536,20 +523,24 @@ export function ProductPage() {
           {/* Tab 1: Description */}
           {tab === "description" && (
             <div className="max-w-4xl bg-white p-6 sm:p-8 rounded-2xl border border-zinc-200 shadow-xs space-y-5 text-sm sm:text-base text-zinc-700 leading-relaxed">
-              <h3 className="text-lg font-bold text-zinc-950">
-                Detailed Product Overview
-              </h3>
+              <h3 className="text-lg font-bold text-zinc-950">Detailed Product Overview</h3>
               <p>{p.description}</p>
               <p>
-                Supplied directly to professional automotive service centers, dealership workshops, and commercial fleet depots. Engineered for continuous operation with reinforced dual hydraulic lifting cylinders and precision synchronization cables.
+                Supplied directly to professional automotive service centers, dealership workshops,
+                and commercial fleet depots. Engineered for continuous operation with reinforced
+                dual hydraulic lifting cylinders and precision synchronization cables.
               </p>
               <div className="pt-4 border-t border-zinc-100">
                 <h4 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
                   Key Engineering Advantages:
                 </h4>
                 <ul className="list-disc pl-5 space-y-2 text-zinc-700">
-                  <li>Reinforced dual-column laser cut structural steel with heavy-duty baseplates.</li>
-                  <li>Electro-hydraulic synchronization ensuring smooth, level carriage movement.</li>
+                  <li>
+                    Reinforced dual-column laser cut structural steel with heavy-duty baseplates.
+                  </li>
+                  <li>
+                    Electro-hydraulic synchronization ensuring smooth, level carriage movement.
+                  </li>
                   <li>Integrated mechanical safety ladders with automatic solenoid release.</li>
                   <li>Tested to 115% dynamic load and 150% static structural benchmark.</li>
                 </ul>
@@ -579,20 +570,28 @@ export function ProductPage() {
                   <tr className="bg-white">
                     <td className="py-3.5 px-6 font-bold text-zinc-800">Selected Power Supply</td>
                     <td className="py-3.5 px-6 font-mono font-semibold text-primary">
-                      {selectedVoltage === "380v" ? "380V 3-Phase (Industrial)" : "220V Single-Phase"}
+                      {selectedVoltage === "380v"
+                        ? "380V 3-Phase (Industrial)"
+                        : "220V Single-Phase"}
                     </td>
                   </tr>
                   {armOptions.length > 0 && (
                     <tr className="bg-zinc-50/60">
                       <td className="py-3.5 px-6 font-bold text-zinc-800">Arm Configuration</td>
                       <td className="py-3.5 px-6 font-medium text-zinc-950">
-                        {selectedArmType === "asymmetric" ? "Asymmetric (EV Platform)" : "Symmetric Telescopic"}
+                        {selectedArmType === "asymmetric"
+                          ? "Asymmetric (EV Platform)"
+                          : "Symmetric Telescopic"}
                       </td>
                     </tr>
                   )}
                   <tr className="bg-white">
-                    <td className="py-3.5 px-6 font-bold text-zinc-800">Supported Vehicle Platforms</td>
-                    <td className="py-3.5 px-6 font-medium text-zinc-950">{p.mobility.join(", ")}</td>
+                    <td className="py-3.5 px-6 font-bold text-zinc-800">
+                      Supported Vehicle Platforms
+                    </td>
+                    <td className="py-3.5 px-6 font-medium text-zinc-950">
+                      {p.mobility.join(", ")}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -615,7 +614,10 @@ export function ProductPage() {
                 Related Equipment & Spare Parts
               </h2>
             </div>
-            <Link to="/shop" className="text-xs sm:text-sm font-bold uppercase tracking-wider text-primary hover:underline flex items-center gap-1.5">
+            <Link
+              to="/shop"
+              className="text-xs sm:text-sm font-bold uppercase tracking-wider text-primary hover:underline flex items-center gap-1.5"
+            >
               <span>View All Products</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -646,9 +648,7 @@ export function ProductPage() {
               <X className="h-5 w-5" />
             </button>
             <div className="text-center mb-4">
-              <h3 className="font-display text-2xl uppercase tracking-wide">
-                {p.name}
-              </h3>
+              <h3 className="font-display text-2xl uppercase tracking-wide">{p.name}</h3>
               <p className="text-xs text-white/60">
                 {p.brand} · SKU: {p.sku}
               </p>
@@ -711,7 +711,8 @@ export function ProductPage() {
                 </h3>
                 <p className="text-xs sm:text-sm text-zinc-600 mt-2 max-w-sm mx-auto leading-relaxed">
                   Thank you! Our B2B commercial equipment desk has registered your request for{" "}
-                  <strong>{p.name}</strong>. A pro-forma quote with tax and delivery schedule will be provided within 24 hours.
+                  <strong>{p.name}</strong>. A pro-forma quote with tax and delivery schedule will
+                  be provided within 24 hours.
                 </p>
                 <button
                   onClick={() => {
@@ -733,7 +734,11 @@ export function ProductPage() {
                     Request Quote: {p.name}
                   </h3>
                   <p className="text-xs text-zinc-500 mt-1">
-                    Model: <span className="font-mono font-semibold">{p.sku}</span> · Brand: <span className="font-semibold">{p.brand}</span> · Config: <span className="font-mono font-semibold text-primary">{selectedVoltage.toUpperCase()}</span>
+                    Model: <span className="font-mono font-semibold">{p.sku}</span> · Brand:{" "}
+                    <span className="font-semibold">{p.brand}</span> · Config:{" "}
+                    <span className="font-mono font-semibold text-primary">
+                      {selectedVoltage.toUpperCase()}
+                    </span>
                   </p>
                 </div>
 
@@ -748,9 +753,7 @@ export function ProductPage() {
                       placeholder="e.g. Dhaka Auto Tech Ltd."
                       className="field text-sm rounded-xl h-11 px-3.5"
                       value={quoteData.businessName}
-                      onChange={(e) =>
-                        setQuoteData({ ...quoteData, businessName: e.target.value })
-                      }
+                      onChange={(e) => setQuoteData({ ...quoteData, businessName: e.target.value })}
                     />
                   </div>
 
@@ -781,9 +784,7 @@ export function ProductPage() {
                       placeholder="+880 17XXXXXXXX"
                       className="field text-sm rounded-xl h-11 px-3.5"
                       value={quoteData.phone}
-                      onChange={(e) =>
-                        setQuoteData({ ...quoteData, phone: e.target.value })
-                      }
+                      onChange={(e) => setQuoteData({ ...quoteData, phone: e.target.value })}
                     />
                   </div>
 
@@ -796,9 +797,7 @@ export function ProductPage() {
                       placeholder="procurement@workshop.com"
                       className="field text-sm rounded-xl h-11 px-3.5"
                       value={quoteData.email}
-                      onChange={(e) =>
-                        setQuoteData({ ...quoteData, email: e.target.value })
-                      }
+                      onChange={(e) => setQuoteData({ ...quoteData, email: e.target.value })}
                     />
                   </div>
                 </div>
@@ -811,9 +810,7 @@ export function ProductPage() {
                     <select
                       className="field text-sm rounded-xl h-11 px-3.5"
                       value={quoteData.businessType}
-                      onChange={(e) =>
-                        setQuoteData({ ...quoteData, businessType: e.target.value })
-                      }
+                      onChange={(e) => setQuoteData({ ...quoteData, businessType: e.target.value })}
                     >
                       <option value="Workshop">Independent Workshop</option>
                       <option value="Service Center">Service Center Hub</option>
@@ -833,9 +830,7 @@ export function ProductPage() {
                       placeholder="e.g. 1 unit / 5 sets"
                       className="field text-sm rounded-xl h-11 px-3.5"
                       value={quoteData.quantity}
-                      onChange={(e) =>
-                        setQuoteData({ ...quoteData, quantity: e.target.value })
-                      }
+                      onChange={(e) => setQuoteData({ ...quoteData, quantity: e.target.value })}
                     />
                   </div>
                 </div>
@@ -849,9 +844,7 @@ export function ProductPage() {
                     placeholder="Bay dimensions, ceiling height, or power availability..."
                     className="field text-sm rounded-xl p-3 min-h-[72px]"
                     value={quoteData.notes}
-                    onChange={(e) =>
-                      setQuoteData({ ...quoteData, notes: e.target.value })
-                    }
+                    onChange={(e) => setQuoteData({ ...quoteData, notes: e.target.value })}
                   />
                 </div>
 

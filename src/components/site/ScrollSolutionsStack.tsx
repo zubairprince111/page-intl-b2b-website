@@ -33,7 +33,9 @@ export function ScrollSolutionsStack() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 1200);
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 1200,
+  );
 
   // 6 PAGE Automotive B2B Workshop Solutions (Matching all prompt requirements)
   const solutions: SolutionCardItem[] = useMemo(
@@ -46,7 +48,11 @@ export function ScrollSolutionsStack() {
         subtitle: "Electro-Hydraulic Lifting Bays",
         description:
           "Commercial 2-post and 4-post vehicle lifts, heavy-duty scissor bays, hydraulic shop presses and vehicle anchoring infrastructure.",
-        specs: ["4.0T - 5.5T Lift Capacity", "CE & ISO 9001 Certified", "Heavy Vehicle Clear-Floor"],
+        specs: [
+          "4.0T - 5.5T Lift Capacity",
+          "CE & ISO 9001 Certified",
+          "Heavy Vehicle Clear-Floor",
+        ],
         image: images.lift,
         link: "/shop",
         search: { cat: "Garage Equipment" },
@@ -74,7 +80,11 @@ export function ScrollSolutionsStack() {
         subtitle: "OEM Spares & Rapid Replenishment",
         description:
           "OEM-certified ceramic brake friction sets, heavy-duty commercial starter batteries, synthetic fluids, and scheduled depot replenishment.",
-        specs: ["ECE R90 Certified Friction", "High-Crank AGM Batteries", "Daily Workshop Logistics"],
+        specs: [
+          "ECE R90 Certified Friction",
+          "High-Crank AGM Batteries",
+          "Daily Workshop Logistics",
+        ],
         image: images.brakepads,
         link: "/shop",
         search: { cat: "Brakes" },
@@ -122,7 +132,7 @@ export function ScrollSolutionsStack() {
         theme: "dark",
       },
     ],
-    []
+    [],
   );
 
   const totalCards = solutions.length;
@@ -181,7 +191,7 @@ export function ScrollSolutionsStack() {
     return Math.max(0, Math.min(totalCards - 1, index));
   }, [scrollProgress, totalCards]);
 
-  const activeSolution = solutions[activeCardIndex];
+  const activeSolution = solutions[activeCardIndex] ?? solutions[0]!;
 
   // Desktop vs mobile offset sizing
   const isMobile = windowWidth < 768;
@@ -279,9 +289,7 @@ export function ScrollSolutionsStack() {
       {/* ======================================================== */}
       <div
         className={`${
-          isReducedMotion
-            ? "py-20"
-            : "sticky top-0 h-screen flex items-center overflow-hidden"
+          isReducedMotion ? "py-20" : "sticky top-0 h-screen flex items-center overflow-hidden"
         } w-full`}
       >
         <div className="container-page w-full relative z-10 py-6 sm:py-8 lg:py-12">
@@ -305,7 +313,8 @@ export function ScrollSolutionsStack() {
 
                 {/* Supporting Line */}
                 <p className="mt-3 sm:mt-4 text-sm sm:text-base text-zinc-400 font-sans leading-relaxed">
-                  Equipment, parts and solutions built around the businesses that keep vehicles moving.
+                  Equipment, parts and solutions built around the businesses that keep vehicles
+                  moving.
                 </p>
 
                 {/* Active Dynamic Solution Overview Panel */}
@@ -401,8 +410,8 @@ export function ScrollSolutionsStack() {
                         isLightPanel
                           ? "bg-[#FAF9F6] text-zinc-950 border-zinc-200/90 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.55)]"
                           : isAccent
-                          ? "bg-[#141518] text-white border-primary/40 ring-1 ring-primary/25 shadow-[0_35px_70px_-15px_rgba(0,0,0,0.7)]"
-                          : "bg-[#121316] text-white border-zinc-700/80 shadow-[0_30px_65px_-15px_rgba(0,0,0,0.65)]"
+                            ? "bg-[#141518] text-white border-primary/40 ring-1 ring-primary/25 shadow-[0_35px_70px_-15px_rgba(0,0,0,0.7)]"
+                            : "bg-[#121316] text-white border-zinc-700/80 shadow-[0_30px_65px_-15px_rgba(0,0,0,0.65)]"
                       }`}
                       style={{
                         transform: cardStyle.transform,
@@ -422,8 +431,8 @@ export function ScrollSolutionsStack() {
                                 isAccent
                                   ? "text-primary"
                                   : isLightPanel
-                                  ? "text-zinc-950"
-                                  : "text-white"
+                                    ? "text-zinc-950"
+                                    : "text-white"
                               }`}
                             >
                               {item.num}
@@ -434,8 +443,8 @@ export function ScrollSolutionsStack() {
                                   isAccent
                                     ? "text-primary"
                                     : isLightPanel
-                                    ? "text-zinc-500"
-                                    : "text-zinc-400"
+                                      ? "text-zinc-500"
+                                      : "text-zinc-400"
                                 }`}
                               >
                                 {item.category}
@@ -453,7 +462,7 @@ export function ScrollSolutionsStack() {
                           {/* Direct Link Action */}
                           <Link
                             to={item.link}
-                            search={item.search}
+                            search={item.search as any}
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all hover:scale-105 shrink-0 ${
                               isLightPanel
                                 ? "bg-zinc-900 text-white hover:bg-zinc-800"
@@ -515,9 +524,7 @@ export function ScrollSolutionsStack() {
                           >
                             B2B Distribution & Infrastructure
                           </span>
-                          <span className="font-bold text-primary">
-                            Turnkey Solutions →
-                          </span>
+                          <span className="font-bold text-primary">Turnkey Solutions →</span>
                         </div>
                       </div>
                     </div>

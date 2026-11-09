@@ -1,0 +1,32 @@
+# ==============================================================================
+# Development Docker Compose: Runs PostgreSQL only
+# Use this when running `npm run dev` locally on your host machine.
+# Command: docker compose -f docker-compose.dev.yml up -d
+# ==============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: page_postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-page_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-page_secure_password_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-page_international}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-page_admin} -d ${POSTGRES_DB:-page_international}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_dev_data:
+    driver: local

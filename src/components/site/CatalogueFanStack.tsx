@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Layers, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  Sparkles,
+} from "lucide-react";
 import { images } from "@/lib/data";
 
 export interface CatalogueItem {
@@ -99,7 +106,9 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
   const [isTouchDevice, setIsTouchDevice] = useState<boolean>(false);
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 1200);
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 1200,
+  );
 
   // Hover Intent Timer to avoid nervous sensitivity / rapid jitter
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -111,7 +120,10 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
     media.addEventListener("change", handler);
 
     // Detect touch device (default touch devices to fanned view for immediate access)
-    if (typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0)) {
+    if (
+      typeof window !== "undefined" &&
+      ("ontouchstart" in window || navigator.maxTouchPoints > 0)
+    ) {
       setIsTouchDevice(true);
     }
 
@@ -135,12 +147,14 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
 
   // Touch Swipe Handlers for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
+    if (e.touches[0]) setTouchStartX(e.touches[0].clientX);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX === null) return;
-    const touchEndX = e.changedTouches[0].clientX;
+    const touchEnd = e.changedTouches[0];
+    if (!touchEnd) return;
+    const touchEndX = touchEnd.clientX;
     const diff = touchEndX - touchStartX;
     if (Math.abs(diff) > 40) {
       if (diff < 0) {
@@ -172,8 +186,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
 
   // Determine whether cards are currently fanned out
   const isCurrentlyFanned =
-    viewMode === "fanned" ||
-    (viewMode === "auto" && (isHovered || isTouchDevice));
+    viewMode === "fanned" || (viewMode === "auto" && (isHovered || isTouchDevice));
 
   // Dynamic responsive horizontal offsets ensuring true dead-center alignment
   const getFanOffsets = () => {
@@ -192,8 +205,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
   // Note: All transforms start from -50% on X and -50% on Y to guarantee DEAD-CENTER alignment
   const getCardStyle = (index: number) => {
     const rawDiff =
-      ((index - activeIndex + total + Math.floor(total / 2)) % total) -
-      Math.floor(total / 2);
+      ((index - activeIndex + total + Math.floor(total / 2)) % total) - Math.floor(total / 2);
 
     if (isReducedMotion) {
       return {
@@ -210,12 +222,10 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
       switch (rawDiff) {
         case 0: // ACTIVE CENTER (True Middle)
           return {
-            transform:
-              "translate3d(-50%, calc(-50% - 32px), 0px) rotate(0deg) scale(1.02)",
+            transform: "translate3d(-50%, calc(-50% - 32px), 0px) rotate(0deg) scale(1.02)",
             zIndex: 40,
             opacity: 1,
-            boxShadow:
-              "0 32px 64px -16px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 32px 64px -16px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.25)",
             transformOrigin: "50% 115%",
           };
         case -1: // LEFT 1
@@ -223,8 +233,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             transform: `translate3d(calc(-50% - ${step1}px), calc(-50% + 14px), -40px) rotate(-8.5deg) scale(0.92)`,
             zIndex: 30,
             opacity: 0.95,
-            boxShadow:
-              "0 20px 40px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15)",
+            boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15)",
             transformOrigin: "50% 115%",
           };
         case 1: // RIGHT 1
@@ -232,8 +241,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             transform: `translate3d(calc(-50% + ${step1}px), calc(-50% + 14px), -40px) rotate(8.5deg) scale(0.92)`,
             zIndex: 30,
             opacity: 0.95,
-            boxShadow:
-              "0 20px 40px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15)",
+            boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15)",
             transformOrigin: "50% 115%",
           };
         case -2: // FAR LEFT 2
@@ -241,8 +249,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             transform: `translate3d(calc(-50% - ${step2}px), calc(-50% + 42px), -80px) rotate(-16deg) scale(0.84)`,
             zIndex: 20,
             opacity: 0.86,
-            boxShadow:
-              "0 14px 30px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+            boxShadow: "0 14px 30px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
             transformOrigin: "50% 115%",
           };
         case 2: // FAR RIGHT 2
@@ -250,8 +257,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             transform: `translate3d(calc(-50% + ${step2}px), calc(-50% + 42px), -80px) rotate(16deg) scale(0.84)`,
             zIndex: 20,
             opacity: 0.86,
-            boxShadow:
-              "0 14px 30px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+            boxShadow: "0 14px 30px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
             transformOrigin: "50% 115%",
           };
         default:
@@ -269,12 +275,10 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
     switch (rawDiff) {
       case 0: // ACTIVE FRONT
         return {
-          transform:
-            "translate3d(-50%, -50%, 0px) rotate(0deg) scale(1)",
+          transform: "translate3d(-50%, -50%, 0px) rotate(0deg) scale(1)",
           zIndex: 40,
           opacity: 1,
-          boxShadow:
-            "0 28px 56px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.25)",
+          boxShadow: "0 28px 56px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.25)",
           transformOrigin: "50% 50%",
         };
       case -1: // BEHIND LEFT 1
@@ -283,8 +287,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             "translate3d(calc(-50% - 6px), calc(-50% + 3px), -20px) rotate(-2.8deg) scale(0.985)",
           zIndex: 30,
           opacity: 0.96,
-          boxShadow:
-            "0 14px 28px -6px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 14px 28px -6px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
           transformOrigin: "50% 50%",
         };
       case 1: // BEHIND RIGHT 1
@@ -293,8 +296,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             "translate3d(calc(-50% + 6px), calc(-50% + 3px), -20px) rotate(2.8deg) scale(0.985)",
           zIndex: 29,
           opacity: 0.96,
-          boxShadow:
-            "0 14px 28px -6px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 14px 28px -6px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
           transformOrigin: "50% 50%",
         };
       case -2: // BEHIND FAR LEFT 2
@@ -303,8 +305,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             "translate3d(calc(-50% - 12px), calc(-50% + 7px), -40px) rotate(-5deg) scale(0.97)",
           zIndex: 20,
           opacity: 0.9,
-          boxShadow:
-            "0 10px 22px -5px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 10px 22px -5px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08)",
           transformOrigin: "50% 50%",
         };
       case 2: // BEHIND FAR RIGHT 2
@@ -313,8 +314,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             "translate3d(calc(-50% + 12px), calc(-50% + 7px), -40px) rotate(5deg) scale(0.97)",
           zIndex: 19,
           opacity: 0.9,
-          boxShadow:
-            "0 10px 22px -5px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08)",
+          boxShadow: "0 10px 22px -5px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08)",
           transformOrigin: "50% 50%",
         };
       default:
@@ -332,7 +332,11 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     if (activeIndex === index) {
       // Already active: navigate to catalogue route
-      navigate({ to: item.link, search: item.search });
+      if (item.search) {
+        navigate({ to: item.link, search: item.search } as any);
+      } else {
+        navigate({ to: item.link } as any);
+      }
     } else {
       // Bring to center
       setActiveIndex(index);
@@ -371,7 +375,8 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
               EXPLORE OUR CATALOGUE.
             </h2>
             <p className="mt-2 text-sm sm:text-base text-red-50/90 max-w-xl font-sans leading-relaxed">
-              Professional equipment, diagnostic systems, and workshop engineering solutions for modern automotive facilities.
+              Professional equipment, diagnostic systems, and workshop engineering solutions for
+              modern automotive facilities.
             </p>
           </div>
 
@@ -479,7 +484,11 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate({ to: item.link, search: item.search });
+                        if (item.search) {
+                          navigate({ to: item.link, search: item.search } as any);
+                        } else {
+                          navigate({ to: item.link } as any);
+                        }
                       }}
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-zinc-950 text-xs font-bold tracking-tight shadow-lg transition-all hover:bg-zinc-100 hover:scale-105"
                     >
@@ -509,9 +518,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
                     alt={item.title}
                     loading="lazy"
                     className={`h-full w-full object-contain transition-transform duration-500 ${
-                      isCenter
-                        ? "scale-105"
-                        : "mix-blend-multiply scale-95 hover:scale-100"
+                      isCenter ? "scale-105" : "mix-blend-multiply scale-95 hover:scale-100"
                     }`}
                   />
 
@@ -552,9 +559,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
                   {/* Bottom Stats Row */}
                   <div
                     className={`mt-3 pt-2.5 border-t flex items-center justify-between text-xs font-mono font-semibold ${
-                      isCenter
-                        ? "border-zinc-800 text-zinc-300"
-                        : "border-zinc-100 text-zinc-600"
+                      isCenter ? "border-zinc-800 text-zinc-300" : "border-zinc-100 text-zinc-600"
                     }`}
                   >
                     <span>{item.count}</span>
@@ -579,8 +584,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
           {/* Active Product Index Indicator: 01 / 05 */}
           <div className="flex items-center gap-4">
             <span className="font-display text-2xl sm:text-3xl font-bold text-white tracking-wider drop-shadow-xs">
-              0{activeIndex + 1}{" "}
-              <span className="text-red-200/80">/ 0{total}</span>
+              0{activeIndex + 1} <span className="text-red-200/80">/ 0{total}</span>
             </span>
 
             {/* Interactive Dot Selectors */}
@@ -600,7 +604,7 @@ export function CatalogueFanStack({ className = "" }: { className?: string }) {
             </div>
 
             <span className="hidden md:inline-block text-xs font-medium text-white/90 truncate max-w-xs ml-2">
-              {activeCatalogue.title} · {activeCatalogue.subtitle}
+              {activeCatalogue?.title} · {activeCatalogue?.subtitle}
             </span>
           </div>
 

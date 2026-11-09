@@ -25,8 +25,7 @@ export const Route = createFileRoute("/services/book")({
   head: () => ({
     meta: [
       {
-        title:
-          "Book Equipment Demonstration & Engineering Consultation — PAGE International",
+        title: "Book Equipment Demonstration & Engineering Consultation — PAGE International",
       },
       {
         name: "description",
@@ -99,9 +98,7 @@ export function BookConsultation() {
   const search = Route.useSearch();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
-  const [sel, setSel] = useState<string[]>(
-    search.service ? [search.service] : ["lift-demo"]
-  );
+  const [sel, setSel] = useState<string[]>(search.service ? [search.service] : ["lift-demo"]);
 
   const [biz, setBiz] = useState({
     businessName: "",
@@ -151,15 +148,14 @@ export function BookConsultation() {
           </strong>{" "}
           at{" "}
           <strong>
-            {locationType === "hub"
-              ? `${c?.name} (${c?.area})`
-              : `On-site at ${biz.businessName}`}
+            {locationType === "hub" ? `${c?.name} (${c?.area})` : `On-site at ${biz.businessName}`}
           </strong>{" "}
           on{" "}
           <strong>
             {day !== null && days[day]!.toDateString()} at {slot}
           </strong>{" "}
-          has been booked. A PAGE commercial application engineer will call you to confirm demonstration preparations.
+          has been booked. A PAGE commercial application engineer will call you to confirm
+          demonstration preparations.
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -193,9 +189,7 @@ export function BookConsultation() {
             Home
           </Link>
           <span>/</span>
-          <span className="font-semibold text-foreground">
-            Book Equipment Consultation
-          </span>
+          <span className="font-semibold text-foreground">Book Equipment Consultation</span>
         </nav>
       </div>
 
@@ -208,7 +202,8 @@ export function BookConsultation() {
             Schedule Equipment Demonstration or Bay Consultation
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl">
-            Book a demonstration of workshop lifts, tyre changers, and diagnostic computers at our regional equipment hubs, or schedule an on-site engineer visit to your garage facility.
+            Book a demonstration of workshop lifts, tyre changers, and diagnostic computers at our
+            regional equipment hubs, or schedule an on-site engineer visit to your garage facility.
           </p>
         </div>
 
@@ -253,9 +248,7 @@ export function BookConsultation() {
                         key={s.id}
                         type="button"
                         aria-pressed={on}
-                        onClick={() =>
-                          setSel(on ? sel.filter((x) => x !== s.id) : [...sel, s.id])
-                        }
+                        onClick={() => setSel(on ? sel.filter((x) => x !== s.id) : [...sel, s.id])}
                         className={`flex items-start justify-between gap-3 rounded border p-4 text-left transition-all ${
                           on
                             ? "border-primary bg-primary/5 ring-1 ring-primary/40"
@@ -263,9 +256,7 @@ export function BookConsultation() {
                         }`}
                       >
                         <div>
-                          <p className="font-bold text-sm text-foreground">
-                            {s.name}
-                          </p>
+                          <p className="font-bold text-sm text-foreground">{s.name}</p>
                           <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                             {s.desc}
                           </p>
@@ -290,7 +281,8 @@ export function BookConsultation() {
             {step === 1 && (
               <div className="space-y-4">
                 <p className="text-xs text-muted-foreground">
-                  Provide your business details so our engineering desk can tailor the demonstration:
+                  Provide your business details so our engineering desk can tailor the
+                  demonstration:
                 </p>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -304,9 +296,7 @@ export function BookConsultation() {
                       placeholder="e.g. Paramount Auto Center Ltd."
                       className="field"
                       value={biz.businessName}
-                      onChange={(e) =>
-                        setBiz({ ...biz, businessName: e.target.value })
-                      }
+                      onChange={(e) => setBiz({ ...biz, businessName: e.target.value })}
                     />
                   </div>
 
@@ -317,9 +307,7 @@ export function BookConsultation() {
                     <select
                       className="field"
                       value={biz.businessType}
-                      onChange={(e) =>
-                        setBiz({ ...biz, businessType: e.target.value })
-                      }
+                      onChange={(e) => setBiz({ ...biz, businessType: e.target.value })}
                     >
                       <option value="Workshop">Independent Workshop</option>
                       <option value="Service Center">Multi-Bay Service Center</option>
@@ -339,9 +327,7 @@ export function BookConsultation() {
                     <select
                       className="field"
                       value={biz.bays}
-                      onChange={(e) =>
-                        setBiz({ ...biz, bays: e.target.value })
-                      }
+                      onChange={(e) => setBiz({ ...biz, bays: e.target.value })}
                     >
                       <option value="1-2 Bays">1–2 Bays (Small Garage)</option>
                       <option value="3-5 Bays">3–5 Bays (Medium Workshop)</option>
@@ -359,9 +345,7 @@ export function BookConsultation() {
                       placeholder="e.g. Torq 2-Post Lift 4.0T, TC-820 Tyre Changer"
                       className="field"
                       value={biz.equipmentInterest}
-                      onChange={(e) =>
-                        setBiz({ ...biz, equipmentInterest: e.target.value })
-                      }
+                      onChange={(e) => setBiz({ ...biz, equipmentInterest: e.target.value })}
                     />
                   </div>
                 </div>
@@ -480,9 +464,7 @@ export function BookConsultation() {
                         <span className="block text-[10px] uppercase tracking-wider">
                           {d.toLocaleDateString("en-US", { weekday: "short" })}
                         </span>
-                        <span className="mt-1 block font-display text-xl">
-                          {d.getDate()}
-                        </span>
+                        <span className="mt-1 block font-display text-xl">{d.getDate()}</span>
                         <span className="block text-[10px]">
                           {d.toLocaleDateString("en-US", { month: "short" })}
                         </span>
@@ -533,9 +515,7 @@ export function BookConsultation() {
                       placeholder="e.g. Engr. Shafiqul Islam"
                       className="field"
                       value={info.contactPerson}
-                      onChange={(e) =>
-                        setInfo({ ...info, contactPerson: e.target.value })
-                      }
+                      onChange={(e) => setInfo({ ...info, contactPerson: e.target.value })}
                     />
                   </div>
 
@@ -549,9 +529,7 @@ export function BookConsultation() {
                       placeholder="+880 17XXXXXXXX"
                       className="field"
                       value={info.phone}
-                      onChange={(e) =>
-                        setInfo({ ...info, phone: e.target.value })
-                      }
+                      onChange={(e) => setInfo({ ...info, phone: e.target.value })}
                     />
                   </div>
                 </div>
@@ -565,9 +543,7 @@ export function BookConsultation() {
                     placeholder="workshop@company.com"
                     className="field"
                     value={info.email}
-                    onChange={(e) =>
-                      setInfo({ ...info, email: e.target.value })
-                    }
+                    onChange={(e) => setInfo({ ...info, email: e.target.value })}
                   />
                 </div>
 
@@ -580,9 +556,7 @@ export function BookConsultation() {
                     placeholder="Provide details about your workshop power supply (single/three phase), ceiling height, or specific demo requirements..."
                     className="field"
                     value={info.notes}
-                    onChange={(e) =>
-                      setInfo({ ...info, notes: e.target.value })
-                    }
+                    onChange={(e) => setInfo({ ...info, notes: e.target.value })}
                   />
                 </div>
               </div>
@@ -620,9 +594,14 @@ export function BookConsultation() {
                         phone: info.phone,
                         email: info.email,
                         serviceId: sel[0] || "consultation",
-                        serviceName: chosenServices.map((s) => s.name).join(", ") || "General Equipment Consultation",
+                        serviceName:
+                          chosenServices.map((s) => s.name).join(", ") ||
+                          "General Equipment Consultation",
                         centerId: locationType === "hub" ? center : "onsite",
-                        centerName: locationType === "hub" ? (c?.name || "PAGE Equipment Hub") : `On-site: ${onsiteAddress || biz.businessName}`,
+                        centerName:
+                          locationType === "hub"
+                            ? c?.name || "PAGE Equipment Hub"
+                            : `On-site: ${onsiteAddress || biz.businessName}`,
                         preferredDate: `${day !== null ? days[day]!.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)} (${slot})`,
                         notes: info.notes,
                       });
@@ -682,8 +661,7 @@ export function BookConsultation() {
                   Scheduled Time:
                 </span>
                 <span className="text-foreground">
-                  {day !== null ? days[day]!.toDateString() : "Date not set"} at{" "}
-                  {slot}
+                  {day !== null ? days[day]!.toDateString() : "Date not set"} at {slot}
                 </span>
               </div>
             </div>

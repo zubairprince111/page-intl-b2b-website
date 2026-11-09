@@ -14,6 +14,7 @@ import {
   ArrowDownRight,
   DollarSign,
   Activity,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   AreaChart,
@@ -34,15 +35,7 @@ export const Route = createFileRoute("/admin/")({
   }),
 });
 
-const PIE_COLORS = [
-  "#10b981",
-  "#3b82f6",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ef4444",
-  "#06b6d4",
-  "#f97316",
-];
+const PIE_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4", "#f97316"];
 
 function StatCard({
   icon: Icon,
@@ -73,9 +66,7 @@ function StatCard({
         {trend && (
           <span
             className={`flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-              trendUp
-                ? "bg-emerald-500/10 text-emerald-400"
-                : "bg-red-500/10 text-red-400"
+              trendUp ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
             }`}
           >
             {trendUp ? (
@@ -107,9 +98,7 @@ function AdminDashboard() {
       <div className="p-6 lg:p-8 space-y-8 max-w-[1440px]">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            Dashboard
-          </h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard</h1>
           <p className="text-[13px] text-zinc-500 mt-1">
             Overview of your store, inventory, and operations.
           </p>
@@ -214,9 +203,7 @@ function AdminDashboard() {
 
           {/* Category Distribution */}
           <div className="bg-[#232323] border border-white/[0.06] rounded-xl p-5">
-            <h3 className="text-[14px] font-semibold text-white mb-1">
-              Inventory by Category
-            </h3>
+            <h3 className="text-[14px] font-semibold text-white mb-1">Inventory by Category</h3>
             <p className="text-[11px] text-zinc-500 mb-4">Product distribution</p>
             <div className="h-[180px] flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
@@ -277,7 +264,10 @@ function AdminDashboard() {
             </div>
             <div className="divide-y divide-white/[0.04]">
               {recentQuotes.map((q) => (
-                <div key={q.id} className="px-5 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition-colors">
+                <div
+                  key={q.id}
+                  className="px-5 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition-colors"
+                >
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-medium text-zinc-200 truncate">
                       {q.companyName}
@@ -289,10 +279,10 @@ function AdminDashboard() {
                       q.status === "pending"
                         ? "bg-amber-500/15 text-amber-400"
                         : q.status === "replied"
-                        ? "bg-blue-500/15 text-blue-400"
-                        : q.status === "accepted"
-                        ? "bg-emerald-500/15 text-emerald-400"
-                        : "bg-red-500/15 text-red-400"
+                          ? "bg-blue-500/15 text-blue-400"
+                          : q.status === "accepted"
+                            ? "bg-emerald-500/15 text-emerald-400"
+                            : "bg-red-500/15 text-red-400"
                     }`}
                   >
                     {q.status}
@@ -318,7 +308,10 @@ function AdminDashboard() {
             </div>
             <div className="divide-y divide-white/[0.04]">
               {recentBookings.map((b) => (
-                <div key={b.id} className="px-5 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition-colors">
+                <div
+                  key={b.id}
+                  className="px-5 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition-colors"
+                >
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-medium text-zinc-200 truncate">
                       {b.companyName}
@@ -326,17 +319,20 @@ function AdminDashboard() {
                     <p className="text-[11px] text-zinc-500 truncate">{b.serviceName}</p>
                   </div>
                   <span className="text-[11px] text-zinc-500 shrink-0">
-                    {new Date(b.preferredDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
+                    {new Date(b.preferredDate).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                    })}
                   </span>
                   <span
                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
                       b.status === "pending"
                         ? "bg-amber-500/15 text-amber-400"
                         : b.status === "confirmed"
-                        ? "bg-emerald-500/15 text-emerald-400"
-                        : b.status === "completed"
-                        ? "bg-blue-500/15 text-blue-400"
-                        : "bg-red-500/15 text-red-400"
+                          ? "bg-emerald-500/15 text-emerald-400"
+                          : b.status === "completed"
+                            ? "bg-blue-500/15 text-blue-400"
+                            : "bg-red-500/15 text-red-400"
                     }`}
                   >
                     {b.status}
@@ -351,11 +347,36 @@ function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "Manage Inventory", desc: "Add, edit, or restock products", icon: Package, href: "/admin/inventory", color: "#10b981" },
-            { label: "Reply to Quotes", desc: `${stats.pendingQuotes} pending responses`, icon: FileText, href: "/admin/quotes", color: "#f59e0b" },
-            { label: "Confirm Bookings", desc: `${stats.pendingBookings} awaiting action`, icon: CalendarCheck, href: "/admin/bookings", color: "#8b5cf6" },
+            {
+              label: "Manage Inventory",
+              desc: "Add, edit, or restock products",
+              icon: Package,
+              href: "/admin/inventory",
+              color: "#10b981",
+            },
+            {
+              label: "Featured Banners",
+              desc: `${stats.activeBanners ?? 4} active promotional slides`,
+              icon: ImageIcon,
+              href: "/admin/banners",
+              color: "#06b6d4",
+            },
+            {
+              label: "Reply to Quotes",
+              desc: `${stats.pendingQuotes} pending responses`,
+              icon: FileText,
+              href: "/admin/quotes",
+              color: "#f59e0b",
+            },
+            {
+              label: "Confirm Bookings",
+              desc: `${stats.pendingBookings} awaiting action`,
+              icon: CalendarCheck,
+              href: "/admin/bookings",
+              color: "#8b5cf6",
+            },
           ].map((action) => (
             <a
               key={action.label}

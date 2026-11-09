@@ -196,17 +196,13 @@ export function Solutions() {
               <span className="text-[11px] font-bold uppercase tracking-widest text-primary">
                 {s.subtitle}
               </span>
-              <h2 className="display-lg mt-2 text-foreground font-bold">
-                {s.name}
-              </h2>
+              <h2 className="display-lg mt-2 text-foreground font-bold">{s.name}</h2>
               <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {s.desc}
               </p>
 
               <div className="mt-4 rounded bg-secondary/60 p-3 text-xs">
-                <span className="font-bold text-foreground">
-                  Target Businesses:{" "}
-                </span>
+                <span className="font-bold text-foreground">Target Businesses: </span>
                 <span className="text-muted-foreground">{s.target}</span>
               </div>
 
@@ -243,10 +239,7 @@ export function Solutions() {
       </section>
 
       {/* Solutions Conversion Banner */}
-      <section
-        id="inquiry"
-        className="bg-ink text-ink-foreground py-16 border-t border-ink-border"
-      >
+      <section id="inquiry" className="bg-ink text-ink-foreground py-16 border-t border-ink-border">
         <div className="container-page text-center max-w-3xl">
           <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-primary block">
             Commercial Project Consultation
@@ -255,8 +248,8 @@ export function Solutions() {
             CONSULT WITH A PAGE WORKSHOP ENGINEER
           </h2>
           <p className="mt-3 text-sm text-ink-muted leading-relaxed max-w-xl mx-auto">
-            Discuss machinery specifications, bay layout blueprints, or bulk container
-            supply contracts with our commercial equipment team.
+            Discuss machinery specifications, bay layout blueprints, or bulk container supply
+            contracts with our commercial equipment team.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link

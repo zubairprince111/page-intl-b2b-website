@@ -1,0 +1,96 @@
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Reverse Proxy & Automatic HTTPS (Caddy 2)
+  # ----------------------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    container_name: page_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-:80}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@pageinternational.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - uploads_data:/app/public/uploads:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - page_network
+
+  # ----------------------------------------------------------------------------
+  # 2. PAGE International B2B Web Application (Node.js Nitro SSR)
+  # ----------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: page_app
+    restart: unless-stopped
+    expose:
+      - "8080"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      NITRO_PORT: 8080
+      DATABASE_URL: postgresql://${POSTGRES_USER:-page_admin}:${POSTGRES_PASSWORD:-replace_with_strong_password}@postgres:5432/${POSTGRES_DB:-page_international}
+      AUTH_SECRET: ${AUTH_SECRET:-replace_with_random_secret}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-console}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@pageinternational.com}
+    volumes:
+      - uploads_data:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - page_network
+
+  # ----------------------------------------------------------------------------
+  # 3. PostgreSQL Database Service
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: page_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-page_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-replace_with_strong_password}
+      POSTGRES_DB: ${POSTGRES_DB:-page_international}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-page_admin} -d ${POSTGRES_DB:-page_international}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - page_network
+
+volumes:
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  page_network:
+    driver: bridge

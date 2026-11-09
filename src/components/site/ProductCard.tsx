@@ -4,13 +4,7 @@ import { Check, Plus, Wrench, Zap } from "lucide-react";
 import { type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
 
-export function ProductCard({
-  p,
-  onQuote,
-}: {
-  p: Product;
-  onQuote?: (p: Product) => void;
-}) {
+export function ProductCard({ p, onQuote }: { p: Product; onQuote?: (p: Product) => void }) {
   const { add, lines } = useCart();
   const [justAdded, setJustAdded] = useState(false);
   const out = p.stock === "Out of stock";

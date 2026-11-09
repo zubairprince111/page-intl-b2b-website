@@ -69,8 +69,7 @@ export const Route = createFileRoute("/shop/")({
       },
       {
         property: "og:description",
-        content:
-          "Commercial automotive B2B catalog with 4W, 2W, 3W & EV mobility platforms.",
+        content: "Commercial automotive B2B catalog with 4W, 2W, 3W & EV mobility platforms.",
       },
     ],
   }),
@@ -146,29 +145,19 @@ export function Shop() {
 
       // Vehicle compatibility filter
       if (vehicle) {
-        const v =
-          vehicle.split(" ")[1]?.toLowerCase() || vehicle.toLowerCase();
+        const v = vehicle.split(" ")[1]?.toLowerCase() || vehicle.toLowerCase();
         const matchesFit = p.fits.some(
           (f) =>
             f.toLowerCase().includes(v) ||
             f.toLowerCase().includes("universal") ||
-            f.toLowerCase().includes("most")
+            f.toLowerCase().includes("most"),
         );
         if (!matchesFit) return false;
       }
 
       return true;
     });
-  }, [
-    allProducts,
-    q,
-    cat,
-    vehicle,
-    selectedBrand,
-    inStock,
-    searchType,
-    searchMobility,
-  ]);
+  }, [allProducts, q, cat, vehicle, selectedBrand, inStock, searchType, searchMobility]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,7 +190,9 @@ export function Shop() {
       {/* Search Bar & Video Section */}
       <section className="pt-20 sm:pt-24 pb-2 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-4 sm:space-y-5">
         <h1 className="sr-only">
-          {cat ? `${cat} — Automotive Equipment & Spare Parts` : "Automotive Equipment & Spare Parts"}
+          {cat
+            ? `${cat} — Automotive Equipment & Spare Parts`
+            : "Automotive Equipment & Spare Parts"}
         </h1>
 
         {/* Centered Search Bar: Under the navbar, above the video */}
@@ -292,13 +283,13 @@ export function Shop() {
                   onClick={() => setInStock(!inStock)}
                   className={cn(
                     "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                    inStock ? "bg-primary" : "bg-zinc-300 dark:bg-zinc-700"
+                    inStock ? "bg-primary" : "bg-zinc-300 dark:bg-zinc-700",
                   )}
                 >
                   <span
                     className={cn(
                       "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out",
-                      inStock ? "translate-x-4" : "translate-x-0"
+                      inStock ? "translate-x-4" : "translate-x-0",
                     )}
                   />
                 </button>
@@ -312,9 +303,7 @@ export function Shop() {
                   </span>
                   {searchMobility && (
                     <button
-                      onClick={() =>
-                        nav({ search: (s: S) => ({ ...s, mobility: undefined }) })
-                      }
+                      onClick={() => nav({ search: (s: S) => ({ ...s, mobility: undefined }) })}
                       className="text-[10px] font-semibold text-primary hover:underline cursor-pointer"
                     >
                       Clear
@@ -347,16 +336,18 @@ export function Shop() {
                           "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-center font-medium transition-all cursor-pointer border text-xs gap-0.5",
                           active
                             ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white shadow-xs font-bold"
-                            : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 hover:border-zinc-300"
+                            : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 hover:border-zinc-300",
                         )}
                       >
                         <Icon
                           className={cn(
                             "h-3.5 w-3.5",
-                            active ? "text-primary" : "text-muted-foreground"
+                            active ? "text-primary" : "text-muted-foreground",
                           )}
                         />
-                        <span className="text-[10.5px] leading-tight font-semibold">{item.label}</span>
+                        <span className="text-[10.5px] leading-tight font-semibold">
+                          {item.label}
+                        </span>
                       </button>
                     );
                   })}
@@ -379,14 +370,12 @@ export function Shop() {
                       <button
                         key={item.label}
                         type="button"
-                        onClick={() =>
-                          nav({ search: (s: S) => ({ ...s, type: item.id }) })
-                        }
+                        onClick={() => nav({ search: (s: S) => ({ ...s, type: item.id }) })}
                         className={cn(
                           "py-1 rounded-lg font-semibold transition-all cursor-pointer text-center truncate px-1 text-[11px]",
                           active
                             ? "bg-white dark:bg-zinc-900 text-foreground shadow-xs"
-                            : "text-muted-foreground hover:text-foreground"
+                            : "text-muted-foreground hover:text-foreground",
                         )}
                       >
                         {item.label}
@@ -399,14 +388,15 @@ export function Shop() {
               {/* 4. Category Dropdown (Compact, No Scroll) */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label htmlFor="filter-cat" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <label
+                    htmlFor="filter-cat"
+                    className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+                  >
                     Category
                   </label>
                   {cat && (
                     <button
-                      onClick={() =>
-                        nav({ search: (s: S) => ({ ...s, cat: undefined }) })
-                      }
+                      onClick={() => nav({ search: (s: S) => ({ ...s, cat: undefined }) })}
                       className="text-[10px] font-semibold text-primary hover:underline cursor-pointer"
                     >
                       Clear
@@ -436,7 +426,10 @@ export function Shop() {
               {/* 5. Manufacturer Brand Dropdown (Compact, No Scroll) */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label htmlFor="filter-brand" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <label
+                    htmlFor="filter-brand"
+                    className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+                  >
                     Brand
                   </label>
                   {selectedBrand && (
@@ -471,9 +464,7 @@ export function Shop() {
                 <div className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg bg-primary/5 border border-primary/20">
                   <span className="font-semibold text-primary truncate text-[11px]">{vehicle}</span>
                   <button
-                    onClick={() =>
-                      nav({ search: (s: S) => ({ ...s, vehicle: undefined }) })
-                    }
+                    onClick={() => nav({ search: (s: S) => ({ ...s, vehicle: undefined }) })}
                     className="text-[10px] text-muted-foreground hover:text-foreground ml-2 shrink-0 cursor-pointer"
                   >
                     Clear
@@ -493,39 +484,28 @@ export function Shop() {
                 {searchMobility && (
                   <Chip
                     label={`Platform: ${searchMobility}`}
-                    onClear={() =>
-                      nav({ search: (s: S) => ({ ...s, mobility: undefined }) })
-                    }
+                    onClear={() => nav({ search: (s: S) => ({ ...s, mobility: undefined }) })}
                   />
                 )}
                 {vehicle && (
                   <Chip
                     label={`Fits: ${vehicle}`}
-                    onClear={() =>
-                      nav({ search: (s: S) => ({ ...s, vehicle: undefined }) })
-                    }
+                    onClear={() => nav({ search: (s: S) => ({ ...s, vehicle: undefined }) })}
                   />
                 )}
                 {cat && (
                   <Chip
                     label={`Category: ${cat}`}
-                    onClear={() =>
-                      nav({ search: (s: S) => ({ ...s, cat: undefined }) })
-                    }
+                    onClear={() => nav({ search: (s: S) => ({ ...s, cat: undefined }) })}
                   />
                 )}
                 {selectedBrand && (
-                  <Chip
-                    label={`Brand: ${selectedBrand}`}
-                    onClear={() => setSelectedBrand("")}
-                  />
+                  <Chip label={`Brand: ${selectedBrand}`} onClear={() => setSelectedBrand("")} />
                 )}
                 {searchType && (
                   <Chip
                     label={`Type: ${searchType === "equipment" ? "Machinery" : "Parts"}`}
-                    onClear={() =>
-                      nav({ search: (s: S) => ({ ...s, type: undefined }) })
-                    }
+                    onClear={() => nav({ search: (s: S) => ({ ...s, type: undefined }) })}
                   />
                 )}
                 {q && (
@@ -544,19 +524,15 @@ export function Shop() {
             {filteredList.length > 0 ? (
               <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {filteredList.map((p) => (
-                  <ProductCard
-                    key={p.slug}
-                    p={p}
-                    onQuote={setActiveQuoteProduct}
-                  />
+                  <ProductCard key={p.slug} p={p} onQuote={setActiveQuoteProduct} />
                 ))}
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-border py-20 text-center bg-card/50">
                 <h3 className="display-md text-foreground">No Products Found</h3>
                 <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-                  We could not find any products matching your current combination
-                  of filters. Try clearing some filters or searching by a broader term.
+                  We could not find any products matching your current combination of filters. Try
+                  clearing some filters or searching by a broader term.
                 </p>
                 <div className="mt-6 flex justify-center gap-3">
                   <button
@@ -621,13 +597,13 @@ export function Shop() {
                 onClick={() => setInStock(!inStock)}
                 className={cn(
                   "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  inStock ? "bg-primary" : "bg-zinc-300 dark:bg-zinc-700"
+                  inStock ? "bg-primary" : "bg-zinc-300 dark:bg-zinc-700",
                 )}
               >
                 <span
                   className={cn(
                     "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out",
-                    inStock ? "translate-x-4" : "translate-x-0"
+                    inStock ? "translate-x-4" : "translate-x-0",
                   )}
                 />
               </button>
@@ -641,9 +617,7 @@ export function Shop() {
                 </span>
                 {searchMobility && (
                   <button
-                    onClick={() =>
-                      nav({ search: (s: S) => ({ ...s, mobility: undefined }) })
-                    }
+                    onClick={() => nav({ search: (s: S) => ({ ...s, mobility: undefined }) })}
                     className="text-[10px] font-semibold text-primary hover:underline cursor-pointer"
                   >
                     Clear
@@ -676,16 +650,18 @@ export function Shop() {
                         "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-center font-medium transition-all cursor-pointer border text-xs gap-0.5",
                         active
                           ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white shadow-xs font-bold"
-                          : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 hover:border-zinc-300"
+                          : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 hover:border-zinc-300",
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-3.5 w-3.5",
-                          active ? "text-primary" : "text-muted-foreground"
+                          active ? "text-primary" : "text-muted-foreground",
                         )}
                       />
-                      <span className="text-[10.5px] leading-tight font-semibold">{item.label}</span>
+                      <span className="text-[10.5px] leading-tight font-semibold">
+                        {item.label}
+                      </span>
                     </button>
                   );
                 })}
@@ -708,14 +684,12 @@ export function Shop() {
                     <button
                       key={item.label}
                       type="button"
-                      onClick={() =>
-                        nav({ search: (s: S) => ({ ...s, type: item.id }) })
-                      }
+                      onClick={() => nav({ search: (s: S) => ({ ...s, type: item.id }) })}
                       className={cn(
                         "py-1 rounded-lg font-semibold transition-all cursor-pointer text-center truncate px-1 text-[11px]",
                         active
                           ? "bg-white dark:bg-zinc-900 text-foreground shadow-xs"
-                          : "text-muted-foreground hover:text-foreground"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {item.label}
@@ -728,14 +702,15 @@ export function Shop() {
             {/* 4. Mobile Category Dropdown */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="m-filter-cat" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label
+                  htmlFor="m-filter-cat"
+                  className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+                >
                   Category
                 </label>
                 {cat && (
                   <button
-                    onClick={() =>
-                      nav({ search: (s: S) => ({ ...s, cat: undefined }) })
-                    }
+                    onClick={() => nav({ search: (s: S) => ({ ...s, cat: undefined }) })}
                     className="text-[10px] font-semibold text-primary hover:underline cursor-pointer"
                   >
                     Clear
@@ -765,7 +740,10 @@ export function Shop() {
             {/* 5. Mobile Brand Dropdown */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="m-filter-brand" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <label
+                  htmlFor="m-filter-brand"
+                  className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+                >
                   Brand
                 </label>
                 {selectedBrand && (
@@ -809,10 +787,7 @@ export function Shop() {
 
       {/* Direct Product Quotation Modal */}
       {activeQuoteProduct && (
-        <QuoteModal
-          product={activeQuoteProduct}
-          onClose={() => setActiveQuoteProduct(null)}
-        />
+        <QuoteModal product={activeQuoteProduct} onClose={() => setActiveQuoteProduct(null)} />
       )}
     </div>
   );

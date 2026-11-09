@@ -12,5 +12,9 @@ export const getRouter = () => {
     defaultPreloadStaleTime: 0,
   });
 
+  if (typeof window !== "undefined") {
+    (window as any).__TSR_ROUTER__ = router;
+  }
+
   return router;
 };

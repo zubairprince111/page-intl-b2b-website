@@ -1,10 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import {
-  getBookings,
-  updateBookingStatus,
-  type ConsultBooking,
-} from "@/lib/admin-data";
+import { getBookings, updateBookingStatus, type ConsultBooking } from "@/lib/admin-data";
 import {
   CalendarCheck,
   Search,
@@ -62,7 +58,9 @@ function AdminBookings() {
       cancelled: <XCircle className="h-3 w-3" />,
     };
     return (
-      <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${styles[status]}`}>
+      <span
+        className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${styles[status]}`}
+      >
         {icons[status]}
         {status}
       </span>
@@ -131,9 +129,7 @@ function AdminBookings() {
                     <CalendarCheck className="h-5 w-5 text-violet-400" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-white truncate">
-                      {b.companyName}
-                    </p>
+                    <p className="text-[13px] font-semibold text-white truncate">{b.companyName}</p>
                     <p className="text-[11px] text-zinc-500 truncate">{b.contactName}</p>
                   </div>
                 </div>

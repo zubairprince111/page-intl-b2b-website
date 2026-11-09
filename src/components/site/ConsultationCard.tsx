@@ -8,5 +8,5 @@ interface ConsultationCardProps {
 }
 
 export function ConsultationCard({ className }: ConsultationCardProps) {
-  return <ConsultationBanner className={className} />;
+  return className ? <ConsultationBanner className={className} /> : <ConsultationBanner />;
 }

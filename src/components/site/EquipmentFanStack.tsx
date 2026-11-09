@@ -12,12 +12,12 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
 
   // Curate 5 flagship industrial equipment items from real product dataset
   const equipmentItems: Product[] = [
-    products.find((p) => p.slug === "heavy-duty-2-post-lift-4t") || products[0],
-    products.find((p) => p.slug === "pro-tyre-changer-assist-arm") || products[1],
-    products.find((p) => p.slug === "digital-wheel-balancer-laser") || products[2],
-    products.find((p) => p.slug === "rotary-screw-air-compressor-10hp") || products[3],
-    products.find((p) => p.slug === "ev-battery-pack-diagnostic-analyzer") || products[4],
-  ];
+    products.find((p) => p.slug === "heavy-duty-2-post-lift-4t") ?? products[0]!,
+    products.find((p) => p.slug === "pro-tyre-changer-assist-arm") ?? products[1]!,
+    products.find((p) => p.slug === "digital-wheel-balancer-laser") ?? products[2]!,
+    products.find((p) => p.slug === "rotary-screw-air-compressor-10hp") ?? products[3]!,
+    products.find((p) => p.slug === "ev-battery-pack-diagnostic-analyzer") ?? products[4]!,
+  ].filter((p): p is Product => Boolean(p));
 
   // Initial active card is center item (index 0: Vehicle Lift, or index 2)
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -45,12 +45,14 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
 
   // Touch Swipe handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
+    if (e.touches[0]) setTouchStartX(e.touches[0].clientX);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX === null) return;
-    const touchEndX = e.changedTouches[0].clientX;
+    const touchEnd = e.changedTouches[0];
+    if (!touchEnd) return;
+    const touchEndX = touchEnd.clientX;
     const diff = touchEndX - touchStartX;
     if (Math.abs(diff) > 45) {
       if (diff < 0) {
@@ -65,7 +67,8 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
   // Compute balanced circular fan offset for each card relative to activeIndex
   const getCardStyle = (index: number) => {
     // Symmetrical cyclic difference: -2, -1, 0, 1, 2
-    const rawDiff = ((index - activeIndex + total + Math.floor(total / 2)) % total) - Math.floor(total / 2);
+    const rawDiff =
+      ((index - activeIndex + total + Math.floor(total / 2)) % total) - Math.floor(total / 2);
 
     if (isReducedMotion) {
       return {
@@ -87,7 +90,8 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
         };
       case -1: // LEFT 1
         return {
-          transform: "translateX(calc(-52% - 20px)) translateY(12px) translateZ(-60px) rotate(-8deg) scale(0.88)",
+          transform:
+            "translateX(calc(-52% - 20px)) translateY(12px) translateZ(-60px) rotate(-8deg) scale(0.88)",
           zIndex: 25,
           opacity: 0.88,
           filter: "brightness(90%)",
@@ -95,7 +99,8 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
         };
       case 1: // RIGHT 1
         return {
-          transform: "translateX(calc(52% + 20px)) translateY(12px) translateZ(-60px) rotate(8deg) scale(0.88)",
+          transform:
+            "translateX(calc(52% + 20px)) translateY(12px) translateZ(-60px) rotate(8deg) scale(0.88)",
           zIndex: 25,
           opacity: 0.88,
           filter: "brightness(90%)",
@@ -103,7 +108,8 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
         };
       case -2: // LEFT 2
         return {
-          transform: "translateX(calc(-98% - 30px)) translateY(32px) translateZ(-120px) rotate(-14deg) scale(0.78)",
+          transform:
+            "translateX(calc(-98% - 30px)) translateY(32px) translateZ(-120px) rotate(-14deg) scale(0.78)",
           zIndex: 15,
           opacity: 0.68,
           filter: "brightness(78%)",
@@ -111,7 +117,8 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
         };
       case 2: // RIGHT 2
         return {
-          transform: "translateX(calc(98% + 30px)) translateY(32px) translateZ(-120px) rotate(14deg) scale(0.78)",
+          transform:
+            "translateX(calc(98% + 30px)) translateY(32px) translateZ(-120px) rotate(14deg) scale(0.78)",
           zIndex: 15,
           opacity: 0.68,
           filter: "brightness(78%)",
@@ -136,7 +143,7 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
     }
   };
 
-  const activeProduct = equipmentItems[activeIndex];
+  const activeProduct = equipmentItems[activeIndex] ?? equipmentItems[0]!;
 
   return (
     <section
@@ -161,11 +168,10 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               <span>EQUIPMENT / 01 · B2B WORKSHOP SHOWCASE</span>
             </div>
-            <h2 className="display-lg text-white tracking-tight">
-              EXPLORE OUR EQUIPMENT.
-            </h2>
+            <h2 className="display-lg text-white tracking-tight">EXPLORE OUR EQUIPMENT.</h2>
             <p className="mt-2 text-sm sm:text-base text-zinc-400 max-w-xl font-sans">
-              Professional machinery, lifting platforms, and diagnostic solutions engineered for modern automotive workshops.
+              Professional machinery, lifting platforms, and diagnostic solutions engineered for
+              modern automotive workshops.
             </p>
           </div>
 
@@ -309,9 +315,7 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
                 </div>
 
                 {/* Subtle PAGE Red Bottom Accent Line on Active */}
-                {isCenter && (
-                  <div className="h-0.5 w-full bg-primary rounded-b-sm" />
-                )}
+                {isCenter && <div className="h-0.5 w-full bg-primary rounded-b-sm" />}
               </div>
             );
           })}

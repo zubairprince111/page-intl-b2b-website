@@ -37,7 +37,7 @@ export const Route = createFileRoute("/cart")({
 });
 
 export function Cart() {
-  const { lines, setQty, remove, clear } = useCart();
+  const { lines, setQty, remove, clear, isLoaded } = useCart();
   const [submitted, setSubmitted] = useState(false);
   const [refId, setRefId] = useState("");
   const [formData, setFormData] = useState({
@@ -116,9 +116,7 @@ export function Cart() {
             Shop
           </Link>
           <span>/</span>
-          <span className="font-semibold text-foreground">
-            Quotation Cart (RFQ)
-          </span>
+          <span className="font-semibold text-foreground">Quotation Cart (RFQ)</span>
         </nav>
       </div>
 
@@ -131,9 +129,7 @@ export function Cart() {
                 B2B Procurement Request
               </span>
             </div>
-            <h1 className="display-lg text-foreground font-bold mt-1">
-              Commercial Quotation Cart
-            </h1>
+            <h1 className="display-lg text-foreground font-bold mt-1">Commercial Quotation Cart</h1>
           </div>
           <span className="text-xs font-semibold text-muted-foreground bg-secondary/80 px-3 py-1 rounded-full w-fit">
             {lines.length} {lines.length === 1 ? "Product" : "Products"} ({totalUnits} total units)
@@ -152,7 +148,11 @@ export function Cart() {
             </h2>
 
             <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Your inquiry for <strong className="text-foreground">{lines.length} line items ({totalUnits} total units)</strong> has been logged under Reference ID:{" "}
+              Your inquiry for{" "}
+              <strong className="text-foreground">
+                {lines.length} line items ({totalUnits} total units)
+              </strong>{" "}
+              has been logged under Reference ID:{" "}
               <span className="font-mono font-bold text-primary">{refId}</span>.
             </p>
 
@@ -177,7 +177,10 @@ export function Cart() {
                 </span>
                 <ul className="space-y-1.5 divide-y divide-border/60">
                   {lines.map((l) => (
-                    <li key={l.slug} className="flex justify-between items-center pt-1.5 text-[11px]">
+                    <li
+                      key={l.slug}
+                      className="flex justify-between items-center pt-1.5 text-[11px]"
+                    >
                       <span className="truncate max-w-[260px] text-foreground font-medium">
                         {l.product.name}
                       </span>
@@ -191,7 +194,8 @@ export function Cart() {
             </div>
 
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Our B2B commercial engineering department will compile your official price quotation, volume rebate tier, and pro-forma invoice within 2–4 business hours.
+              Our B2B commercial engineering department will compile your official price quotation,
+              volume rebate tier, and pro-forma invoice within 2–4 business hours.
             </p>
 
             <div className="pt-2 flex flex-wrap justify-center gap-3">
@@ -210,6 +214,14 @@ export function Cart() {
               </Link>
             </div>
           </div>
+        ) : !isLoaded ? (
+          /* Loading State while reading local storage */
+          <div className="mt-12 rounded-3xl border border-border/80 py-24 text-center bg-card shadow-xs">
+            <div className="animate-spin h-7 w-7 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+            <p className="text-xs text-muted-foreground font-mono">
+              Restoring your quotation cart...
+            </p>
+          </div>
         ) : !lines.length ? (
           /* Empty State */
           <div className="mt-12 rounded-3xl border border-dashed border-border py-24 text-center bg-card">
@@ -218,7 +230,8 @@ export function Cart() {
             </span>
             <h2 className="display-md text-foreground">Your Quotation Cart is Empty</h2>
             <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-              You have not added any automotive spare parts or garage machinery to your quotation list yet. Add products to request combined pricing and pro-forma invoices.
+              You have not added any automotive spare parts or garage machinery to your quotation
+              list yet. Add products to request combined pricing and pro-forma invoices.
             </p>
             <div className="mt-8 flex justify-center gap-3">
               <Link
@@ -358,7 +371,8 @@ export function Cart() {
                   Request Commercial Pricing
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Admin will calculate exact bulk pricing, tax invoices, and shipping estimates for all {lines.length} items.
+                  Admin will calculate exact bulk pricing, tax invoices, and shipping estimates for
+                  all {lines.length} items.
                 </p>
               </div>
 
@@ -373,9 +387,7 @@ export function Cart() {
                     placeholder="e.g. Dhaka Premier Motors Ltd."
                     className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     value={formData.companyName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, companyName: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                   />
                 </div>
 
@@ -389,9 +401,7 @@ export function Cart() {
                       placeholder="Engineer / Manager"
                       className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       value={formData.contactName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, contactName: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
                     />
                   </div>
 
@@ -405,9 +415,7 @@ export function Cart() {
                       placeholder="+880 17XX-XXXXXX"
                       className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     />
                   </div>
                 </div>
@@ -422,9 +430,7 @@ export function Cart() {
                       placeholder="procurement@corp.com"
                       className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
                   </div>
 
@@ -435,9 +441,7 @@ export function Cart() {
                     <select
                       className="w-full h-9.5 px-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     >
                       <option value="Dhaka">Dhaka Division</option>
                       <option value="Chittagong">Chittagong Division</option>
@@ -458,9 +462,7 @@ export function Cart() {
                     placeholder="Specific delivery timeline, foundation bolt specs, or power requirements..."
                     className="w-full p-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
                     value={formData.notes}
-                    onChange={(e) =>
-                      setFormData({ ...formData, notes: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   />
                 </div>
 
@@ -471,7 +473,9 @@ export function Cart() {
                   </div>
                   <div className="flex justify-between">
                     <span>Total Quantity:</span>
-                    <span className="font-mono font-semibold text-foreground">{totalUnits} units</span>
+                    <span className="font-mono font-semibold text-foreground">
+                      {totalUnits} units
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Quotation Turnaround:</span>

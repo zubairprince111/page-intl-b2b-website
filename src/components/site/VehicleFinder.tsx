@@ -14,7 +14,7 @@ const MOBILITY_OPTIONS: { id: MobilityType; label: string; icon: any }[] = [
 export function VehicleFinder({ dark = false }: { dark?: boolean }) {
   const { vehicle, setVehicle } = useCart();
   const [platform, setPlatform] = useState<MobilityType>(
-    (vehicle?.platform as MobilityType) || "4-Wheeler"
+    (vehicle?.platform as MobilityType) || "4-Wheeler",
   );
   const [make, setMake] = useState(vehicle?.make ?? "");
   const [model, setModel] = useState(vehicle?.model ?? "");
@@ -25,7 +25,7 @@ export function VehicleFinder({ dark = false }: { dark?: boolean }) {
   const currentPlatformMakes = vehiclePlatformData[platform] ?? {};
   const makes = Object.keys(currentPlatformMakes);
   const models = make ? Object.keys(currentPlatformMakes[make] ?? {}) : [];
-  const engines = make && model ? currentPlatformMakes[make]?.[model] ?? [] : [];
+  const engines = make && model ? (currentPlatformMakes[make]?.[model] ?? []) : [];
   const ready = make && model;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -98,8 +98,8 @@ export function VehicleFinder({ dark = false }: { dark?: boolean }) {
                   active
                     ? "bg-primary text-white border-primary shadow-sm"
                     : dark
-                    ? "border-ink-border bg-ink-1 hover:border-muted-foreground/50 text-ink-foreground"
-                    : "border-border bg-background hover:border-foreground/30 text-foreground"
+                      ? "border-ink-border bg-ink-1 hover:border-muted-foreground/50 text-ink-foreground"
+                      : "border-border bg-background hover:border-foreground/30 text-foreground"
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />

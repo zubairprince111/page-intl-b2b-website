@@ -15,12 +15,18 @@ import {
   Menu,
   X,
   ExternalLink,
+  Image as ImageIcon,
+  FolderOpen,
+  Newspaper,
 } from "lucide-react";
 import { getAdminStats, getAuthAdminUser, logoutAdmin, type AdminUser } from "@/lib/admin-data";
 
 const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
   { to: "/admin/inventory", icon: Package, label: "Inventory" },
+  { to: "/admin/banners", icon: ImageIcon, label: "Banners" },
+  { to: "/admin/media", icon: FolderOpen, label: "Media Library" },
+  { to: "/admin/updates", icon: Newspaper, label: "Field Updates" },
   { to: "/admin/users", icon: Users, label: "Users" },
   { to: "/admin/quotes", icon: FileText, label: "Quotations" },
   { to: "/admin/bookings", icon: CalendarCheck, label: "Bookings" },
@@ -117,7 +123,11 @@ export function AdminLayout({
             onClick={() => setCollapsed(!collapsed)}
             className="hidden lg:grid h-6 w-6 place-items-center rounded-md hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
           >
-            {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+            {collapsed ? (
+              <ChevronRight className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronLeft className="h-3.5 w-3.5" />
+            )}
           </button>
           <button
             onClick={() => setMobileOpen(false)}
@@ -130,9 +140,7 @@ export function AdminLayout({
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-2.5 space-y-0.5">
           {navItems.map((item) => {
-            const isActive = item.exact
-              ? activeRoute === item.to
-              : activeRoute.startsWith(item.to);
+            const isActive = item.exact ? activeRoute === item.to : activeRoute.startsWith(item.to);
             return (
               <Link
                 key={item.to}
@@ -140,9 +148,10 @@ export function AdminLayout({
                 onClick={() => setMobileOpen(false)}
                 className={`
                   group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium transition-all duration-150
-                  ${isActive
-                    ? "bg-white/[0.08] text-white"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
+                  ${
+                    isActive
+                      ? "bg-white/[0.08] text-white"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
                   }
                   ${collapsed ? "justify-center px-0" : ""}
                 `}
@@ -250,9 +259,7 @@ export function AdminLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-[#1c1c1c]">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-[#1c1c1c]">{children}</main>
       </div>
     </div>
   );
