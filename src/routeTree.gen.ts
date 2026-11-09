@@ -16,11 +16,14 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ConsultationRouteImport } from './routes/consultation'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ServiceCentersRouteImport } from './routes/service-centers'
 import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as SupportRouteImport } from './routes/support'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as VehiclesRouteImport } from './routes/vehicles'
+import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminBannersRouteImport } from './routes/admin/banners'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
@@ -70,6 +73,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServiceCentersRoute = ServiceCentersRouteImport.update({
   id: '/service-centers',
   path: '/service-centers',
@@ -85,6 +93,11 @@ const SupportRoute = SupportRouteImport.update({
   path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UpdatesRoute = UpdatesRouteImport.update({
   id: '/updates',
   path: '/updates',
@@ -93,6 +106,11 @@ const UpdatesRoute = UpdatesRouteImport.update({
 const VehiclesRoute = VehiclesRouteImport.update({
   id: '/vehicles',
   path: '/vehicles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WarrantyRoute = WarrantyRouteImport.update({
+  id: '/warranty',
+  path: '/warranty',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -169,11 +187,14 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/service-centers': typeof ServiceCentersRoute
   '/solutions': typeof SolutionsRoute
   '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/updates': typeof UpdatesRoute
   '/vehicles': typeof VehiclesRoute
+  '/warranty': typeof WarrantyRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/inventory': typeof AdminInventoryRoute
@@ -196,11 +217,14 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/service-centers': typeof ServiceCentersRoute
   '/solutions': typeof SolutionsRoute
   '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/updates': typeof UpdatesRoute
   '/vehicles': typeof VehiclesRoute
+  '/warranty': typeof WarrantyRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/inventory': typeof AdminInventoryRoute
@@ -224,11 +248,14 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/service-centers': typeof ServiceCentersRoute
   '/solutions': typeof SolutionsRoute
   '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/updates': typeof UpdatesRoute
   '/vehicles': typeof VehiclesRoute
+  '/warranty': typeof WarrantyRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/inventory': typeof AdminInventoryRoute
@@ -253,11 +280,14 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/consultation'
     | '/login'
+    | '/privacy'
     | '/service-centers'
     | '/solutions'
     | '/support'
+    | '/terms'
     | '/updates'
     | '/vehicles'
+    | '/warranty'
     | '/admin/banners'
     | '/admin/bookings'
     | '/admin/inventory'
@@ -280,11 +310,14 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/consultation'
     | '/login'
+    | '/privacy'
     | '/service-centers'
     | '/solutions'
     | '/support'
+    | '/terms'
     | '/updates'
     | '/vehicles'
+    | '/warranty'
     | '/admin/banners'
     | '/admin/bookings'
     | '/admin/inventory'
@@ -307,11 +340,14 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/consultation'
     | '/login'
+    | '/privacy'
     | '/service-centers'
     | '/solutions'
     | '/support'
+    | '/terms'
     | '/updates'
     | '/vehicles'
+    | '/warranty'
     | '/admin/banners'
     | '/admin/bookings'
     | '/admin/inventory'
@@ -335,11 +371,14 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   ConsultationRoute: typeof ConsultationRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
   ServiceCentersRoute: typeof ServiceCentersRoute
   SolutionsRoute: typeof SolutionsRoute
   SupportRoute: typeof SupportRoute
+  TermsRoute: typeof TermsRoute
   UpdatesRoute: typeof UpdatesRoute
   VehiclesRoute: typeof VehiclesRoute
+  WarrantyRoute: typeof WarrantyRoute
   AdminBannersRoute: typeof AdminBannersRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
@@ -406,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/service-centers': {
       id: '/service-centers'
       path: '/service-centers'
@@ -427,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/updates': {
       id: '/updates'
       path: '/updates'
@@ -439,6 +492,13 @@ declare module '@tanstack/react-router' {
       path: '/vehicles'
       fullPath: '/vehicles'
       preLoaderRoute: typeof VehiclesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/warranty': {
+      id: '/warranty'
+      path: '/warranty'
+      fullPath: '/warranty'
+      preLoaderRoute: typeof WarrantyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -543,11 +603,14 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   ConsultationRoute: ConsultationRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
   ServiceCentersRoute: ServiceCentersRoute,
   SolutionsRoute: SolutionsRoute,
   SupportRoute: SupportRoute,
+  TermsRoute: TermsRoute,
   UpdatesRoute: UpdatesRoute,
   VehiclesRoute: VehiclesRoute,
+  WarrantyRoute: WarrantyRoute,
   AdminBannersRoute: AdminBannersRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminInventoryRoute: AdminInventoryRoute,

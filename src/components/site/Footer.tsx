@@ -93,7 +93,7 @@ const cols: Array<{
     links: [
       { l: "Request Commercial Quote", to: "/support" },
       { l: "Product Catalogues & Specs", to: "/support" },
-      { l: "Machinery Warranty & Service", to: "/support", hash: "warranty-policy" },
+      { l: "Machinery Warranty & Service", to: "/warranty" },
       { l: "Bay Layout Consultation", to: "/services/book" },
       { l: "Fitment & Compatibility", to: "/vehicles" },
       { l: "Equip Your Service Center", to: "/service-centers" },
@@ -107,7 +107,7 @@ const cols: Array<{
       { l: "Industrial Demo Hubs", to: "/service-centers" },
       { l: "Partner Brands", to: "/#brands" },
       { l: "Supply Network", to: "/about" },
-      { l: "Commercial Terms of Supply", to: "/support", hash: "commercial-terms" },
+      { l: "Commercial Terms of Supply", to: "/terms" },
       { l: "Contact Commercial Desk", to: "/support" },
     ],
   },
@@ -272,25 +272,13 @@ export function Footer() {
             <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
               THINK NEXT.
             </span>
-            <Link
-              to="/support"
-              hash="privacy-policy"
-              className="hover:text-ink-foreground transition-colors"
-            >
+            <Link to="/privacy" className="hover:text-ink-foreground transition-colors">
               Privacy Policy
             </Link>
-            <Link
-              to="/support"
-              hash="commercial-terms"
-              className="hover:text-ink-foreground transition-colors"
-            >
+            <Link to="/terms" className="hover:text-ink-foreground transition-colors">
               Commercial Terms of Supply
             </Link>
-            <Link
-              to="/support"
-              hash="warranty-policy"
-              className="hover:text-ink-foreground transition-colors"
-            >
+            <Link to="/warranty" className="hover:text-ink-foreground transition-colors">
               Equipment Warranty Policy
             </Link>
             <Link

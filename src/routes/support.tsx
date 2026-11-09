@@ -9,10 +9,6 @@ import {
   Phone,
   ShieldCheck,
   Wrench,
-  FileText,
-  Lock,
-  Scale,
-  HelpCircle,
 } from "lucide-react";
 import {
   Accordion,
@@ -21,24 +17,22 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PageHeader } from "@/components/site/PageHeader";
-import { LegalPolicies } from "@/components/site/LegalPolicies";
 
 export const Route = createFileRoute("/support")({
   head: () => ({
     meta: [
       {
-        title: "Commercial Support, Policies, Warranty & B2B Quotations — PAGE International",
+        title: "Commercial Support, B2B Quotations & Product Guides — PAGE International",
       },
       {
         name: "description",
         content:
-          "Official Privacy Policy, Commercial Terms of Supply, Equipment Warranty Policy, B2B quotation desk, and Dhaka demonstration hub.",
+          "Contact PAGE automotive technical support, request equipment or fleet quotations, view warranty terms and download product datasheets.",
       },
-      { property: "og:title", content: "PAGE B2B Support, Warranty & Commercial Policies" },
+      { property: "og:title", content: "PAGE B2B Support & Quotes" },
       {
         property: "og:description",
-        content:
-          "Official B2B commercial terms, zero-password privacy policy, 18-36 month equipment warranties, and technical assistance.",
+        content: "Direct technical assistance, commercial quotations and equipment datasheets.",
       },
     ],
   }),
@@ -81,71 +75,8 @@ export function Support() {
         intro="Have questions regarding equipment dimensions, vehicle compatibility, or volume supply terms? Our technical applications engineers and B2B commercial advisors are ready to assist."
       />
 
-      {/* Quick Navigation Strip */}
-      <div className="border-b border-border/80 bg-muted/40 py-3 sticky top-16 z-20 backdrop-blur-md">
-        <div className="container-page flex items-center justify-between gap-3 overflow-x-auto no-scrollbar text-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground shrink-0 hidden sm:inline">
-              Jump To:
-            </span>
-            <a
-              href="#sourcing-desk"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card font-medium text-foreground hover:border-primary/50 hover:text-primary transition-colors shrink-0 shadow-2xs"
-            >
-              <Phone className="h-3 w-3 text-primary" />
-              <span>Direct Quotation Desk</span>
-            </a>
-            <a
-              href="#dhaka-hub"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card font-medium text-foreground hover:border-primary/50 hover:text-primary transition-colors shrink-0 shadow-2xs"
-            >
-              <MapPin className="h-3 w-3 text-primary" />
-              <span>Dhaka Hub & Showroom</span>
-            </a>
-            <a
-              href="#privacy-policy"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card font-medium text-foreground hover:border-primary/50 hover:text-primary transition-colors shrink-0 shadow-2xs"
-            >
-              <Lock className="h-3 w-3 text-primary" />
-              <span>Privacy Policy</span>
-            </a>
-            <a
-              href="#commercial-terms"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card font-medium text-foreground hover:border-primary/50 hover:text-primary transition-colors shrink-0 shadow-2xs"
-            >
-              <FileText className="h-3 w-3 text-primary" />
-              <span>Commercial Terms</span>
-            </a>
-            <a
-              href="#warranty-policy"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card font-medium text-foreground hover:border-primary/50 hover:text-primary transition-colors shrink-0 shadow-2xs"
-            >
-              <ShieldCheck className="h-3 w-3 text-primary" />
-              <span>Warranty Policy</span>
-            </a>
-            <a
-              href="#support-faqs"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card font-medium text-foreground hover:border-primary/50 hover:text-primary transition-colors shrink-0 shadow-2xs"
-            >
-              <HelpCircle className="h-3 w-3 text-primary" />
-              <span>FAQs</span>
-            </a>
-          </div>
-
-          <div className="shrink-0 hidden lg:flex items-center gap-2">
-            <span className="text-[11px] text-muted-foreground font-mono">Tejgaon Hotline:</span>
-            <a
-              href="tel:+8809612724346"
-              className="font-mono text-xs font-bold text-foreground hover:text-primary"
-            >
-              +880 9612-PAGE-INTL
-            </a>
-          </div>
-        </div>
-      </div>
-
       {/* Main Section: Custom Quotation Desk (Call / Email Direct) */}
-      <section id="sourcing-desk" className="container-page py-14 lg:py-20 scroll-mt-32">
+      <section className="container-page py-14 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           {/* Left Column: Sourcing Proposition & Commercial Desk */}
           <div>
@@ -358,10 +289,7 @@ export function Support() {
       </section>
 
       {/* Dhaka Office Location & Google Maps */}
-      <section
-        id="dhaka-hub"
-        className="border-b border-border bg-card py-16 lg:py-20 scroll-mt-24"
-      >
+      <section className="border-b border-border bg-card py-16 lg:py-20">
         <div className="container-page">
           <div className="grid gap-10 lg:grid-cols-[1.1fr_1.9fr] items-center">
             {/* Office Details */}
@@ -486,21 +414,8 @@ export function Support() {
         </div>
       </section>
 
-      {/* Commercial Governance, Terms & Warranty Policies Section */}
-      <section
-        id="governance"
-        className="border-b border-border bg-background py-16 lg:py-24 scroll-mt-20"
-      >
-        <div className="container-page">
-          <LegalPolicies />
-        </div>
-      </section>
-
       {/* Dedicated FAQs Section */}
-      <section
-        id="support-faqs"
-        className="border-t border-border bg-secondary/30 py-16 lg:py-20 scroll-mt-24"
-      >
+      <section className="border-t border-border bg-secondary/30 py-16 lg:py-20">
         <div className="container-page max-w-4xl">
           <div className="mb-10 text-center">
             <span className="eyebrow text-primary">Support & Documentation</span>
