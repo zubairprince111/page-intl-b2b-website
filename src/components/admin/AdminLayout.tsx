@@ -29,8 +29,8 @@ const navItems = [
   { to: "/admin/media", icon: FolderOpen, label: "Media Library" },
   { to: "/admin/updates", icon: Newspaper, label: "Field Updates" },
   { to: "/admin/users", icon: Users, label: "Users" },
-  { to: "/admin/quotes", icon: FileText, label: "Quotations" },
-  { to: "/admin/bookings", icon: CalendarCheck, label: "Bookings" },
+  { to: "/admin/quotes", icon: FileText, label: "Quotations", badgeKey: "quotes" as const },
+  { to: "/admin/bookings", icon: CalendarCheck, label: "Bookings", badgeKey: "bookings" as const },
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -148,6 +148,12 @@ export function AdminLayout({
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.exact ? activeRoute === item.to : activeRoute.startsWith(item.to);
+            const pendingCount =
+              item.badgeKey === "quotes"
+                ? (stats?.pendingQuotes ?? 0)
+                : item.badgeKey === "bookings"
+                  ? (stats?.pendingBookings ?? 0)
+                  : 0;
 
             return (
               <Link
@@ -155,7 +161,7 @@ export function AdminLayout({
                 to={item.to}
                 onClick={() => setMobileOpen(false)}
                 className={`
-                  flex items-center gap-3 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all
+                  group relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all
                   ${
                     isActive
                       ? "bg-emerald-500/15 text-emerald-400 font-semibold shadow-xs"
@@ -163,12 +169,45 @@ export function AdminLayout({
                   }
                   ${collapsed ? "justify-center px-0" : ""}
                 `}
-                title={collapsed ? item.label : undefined}
+                title={
+                  collapsed
+                    ? `${item.label}${pendingCount > 0 ? ` (${pendingCount} pending)` : ""}`
+                    : undefined
+                }
               >
-                <Icon
-                  className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-zinc-400"}`}
-                />
-                {!collapsed && <span>{item.label}</span>}
+                <div className="relative shrink-0 flex items-center justify-center">
+                  <Icon
+                    className={`h-4 w-4 ${
+                      isActive ? "text-emerald-400" : "text-zinc-400 group-hover:text-zinc-200"
+                    }`}
+                  />
+                  {collapsed && pendingCount > 0 && (
+                    <span
+                      className={`absolute -top-1 -right-1 h-2 w-2 rounded-full ${
+                        item.badgeKey === "quotes"
+                          ? "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]"
+                          : "bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.9)]"
+                      } animate-pulse`}
+                    />
+                  )}
+                </div>
+
+                {!collapsed && (
+                  <>
+                    <span className="truncate">{item.label}</span>
+                    {pendingCount > 0 && (
+                      <span
+                        className={`ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold font-mono transition-all ${
+                          item.badgeKey === "quotes"
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 group-hover:bg-amber-500/30"
+                            : "bg-violet-500/20 text-violet-300 border border-violet-500/30 group-hover:bg-violet-500/30"
+                        }`}
+                      >
+                        {pendingCount}
+                      </span>
+                    )}
+                  </>
+                )}
               </Link>
             );
           })}
