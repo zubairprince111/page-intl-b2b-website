@@ -35,7 +35,15 @@ export const socialChannels = [
   },
 ] as const;
 
-const cols = [
+const cols: Array<{
+  title: string;
+  links: Array<{
+    l: string;
+    to: string;
+    search?: Record<string, string>;
+    hash?: string;
+  }>;
+}> = [
   {
     title: "Products",
     links: [
@@ -85,7 +93,7 @@ const cols = [
     links: [
       { l: "Request Commercial Quote", to: "/support" },
       { l: "Product Catalogues & Specs", to: "/support" },
-      { l: "Machinery Warranty & Service", to: "/support" },
+      { l: "Machinery Warranty & Service", to: "/support", hash: "warranty-policy" },
       { l: "Bay Layout Consultation", to: "/services/book" },
       { l: "Fitment & Compatibility", to: "/vehicles" },
       { l: "Equip Your Service Center", to: "/service-centers" },
@@ -99,7 +107,7 @@ const cols = [
       { l: "Industrial Demo Hubs", to: "/service-centers" },
       { l: "Partner Brands", to: "/#brands" },
       { l: "Supply Network", to: "/about" },
-      { l: "Commercial Terms of Supply", to: "/support" },
+      { l: "Commercial Terms of Supply", to: "/support", hash: "commercial-terms" },
       { l: "Contact Commercial Desk", to: "/support" },
     ],
   },
@@ -230,6 +238,7 @@ export function Footer() {
                         <Link
                           to={link.to}
                           search={link.search as any}
+                          {...(link.hash ? { hash: link.hash } : {})}
                           className="text-ink-muted transition-colors hover:text-primary"
                         >
                           {link.l}
@@ -237,6 +246,7 @@ export function Footer() {
                       ) : (
                         <Link
                           to={link.to}
+                          {...(link.hash ? { hash: link.hash } : {})}
                           className="text-ink-muted transition-colors hover:text-primary"
                         >
                           {link.l}
@@ -262,13 +272,25 @@ export function Footer() {
             <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
               THINK NEXT.
             </span>
-            <Link to="/support" className="hover:text-ink-foreground">
+            <Link
+              to="/support"
+              hash="privacy-policy"
+              className="hover:text-ink-foreground transition-colors"
+            >
               Privacy Policy
             </Link>
-            <Link to="/support" className="hover:text-ink-foreground">
+            <Link
+              to="/support"
+              hash="commercial-terms"
+              className="hover:text-ink-foreground transition-colors"
+            >
               Commercial Terms of Supply
             </Link>
-            <Link to="/support" className="hover:text-ink-foreground">
+            <Link
+              to="/support"
+              hash="warranty-policy"
+              className="hover:text-ink-foreground transition-colors"
+            >
               Equipment Warranty Policy
             </Link>
             <Link
