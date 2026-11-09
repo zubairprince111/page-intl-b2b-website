@@ -10,11 +10,9 @@ import {
   Wrench,
   X,
   Zap,
-  User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
-import { useCurrentUser } from "@/lib/auth-client";
 
 const shopLinks = [
   {
@@ -71,7 +69,6 @@ export function Header() {
   const [mobileShopOpen, setMobileShopOpen] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const { count } = useCart();
-  const { data: currentUser } = useCurrentUser();
 
   useEffect(() => {
     setOpen(false);
@@ -214,26 +211,6 @@ export function Header() {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-2.5">
-            {/* Admin Portal Sign In */}
-            <Link
-              to={currentUser ? "/admin" : "/admin/login"}
-              aria-label={currentUser ? `Admin Portal: ${currentUser.name}` : "Admin Staff Sign In"}
-              title={currentUser ? `Admin Portal: ${currentUser.name}` : "Admin Staff Sign In"}
-              className={`relative grid h-9.5 w-9.5 place-items-center rounded-full border transition-all ${
-                isGlass
-                  ? "border-zinc-200/90 bg-white/80 hover:bg-white text-zinc-800 shadow-xs"
-                  : "border-white/20 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm"
-              }`}
-            >
-              {currentUser ? (
-                <span className="text-[11px] font-bold font-mono text-primary">
-                  {currentUser.name.slice(0, 2).toUpperCase()}
-                </span>
-              ) : (
-                <User className="h-4 w-4" />
-              )}
-            </Link>
-
             <Link
               to="/cart"
               aria-label={`Cart, ${count} items`}
