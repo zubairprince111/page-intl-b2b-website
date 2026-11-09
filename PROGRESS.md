@@ -14,8 +14,8 @@
 | **Phase 2** | PostgreSQL Database & Drizzle Migrations           | **DONE**        | Schema extension, migrations, seed with admin bootstrap, backup/restore scripts              |
 | **Phase 3** | Authentication & Security Hardening                | **DONE**        | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization |
 | **Phase 4** | Real Data Flows (Zero LocalStorage)                | **DONE**        | Full PostgreSQL persistence, RPC bridge, React Query, 0 localStorage, admin-data deleted     |
-| **Phase 5** | Transactional Email & Persistent Storage           | **IN PROGRESS** | Async email queuing (SMTP/Resend), storage verification                                      |
-| **Phase 6** | Performance & "Smooth Like Butter" UX              | **PENDING**     | Skeletons, code splitting, chunk < 500kB, image optimization, slow 4G check                  |
+| **Phase 5** | Transactional Email & Persistent Storage           | **DONE**        | Async email queuing (Console, SMTP via nodemailer, Resend), DB logging, media storage        |
+| **Phase 6** | Performance & "Smooth Like Butter" UX              | **IN PROGRESS** | Skeletons, code splitting, chunk < 500kB, image optimization, slow 4G check                  |
 | **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **PENDING**     | Semantic HTML, JSON-LD, sitemap, meta tags, responsive checks (360px - 1920px)               |
 | **Phase 8** | Testing (Vitest Unit/Integration & Playwright E2E) | **PENDING**     | Full user journey tests, load test (autocannon)                                              |
 | **Phase 9** | Operations, CI/CD, Docs & Verification             | **PENDING**     | Health checks, pino logging, GitHub Actions, README & DEPLOYMENT.md rewrite, V2 Audit        |
@@ -98,3 +98,19 @@
 - [x] Updated public views (`MobilityScrollStack.tsx`, `/cart`, `/updates`, `/shop/$slug`) to use PostgreSQL data layer.
 - [x] Deleted legacy `src/lib/admin-data.ts`, achieving 100% zero-localStorage architecture for business data.
 - [x] Verified `npx tsc --noEmit`, `npm run lint` (0 errors), `npm run format`, and `npm test` all pass.
+
+### Phase 5: Transactional Email & Persistent Storage
+
+- [x] Built transactional email engine (`src/lib/email.server.ts`) with `EmailProvider` interface.
+- [x] Implemented `ConsoleEmailProvider` for local dev/testing with formatted terminal logging and database record.
+- [x] Implemented `SmtpEmailProvider` with `nodemailer` supporting custom SMTP host/port/auth and TLS.
+- [x] Implemented `ResendEmailProvider` with zero-dependency direct HTTP REST dispatch.
+- [x] Built responsive, branded HTML templates with text fallbacks:
+  - RFQ quote confirmation (`renderQuoteConfirmationEmail`)
+  - Consultation booking confirmation (`renderBookingConfirmationEmail`)
+  - Commercial order confirmation (`renderOrderConfirmationEmail`)
+  - Password reset request (`renderPasswordResetEmail`)
+- [x] Wired non-blocking background email dispatch (`sendTransactionalEmail`) with automatic retry and persistent audit trail in PostgreSQL `emailLog` table.
+- [x] Confirmed media storage engine (`src/lib/media.server.ts`) with magic-byte verification, path containment, and database metadata tracking in `media` table.
+- [x] Verified `npx tsc --noEmit`, `npm run lint` (0 errors), `npm run format`, `npm test`, and `npm run build` all pass.
+

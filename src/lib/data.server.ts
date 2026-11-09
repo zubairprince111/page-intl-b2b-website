@@ -23,6 +23,12 @@ import { eq, desc, asc, and, or, sql, inArray } from "drizzle-orm";
 import { getSessionUserCore, getClientIp } from "./auth.server";
 import { checkRateLimit } from "./rate-limiter";
 import crypto from "node:crypto";
+import {
+  sendTransactionalEmail,
+  renderQuoteConfirmationEmail,
+  renderBookingConfirmationEmail,
+  renderOrderConfirmationEmail,
+} from "./email.server";
 
 // -----------------------------------------------------------------------------
 // HELPER: Require Admin Privileges
@@ -108,13 +114,20 @@ export async function createQuoteCore(data: CreateQuoteInput) {
       ipAddress: ip,
     });
 
-    await db.insert(emailLog).values({
-      id: `email-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
-      recipient: data.email,
+    const emailData = renderQuoteConfirmationEmail({
+      quoteNumber,
+      contactName: data.contactName,
+      companyName: data.companyName || undefined,
+      productName: data.productName,
+      qty: data.qty,
+    });
+    sendTransactionalEmail({
+      to: data.email,
       subject: `Quotation Request Received [${quoteNumber}] — PAGE International`,
       template: "QUOTE_CONFIRMATION",
-      status: "QUEUED",
-    });
+      html: emailData.html,
+      text: emailData.text,
+    }).catch(() => {});
   } catch {
     // Non-blocking
   }
@@ -278,13 +291,22 @@ export async function createBookingCore(data: CreateBookingInput) {
       ipAddress: ip,
     });
 
-    await db.insert(emailLog).values({
-      id: `email-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
-      recipient: data.email,
+    const emailData = renderBookingConfirmationEmail({
+      bookingNumber,
+      contactName: data.contactName,
+      companyName: data.companyName || undefined,
+      serviceType: data.serviceType,
+      centerName: data.centerName || data.city || "PAGE Regional Center",
+      bookingDate: data.bookingDate,
+      timeSlot: data.timeSlot,
+    });
+    sendTransactionalEmail({
+      to: data.email,
       subject: `Demonstration Booking Received [${bookingNumber}] — PAGE International`,
       template: "BOOKING_CONFIRMATION",
-      status: "QUEUED",
-    });
+      html: emailData.html,
+      text: emailData.text,
+    }).catch(() => {});
   } catch {
     // Non-blocking
   }
@@ -524,13 +546,21 @@ export async function createOrderCore(data: CreateOrderInput) {
       ipAddress: ip,
     });
 
-    await db.insert(emailLog).values({
-      id: `email-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
-      recipient: data.customerEmail,
+    const emailData = renderOrderConfirmationEmail({
+      orderNumber,
+      customerName: data.customerName,
+      companyName: data.companyName || undefined,
+      total,
+      itemsCount: verifiedItems.length,
+      paymentMethod: data.paymentMethod,
+    });
+    sendTransactionalEmail({
+      to: data.customerEmail,
       subject: `Order Confirmation [${orderNumber}] — PAGE International`,
       template: "ORDER_CONFIRMATION",
-      status: "QUEUED",
-    });
+      html: emailData.html,
+      text: emailData.text,
+    }).catch(() => {});
   } catch {
     // Non-blocking
   }

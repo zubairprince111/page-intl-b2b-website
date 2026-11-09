@@ -15,6 +15,7 @@ import { getCookie, setCookie, deleteCookie, getRequestIP } from "@tanstack/reac
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import { checkRateLimit } from "./rate-limiter";
+import { sendTransactionalEmail, renderPasswordResetEmail } from "./email.server";
 
 export const SESSION_COOKIE_NAME = "page_session";
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
@@ -332,7 +333,7 @@ export async function requestPasswordResetCore(data: {
   }
 
   const userRows = await db
-    .select({ id: users.id, email: users.email })
+    .select({ id: users.id, email: users.email, name: users.name })
     .from(users)
     .where(eq(users.email, data.email))
     .limit(1);
@@ -350,13 +351,20 @@ export async function requestPasswordResetCore(data: {
       expiresAt,
     });
 
-    await db.insert(emailLog).values({
-      id: `email-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
-      recipient: user.email,
-      subject: "PAGE International — Password Reset Request",
-      template: "password_reset",
-      status: "QUEUED",
+    const resetLink = `${process.env["APP_URL"] || "http://localhost:8080"}/reset-password?token=${rawToken}`;
+    const emailData = renderPasswordResetEmail({
+      name: user.name || "Customer",
+      resetLink,
+      expiresInMinutes: 60,
     });
+
+    sendTransactionalEmail({
+      to: user.email,
+      subject: "PAGE International — Password Reset Request",
+      template: "PASSWORD_RESET",
+      html: emailData.html,
+      text: emailData.text,
+    }).catch(() => {});
 
     console.log(`[AUTH] Password reset token generated for ${user.email}: ${rawToken}`);
   }
