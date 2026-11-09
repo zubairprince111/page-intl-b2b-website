@@ -271,23 +271,18 @@ function Home() {
             ))}
           </div>
 
-          {/* Bottom Toggle Control — Explore All Machinery in Shop */}
+          {/* Explore All Machinery CTA */}
           <div className="mt-8 sm:mt-10 flex justify-center">
-            <div className="inline-flex items-center p-1 sm:p-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 shadow-xs">
-              <span className="px-3.5 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-500 select-none">
-                Featured (4)
+            <Link
+              to="/shop"
+              search={{ cat: "Garage Equipment" }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white dark:bg-zinc-900 hover:bg-primary dark:hover:bg-primary text-zinc-900 dark:text-zinc-100 hover:text-white dark:hover:text-white font-bold text-[11px] sm:text-xs uppercase tracking-wider border border-zinc-200 dark:border-zinc-700/80 shadow-xs hover:shadow-md transition-all group cursor-pointer"
+            >
+              <span>Explore All Machinery</span>
+              <span className="h-5 w-5 rounded-full bg-primary group-hover:bg-white text-white group-hover:text-primary flex items-center justify-center transition-colors">
+                <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
               </span>
-              <Link
-                to="/shop"
-                search={{ cat: "Garage Equipment" }}
-                className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-white dark:bg-zinc-900 hover:bg-primary dark:hover:bg-primary text-zinc-900 dark:text-zinc-100 hover:text-white dark:hover:text-white font-bold text-[11px] sm:text-xs uppercase tracking-wider shadow-sm hover:shadow transition-all group cursor-pointer"
-              >
-                <span>Explore All Machinery</span>
-                <span className="h-5 w-5 rounded-full bg-primary group-hover:bg-white text-white group-hover:text-primary flex items-center justify-center transition-colors">
-                  <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </Link>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
