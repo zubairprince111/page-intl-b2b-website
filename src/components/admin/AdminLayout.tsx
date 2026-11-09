@@ -19,7 +19,8 @@ import {
   FolderOpen,
   Newspaper,
 } from "lucide-react";
-import { getAdminStats, getAuthAdminUser, logoutAdmin, type AdminUser } from "@/lib/admin-data";
+import { useCurrentUser, useLogout } from "@/lib/auth-client";
+import { getAdminStats } from "@/lib/admin-data";
 
 const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
@@ -43,38 +44,36 @@ export function AdminLayout({
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
-  const [isReady, setIsReady] = useState(false);
+  const { data: user, isLoading } = useCurrentUser();
+  const logoutMutation = useLogout();
   const stats = getAdminStats();
 
   useEffect(() => {
-    const user = getAuthAdminUser();
-    if (!user) {
-      navigate({ to: "/admin/login" });
-    } else {
-      setCurrentUser(user);
-      setIsReady(true);
+    if (!isLoading) {
+      if (!user || user.role !== "admin") {
+        navigate({ to: "/admin/login" });
+      }
     }
-  }, [navigate]);
+  }, [user, isLoading, navigate]);
 
-  function handleSignOut() {
-    logoutAdmin();
+  async function handleSignOut() {
+    await logoutMutation.mutateAsync();
     navigate({ to: "/admin/login" });
   }
 
-  if (!isReady || !currentUser) {
+  if (isLoading || !user || user.role !== "admin") {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-[#121212] text-zinc-400">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
-          <p className="text-xs font-mono">Authenticating session...</p>
+          <p className="text-xs font-mono">Verifying administrative privileges...</p>
         </div>
       </div>
     );
   }
 
   const notifCount = stats.pendingQuotes + stats.pendingBookings;
-  const initials = currentUser.name
+  const initials = user.name
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -82,11 +81,11 @@ export function AdminLayout({
     .toUpperCase();
 
   return (
-    <div className="flex h-screen bg-[#1c1c1c] text-zinc-200 overflow-hidden font-[Inter,system-ui,sans-serif]">
-      {/* Mobile overlay */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#121212] text-zinc-200 font-[Inter,system-ui,sans-serif]">
+      {/* Mobile Drawer Backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-xs"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -94,84 +93,82 @@ export function AdminLayout({
       {/* Sidebar */}
       <aside
         className={`
-          fixed lg:relative z-50 h-full flex flex-col
-          bg-[#171717] border-r border-white/[0.06]
-          transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${collapsed ? "w-[68px]" : "w-[260px]"}
+          fixed lg:static top-0 bottom-0 left-0 z-50
+          flex flex-col bg-[#171717] border-r border-white/[0.06]
+          transition-all duration-200 ease-in-out shrink-0
+          ${collapsed ? "w-16" : "w-60"}
           ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {/* Logo Area */}
-        <div className="flex items-center justify-between h-14 px-4 border-b border-white/[0.06] shrink-0">
+        {/* Brand Header */}
+        <div className="h-14 border-b border-white/[0.06] flex items-center justify-between px-3.5 shrink-0">
           {!collapsed && (
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="h-7 w-7 rounded-md bg-emerald-500 flex items-center justify-center text-[11px] font-black text-white shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="h-7 w-7 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-black text-xs">
                 P
               </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-white truncate">PAGE Admin</p>
-                <p className="text-[10px] text-zinc-500 truncate">pageinternational.com</p>
+              <div>
+                <span className="font-bold text-xs tracking-wider uppercase text-white font-display">
+                  PAGE Admin
+                </span>
+                <span className="block text-[9px] font-mono text-zinc-500 uppercase">Console</span>
               </div>
             </div>
           )}
+
           {collapsed && (
-            <div className="h-7 w-7 rounded-md bg-emerald-500 flex items-center justify-center text-[11px] font-black text-white mx-auto">
+            <div className="h-7 w-7 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-black text-xs mx-auto">
               P
             </div>
           )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:grid h-6 w-6 place-items-center rounded-md hover:bg-white/[0.06] text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
-          >
-            {collapsed ? (
-              <ChevronRight className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronLeft className="h-3.5 w-3.5" />
-            )}
-          </button>
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="lg:hidden grid h-6 w-6 place-items-center rounded-md hover:bg-white/[0.06] text-zinc-500"
-          >
-            <X className="h-4 w-4" />
-          </button>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="hidden lg:grid h-6 w-6 place-items-center rounded-md hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 transition-colors"
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {collapsed ? (
+                <ChevronRight className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronLeft className="h-3.5 w-3.5" />
+              )}
+            </button>
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="lg:hidden grid h-6 w-6 place-items-center rounded-md hover:bg-white/[0.06] text-zinc-400"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2.5 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto p-2 space-y-1">
           {navItems.map((item) => {
+            const Icon = item.icon;
             const isActive = item.exact ? activeRoute === item.to : activeRoute.startsWith(item.to);
+
             return (
               <Link
                 key={item.to}
-                to={item.to as any}
+                to={item.to}
                 onClick={() => setMobileOpen(false)}
                 className={`
-                  group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium transition-all duration-150
+                  flex items-center gap-3 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all
                   ${
                     isActive
-                      ? "bg-white/[0.08] text-white"
+                      ? "bg-emerald-500/15 text-emerald-400 font-semibold shadow-xs"
                       : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
                   }
                   ${collapsed ? "justify-center px-0" : ""}
                 `}
+                title={collapsed ? item.label : undefined}
               >
-                <item.icon
-                  className={`h-4 w-4 shrink-0 ${
-                    isActive ? "text-emerald-400" : "text-zinc-500 group-hover:text-zinc-400"
-                  }`}
+                <Icon
+                  className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-zinc-400"}`}
                 />
-                {!collapsed && <span className="truncate">{item.label}</span>}
-                {!collapsed && item.label === "Quotations" && stats.pendingQuotes > 0 && (
-                  <span className="ml-auto text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">
-                    {stats.pendingQuotes}
-                  </span>
-                )}
-                {!collapsed && item.label === "Bookings" && stats.pendingBookings > 0 && (
-                  <span className="ml-auto text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full font-bold">
-                    {stats.pendingBookings}
-                  </span>
-                )}
+                {!collapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
@@ -247,11 +244,9 @@ export function AdminLayout({
                 {initials}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-[12px] font-medium text-zinc-200 leading-tight">
-                  {currentUser.name}
-                </p>
+                <p className="text-[12px] font-medium text-zinc-200 leading-tight">{user.name}</p>
                 <p className="text-[10px] text-zinc-500 leading-tight capitalize">
-                  {currentUser.role.replace(/_/g, " ")}
+                  {user.role.replace(/_/g, " ")}
                 </p>
               </div>
             </div>

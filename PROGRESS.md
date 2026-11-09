@@ -12,8 +12,8 @@
 | **Phase 0** | Safety, Baseline & Repo Hygiene                    | **DONE**        | Secrets audited; .env.example, .gitignore, .dockerignore hardened; baseline recorded         |
 | **Phase 1** | Build, Docker & Code Formatting                    | **DONE**        | Dynamic Nitro preset, Docker multi-stage non-root, Caddyfile, .gitattributes & lint fix      |
 | **Phase 2** | PostgreSQL Database & Drizzle Migrations           | **DONE**        | Schema extension, migrations, seed with admin bootstrap, backup/restore scripts              |
-| **Phase 3** | Authentication & Security Hardening                | **IN PROGRESS** | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization |
-| **Phase 4** | Real Data Flows (Zero LocalStorage)                | **PENDING**     | Server functions for RFQs, orders, bookings, catalog, admin CRUD, CSV exports                |
+| **Phase 3** | Authentication & Security Hardening                | **DONE**        | Password hashing, HTTP-only JWT sessions, role middleware, rate limiting, media sanitization |
+| **Phase 4** | Real Data Flows (Zero LocalStorage)                | **IN PROGRESS** | Server functions for RFQs, orders, bookings, catalog, admin CRUD, CSV exports                |
 | **Phase 5** | Transactional Email & Persistent Storage           | **PENDING**     | Async email queuing (SMTP/Resend), S3/R2 storage driver                                      |
 | **Phase 6** | Performance & "Smooth Like Butter" UX              | **PENDING**     | Skeletons, code splitting, chunk < 500kB, image optimization, slow 4G check                  |
 | **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **PENDING**     | Semantic HTML, JSON-LD, sitemap, meta tags, responsive checks (360px - 1920px)               |
@@ -72,3 +72,14 @@
 - [x] Updated `src/db/status.ts` and `npm run db:status` to report health and record counts across all tables.
 
 ### Phase 3: Authentication & Security Hardening
+
+- [x] Built server-side in-memory sliding-window IP rate limiter (`src/lib/rate-limiter.ts`) protecting login, registration, and reset endpoints.
+- [x] Built server-side auth core (`src/lib/auth.server.ts`) with bcrypt (cost 12), crypto-random session tokens, secure HTTP-only cookies (`page_session`), and session validation.
+- [x] Built RPC server functions bridge (`src/lib/auth-functions.ts`, `src/lib/user-functions.ts`) using dynamic imports to keep Node/database code out of browser bundles.
+- [x] Built client React Query hooks (`src/lib/auth-client.ts`) for seamless session management (`useCurrentUser`, `useLogin`, `useRegister`, `useLogout`).
+- [x] Rebuilt `/admin/login` to authenticate via real PostgreSQL database credentials, eliminating hardcoded passwords and insecure client-side bypasses.
+- [x] Hardened `AdminLayout.tsx` to verify active admin session via server RPC, preventing unauthorized access.
+- [x] Created customer authentication portal (`/login`) with workshop registration, honeypot spam protection, and password reset.
+- [x] Created authenticated customer account dashboard (`/account`) showing user profile, active quotes, order history, bay bookings, and secure password update.
+- [x] Built secure media storage engine (`src/lib/media.server.ts`) with admin-only authorization, magic bytes MIME verification (JPEG/PNG/WEBP/PDF), path traversal containment, and random file name generation.
+- [x] Created media management admin interface (`/admin/media`).
