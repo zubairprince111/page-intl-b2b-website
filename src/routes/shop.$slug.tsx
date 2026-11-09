@@ -15,9 +15,9 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
+import { QuoteModal } from "@/components/site/QuoteModal";
 import { products, getShopProducts, getProductBySlug, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
-import { useCreateQuote } from "@/lib/data-client";
 
 export const Route = createFileRoute("/shop/$slug")({
   loader: ({ params }) => {
@@ -99,7 +99,6 @@ function ProductPage() {
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<TabType>("description");
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
-  const [quoteSent, setQuoteSent] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
 
@@ -124,42 +123,6 @@ function ProductPage() {
   const [selectedArmType, setSelectedArmType] = useState(armOptions[0]?.id || "standard");
 
   const inCart = lines.some((l) => l.slug === p.slug);
-  const createQuoteMutation = useCreateQuote();
-
-  // Quote Form State
-  const [quoteData, setQuoteData] = useState({
-    businessName: "",
-    contactPerson: "",
-    phone: "",
-    email: "",
-    businessType: "Workshop",
-    quantity: String(qty),
-    notes: "",
-  });
-
-  const handleQuoteSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quoteData.businessName || !quoteData.phone) return;
-    try {
-      await createQuoteMutation.mutateAsync({
-        companyName: quoteData.businessName,
-        contactName: quoteData.contactPerson || quoteData.businessName,
-        phone: quoteData.phone,
-        email: quoteData.email || "inquiry@workshop.bd",
-        productSlug: p.slug,
-        productName: p.name,
-        qty: Math.max(1, Number(quoteData.quantity) || 1),
-        businessType: quoteData.businessType || "Workshop",
-        city: "Dhaka",
-        notes: quoteData.notes
-          ? `${quoteData.notes} [Config: ${selectedVoltage.toUpperCase()} / ${selectedArmType}]`
-          : `Config: ${selectedVoltage.toUpperCase()} / ${selectedArmType}`,
-      });
-    } catch (err) {
-      console.error("Failed to add quotation from product page:", err);
-    }
-    setQuoteSent(true);
-  };
 
   const out = p.stock === "Out of stock";
   const low = p.stock === "Low stock";
@@ -712,185 +675,9 @@ function ProductPage() {
       )}
 
       {/* ======================================================== */}
-      {/* QUICK B2B QUOTE MODAL                                    */}
+      {/* QUICK B2B QUOTE MODAL (EMAIL OTP VERIFICATION)           */}
       {/* ======================================================== */}
-      {quoteModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs animate-in fade-in duration-200"
-        >
-          <div className="relative w-full max-w-lg rounded-3xl border border-zinc-200/90 bg-white p-6 shadow-2xl sm:p-8">
-            <button
-              onClick={() => {
-                setQuoteModalOpen(false);
-                setQuoteSent(false);
-              }}
-              aria-label="Close modal"
-              className="absolute right-5 top-5 grid h-8 w-8 place-items-center rounded-full bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
-            {quoteSent ? (
-              <div className="py-8 text-center">
-                <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-500/10 text-emerald-600 mb-4">
-                  <CheckCircle2 className="h-8 w-8" />
-                </div>
-                <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-zinc-950">
-                  Quotation Request Sent
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-600 mt-2 max-w-sm mx-auto leading-relaxed">
-                  Thank you! Our B2B commercial equipment desk has registered your request for{" "}
-                  <strong>{p.name}</strong>. A pro-forma quote with tax and delivery schedule will
-                  be provided within 24 hours.
-                </p>
-                <button
-                  onClick={() => {
-                    setQuoteModalOpen(false);
-                    setQuoteSent(false);
-                  }}
-                  className="btn btn-primary h-11 px-8 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl mt-6 cursor-pointer"
-                >
-                  Done
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleQuoteSubmit} className="space-y-4">
-                <div>
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
-                    B2B Commercial Procurement
-                  </span>
-                  <h3 className="font-display text-xl sm:text-2xl font-bold uppercase tracking-tight text-zinc-950 mt-1">
-                    Request Quote: {p.name}
-                  </h3>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Model: <span className="font-mono font-semibold">{p.sku}</span> · Brand:{" "}
-                    <span className="font-semibold">{p.brand}</span> · Config:{" "}
-                    <span className="font-mono font-semibold text-primary">
-                      {selectedVoltage.toUpperCase()}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                      Business / Garage Name *
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="e.g. Dhaka Auto Tech Ltd."
-                      className="field text-sm rounded-xl h-11 px-3.5"
-                      value={quoteData.businessName}
-                      onChange={(e) => setQuoteData({ ...quoteData, businessName: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                      Contact Person
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Name"
-                      className="field text-sm rounded-xl h-11 px-3.5"
-                      value={quoteData.contactPerson}
-                      onChange={(e) =>
-                        setQuoteData({ ...quoteData, contactPerson: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                      Phone / WhatsApp *
-                    </label>
-                    <input
-                      required
-                      type="tel"
-                      placeholder="+880 17XXXXXXXX"
-                      className="field text-sm rounded-xl h-11 px-3.5"
-                      value={quoteData.phone}
-                      onChange={(e) => setQuoteData({ ...quoteData, phone: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                      Business Email
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="procurement@workshop.com"
-                      className="field text-sm rounded-xl h-11 px-3.5"
-                      value={quoteData.email}
-                      onChange={(e) => setQuoteData({ ...quoteData, email: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                      Business Type
-                    </label>
-                    <select
-                      className="field text-sm rounded-xl h-11 px-3.5"
-                      value={quoteData.businessType}
-                      onChange={(e) => setQuoteData({ ...quoteData, businessType: e.target.value })}
-                    >
-                      <option value="Workshop">Independent Workshop</option>
-                      <option value="Service Center">Service Center Hub</option>
-                      <option value="Dealership">Dealership Workshop</option>
-                      <option value="Distributor">Wholesale Distributor</option>
-                      <option value="Fleet">Commercial Fleet Operator</option>
-                      <option value="EV Business">EV Workshop / Specialized</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                      Quantity Required
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 1 unit / 5 sets"
-                      className="field text-sm rounded-xl h-11 px-3.5"
-                      value={quoteData.quantity}
-                      onChange={(e) => setQuoteData({ ...quoteData, quantity: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 mb-1.5">
-                    Bay Specifications / Notes
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="Bay dimensions, ceiling height, or power availability..."
-                    className="field text-sm rounded-xl p-3 min-h-[72px]"
-                    value={quoteData.notes}
-                    onChange={(e) => setQuoteData({ ...quoteData, notes: e.target.value })}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary h-12 w-full text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl cursor-pointer shadow-sm hover:shadow transition-all"
-                >
-                  <Send className="h-4 w-4" />
-                  <span>Send Quotation Request</span>
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      {quoteModalOpen && <QuoteModal product={p} onClose={() => setQuoteModalOpen(false)} />}
     </div>
   );
 }

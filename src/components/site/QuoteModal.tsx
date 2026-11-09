@@ -1,7 +1,21 @@
-import { useState, useEffect } from "react";
-import { CheckCircle2, FileSpreadsheet, Minus, Plus, X, Loader2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  CheckCircle2,
+  FileSpreadsheet,
+  Minus,
+  Plus,
+  X,
+  Loader2,
+  Mail,
+  ShieldCheck,
+  ArrowLeft,
+  RefreshCw,
+  Copy,
+  Check,
+  Sparkles,
+} from "lucide-react";
 import type { Product } from "@/lib/data";
-import { useCreateQuote } from "@/lib/data-client";
+import { useSendQuoteOtp, useVerifyAndSubmitQuote } from "@/lib/data-client";
 
 export interface QuoteModalProps {
   product: Product | null;
@@ -9,12 +23,18 @@ export interface QuoteModalProps {
 }
 
 export function QuoteModal({ product, onClose }: QuoteModalProps) {
+  const [step, setStep] = useState<"form" | "otp" | "success">("form");
   const [qty, setQty] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otp, setOtp] = useState("");
   const [quoteNumber, setQuoteNumber] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const createQuoteMutation = useCreateQuote();
+  const [cooldown, setCooldown] = useState(0);
+  const [copiedRef, setCopiedRef] = useState(false);
+
+  const otpInputRef = useRef<HTMLInputElement>(null);
+
+  const sendOtpMutation = useSendQuoteOtp();
+  const verifyAndSubmitMutation = useVerifyAndSubmitQuote();
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -27,7 +47,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
     honeypot: "",
   });
 
-  // Prevent background body scrolling when quotation modal is opened
+  // Prevent background body scrolling when modal is open
   useEffect(() => {
     if (!product) return;
 
@@ -52,20 +72,85 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
     };
   }, [product, onClose]);
 
+  // Handle countdown timer for OTP resend
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((c) => Math.max(0, c - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  // Focus OTP input when switching to OTP screen
+  useEffect(() => {
+    if (step === "otp") {
+      setTimeout(() => {
+        otpInputRef.current?.focus();
+      }, 100);
+    }
+  }, [step]);
+
   if (!product) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Step 1: Submit Form & Trigger OTP Dispatch
+  const handleInitiateOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.companyName || !formData.phone) return;
+    if (!formData.companyName.trim() || !formData.phone.trim() || !formData.email.trim()) {
+      setErrorMsg("Please fill in all required fields (Company, Phone, and Email).");
+      return;
+    }
+
     setErrorMsg(null);
-    setIsSubmitting(true);
 
     try {
-      const res = await createQuoteMutation.mutateAsync({
-        companyName: formData.companyName,
-        contactName: formData.contactName || formData.companyName,
-        phone: formData.phone,
-        email: formData.email,
+      await sendOtpMutation.mutateAsync({
+        email: formData.email.trim(),
+        companyName: formData.companyName.trim(),
+        productName: product.name,
+      });
+
+      setStep("otp");
+      setCooldown(60);
+      setOtp("");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to dispatch verification code. Please check your email.");
+    }
+  };
+
+  // Resend OTP
+  const handleResendOtp = async () => {
+    if (cooldown > 0 || sendOtpMutation.isPending) return;
+    setErrorMsg(null);
+    try {
+      await sendOtpMutation.mutateAsync({
+        email: formData.email.trim(),
+        companyName: formData.companyName.trim(),
+        productName: product.name,
+      });
+      setCooldown(60);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to resend verification code.");
+    }
+  };
+
+  // Step 2: Verify OTP and Save Quote
+  const handleVerifyOtpAndSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanOtp = otp.trim();
+    if (cleanOtp.length < 6) {
+      setErrorMsg("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    setErrorMsg(null);
+
+    try {
+      const res = await verifyAndSubmitMutation.mutateAsync({
+        otp: cleanOtp,
+        companyName: formData.companyName.trim(),
+        contactName: formData.contactName.trim() || formData.companyName.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
         productSlug: product.slug,
         productName: product.name,
         qty,
@@ -78,16 +163,23 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
       if (res.quoteNumber) {
         setQuoteNumber(res.quoteNumber);
       }
-      setSubmitted(true);
+      setStep("success");
     } catch (err: any) {
-      setErrorMsg(err?.message || "Failed to submit quotation. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      setErrorMsg(err?.message || "Invalid verification code. Please try again.");
     }
   };
 
-  const handleReset = () => {
-    setSubmitted(false);
+  const handleCopyRef = () => {
+    if (navigator.clipboard && quoteNumber) {
+      navigator.clipboard.writeText(quoteNumber);
+      setCopiedRef(true);
+      setTimeout(() => setCopiedRef(false), 2000);
+    }
+  };
+
+  const handleDone = () => {
+    setStep("form");
+    setOtp("");
     onClose();
   };
 
@@ -95,38 +187,62 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-lg rounded-2xl bg-card border border-border/80 shadow-2xl p-6 sm:p-7 text-foreground overflow-hidden max-h-[92vh] flex flex-col">
+      <div className="relative w-full max-w-lg rounded-3xl bg-card border border-border shadow-2xl p-6 sm:p-7 text-foreground overflow-hidden max-h-[92vh] flex flex-col">
         {/* Close Button */}
         <button
           onClick={onClose}
           aria-label="Close quote dialog"
-          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer z-10"
         >
           <X className="h-4 w-4" />
         </button>
 
-        {submitted ? (
-          <div className="py-8 text-center space-y-4">
+        {/* STEP 3: SUCCESS CONFIRMATION */}
+        {step === "success" ? (
+          <div className="py-6 text-center space-y-4">
             <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-500/10 text-emerald-600">
               <CheckCircle2 className="h-10 w-10" />
             </div>
-            <h3 className="text-2xl font-display font-bold uppercase tracking-wide">
-              Quotation Request Received
-            </h3>
+
+            <div className="space-y-1">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                Email Verified • Request Confirmed
+              </span>
+              <h3 className="text-2xl font-display font-bold uppercase tracking-tight text-foreground">
+                Quotation Request Received
+              </h3>
+            </div>
+
             <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
               Your inquiry for{" "}
               <strong className="text-foreground">
                 {qty}x {product.name}
               </strong>{" "}
-              has been logged in our system under Reference ID:{" "}
-              <span className="font-mono font-bold text-primary">
-                {quoteNumber || `#RFQ-${Math.floor(100000 + Math.random() * 900000)}`}
-              </span>
-              .
+              has been logged under Reference ID:
             </p>
-            <div className="rounded-xl border border-border bg-secondary/50 p-4 text-xs text-left space-y-1.5 text-muted-foreground">
+
+            {/* Reference ID Pill with Copy */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary border border-border">
+              <span className="font-mono font-bold text-base text-primary">
+                {quoteNumber || "#RFQ-2026-CONFIRMED"}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyRef}
+                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                title="Copy reference number"
+              >
+                {copiedRef ? (
+                  <Check className="h-4 w-4 text-emerald-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-secondary/40 p-4 text-xs text-left space-y-2 text-muted-foreground">
               <div className="flex justify-between">
                 <span>Product:</span>
                 <span className="font-semibold text-foreground truncate max-w-[220px]">
@@ -134,42 +250,147 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Company:</span>
+                <span>Workshop / Company:</span>
                 <span className="font-semibold text-foreground truncate max-w-[220px]">
                   {formData.companyName}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Contact Phone:</span>
+                <span>Verified Email:</span>
+                <span className="font-mono text-foreground">{formData.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Phone:</span>
                 <span className="font-mono text-foreground">{formData.phone}</span>
               </div>
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              Our commercial engineering team will prepare your formal price quotation and pro-forma
-              invoice within 2–4 business hours.
+
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Our commercial engineering desk will prepare your formal price quotation and pro-forma
+              invoice within 2–4 business hours. No password or login was required.
             </p>
+
             <button
-              onClick={handleReset}
-              className="btn btn-primary h-10 px-8 text-xs font-bold uppercase tracking-wider rounded-full shadow-md cursor-pointer"
+              onClick={handleDone}
+              className="btn btn-primary h-10 px-8 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md cursor-pointer"
             >
               Done
             </button>
           </div>
+        ) : step === "otp" ? (
+          /* STEP 2: EMAIL OTP VERIFICATION */
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1 py-2">
+            {/* Back button */}
+            <button
+              type="button"
+              onClick={() => {
+                setStep("form");
+                setErrorMsg(null);
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back to Edit Details</span>
+            </button>
+
+            <div className="text-center space-y-2 pt-2">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <Mail className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-display font-bold uppercase tracking-tight text-foreground">
+                Verify Your Work Email
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                We sent a 6-digit verification code to{" "}
+                <strong className="text-foreground">{formData.email}</strong>. Enter it below to
+                confirm your quotation request.
+              </p>
+            </div>
+
+            <form onSubmit={handleVerifyOtpAndSubmit} className="space-y-4 pt-2">
+              {/* 6-Digit OTP Input */}
+              <div>
+                <label
+                  htmlFor="quote-otp-input"
+                  className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground text-center mb-2"
+                >
+                  Enter 6-Digit Code
+                </label>
+                <input
+                  ref={otpInputRef}
+                  id="quote-otp-input"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="------"
+                  className="w-full h-12 text-center font-mono font-bold text-2xl tracking-[0.5em] rounded-xl border border-input bg-card text-foreground focus:border-primary focus:outline-none shadow-xs"
+                />
+              </div>
+
+              {errorMsg && (
+                <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-500 text-center animate-in fade-in">
+                  {errorMsg}
+                </div>
+              )}
+
+              {/* Verify CTA */}
+              <button
+                type="submit"
+                disabled={otp.length < 6 || verifyAndSubmitMutation.isPending}
+                className="btn btn-primary w-full h-11 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {verifyAndSubmitMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Verifying Code & Logging Quotation...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>Verify Email & Submit Quotation</span>
+                  </>
+                )}
+              </button>
+
+              {/* Resend Cooldown */}
+              <div className="text-center text-xs text-muted-foreground pt-1">
+                {cooldown > 0 ? (
+                  <span>Resend code in {cooldown}s</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={sendOtpMutation.isPending}
+                    className="text-primary font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw
+                      className={`h-3 w-3 ${sendOtpMutation.isPending ? "animate-spin" : ""}`}
+                    />
+                    <span>Resend Verification Code</span>
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         ) : (
+          /* STEP 1: QUOTATION DETAILS FORM */
           <>
             {/* Header */}
-            <div className="border-b border-border pb-3 pr-8">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-primary">
-                Commercial RFQ & Wholesale
-              </span>
-              <h2 className="text-lg sm:text-xl font-display font-bold uppercase tracking-tight text-foreground mt-0.5">
+            <div className="border-b border-border pb-3 pr-8 space-y-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Zero Account or Password Needed • Quick Email OTP</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-display font-bold uppercase tracking-tight text-foreground">
                 Request Price Quotation
               </h2>
             </div>
 
             {/* Product Summary Box */}
-            <div className="my-3 flex items-center gap-3.5 rounded-xl border border-border/80 bg-secondary/40 p-2.5 shrink-0">
-              <div className="h-12 w-12 shrink-0 rounded-lg border border-border bg-white p-1 flex items-center justify-center">
+            <div className="my-3 flex items-center gap-3.5 rounded-2xl border border-border/80 bg-secondary/40 p-2.5 shrink-0">
+              <div className="h-12 w-12 shrink-0 rounded-xl border border-border bg-white p-1 flex items-center justify-center">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -208,7 +429,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-3 pr-1">
+            <form onSubmit={handleInitiateOtp} className="flex-1 overflow-y-auto space-y-3 pr-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label
@@ -251,7 +472,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                     htmlFor="quote-phone"
                     className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
                   >
-                    Mobile Phone *
+                    Mobile Phone / WhatsApp *
                   </label>
                   <input
                     id="quote-phone"
@@ -268,10 +489,11 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                     htmlFor="quote-email"
                     className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
                   >
-                    Work Email
+                    Work Email (For OTP Code) *
                   </label>
                   <input
                     id="quote-email"
+                    required
                     type="email"
                     value={formData.email}
                     placeholder="contact@workshop.com"
@@ -359,18 +581,18 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
               <div className="pt-1">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={sendOtpMutation.isPending}
                   className="btn btn-primary w-full h-10 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {isSubmitting ? (
+                  {sendOtpMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Submitting to Engineering Desk...</span>
+                      <span>Sending Verification Code...</span>
                     </>
                   ) : (
                     <>
-                      <FileSpreadsheet className="h-4 w-4" />
-                      <span>Submit Price Quotation Request</span>
+                      <Mail className="h-4 w-4" />
+                      <span>Send Email OTP & Continue</span>
                     </>
                   )}
                 </button>

@@ -6,6 +6,23 @@ import type { CreateQuoteInput, CreateBookingInput, CreateOrderInput } from "./d
 // 1. QUOTES RPC FUNCTIONS
 // =============================================================================
 
+export const sendQuoteOtpServerFn = createServerFn({ method: "POST" })
+  .validator(
+    (data: { email: string; companyName?: string | undefined; productName?: string | undefined }) =>
+      data,
+  )
+  .handler(async ({ data }) => {
+    const { sendQuoteOtpCore } = await import("./otp.server");
+    return await sendQuoteOtpCore(data);
+  });
+
+export const verifyQuoteOtpAndSubmitServerFn = createServerFn({ method: "POST" })
+  .validator((data: CreateQuoteInput & { otp: string }) => data)
+  .handler(async ({ data }) => {
+    const { verifyQuoteOtpAndCreateCore } = await import("./otp.server");
+    return await verifyQuoteOtpAndCreateCore(data);
+  });
+
 export const createQuoteServerFn = createServerFn({ method: "POST" })
   .validator((data: CreateQuoteInput) => data)
   .handler(async ({ data }) => {

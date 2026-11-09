@@ -16,9 +16,9 @@ import {
   User,
   Wrench,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart";
-import { useCreateQuote } from "@/lib/data-client";
+import { useSendQuoteOtp, useVerifyAndSubmitQuote } from "@/lib/data-client";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -38,7 +38,13 @@ export const Route = createFileRoute("/cart")({
 
 export function Cart() {
   const { lines, setQty, remove, clear, isLoaded } = useCart();
-  const createQuoteMutation = useCreateQuote();
+  const sendOtpMutation = useSendQuoteOtp();
+  const verifyAndSubmitMutation = useVerifyAndSubmitQuote();
+
+  const [cartStep, setCartStep] = useState<"form" | "otp">("form");
+  const [otp, setOtp] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [refId, setRefId] = useState("");
   const [formData, setFormData] = useState({
@@ -52,11 +58,59 @@ export function Cart() {
 
   const totalUnits = lines.reduce((acc, l) => acc + l.qty, 0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.companyName || !formData.phone) return;
+  // Cooldown timer for OTP resend
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((c) => Math.max(0, c - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
-    // Save all cart items into ONE single consolidated quotation request in PostgreSQL
+  // Step 1: Send OTP to email
+  const handleInitiateOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.companyName.trim() || !formData.phone.trim() || !formData.email.trim()) {
+      setErrorMsg(
+        "Please provide your Company Name, Phone, and Email to receive your verification code.",
+      );
+      return;
+    }
+
+    setErrorMsg(null);
+
+    const firstLine = lines[0];
+    const productSummary =
+      lines.length === 1 && firstLine
+        ? `${firstLine.qty}x ${firstLine.product.name}`
+        : `${lines.length} Products: ${lines.map((l) => `${l.qty}x ${l.product.name}`).join(", ")}`;
+
+    try {
+      await sendOtpMutation.mutateAsync({
+        email: formData.email.trim(),
+        companyName: formData.companyName.trim(),
+        productName: productSummary,
+      });
+
+      setCartStep("otp");
+      setCooldown(60);
+      setOtp("");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to send verification code. Please check your email.");
+    }
+  };
+
+  // Step 2: Verify OTP and Submit Consolidated Quotation
+  const handleVerifyOtpAndSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanOtp = otp.trim();
+    if (cleanOtp.length < 6) {
+      setErrorMsg("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    setErrorMsg(null);
+
     try {
       if (lines.length > 0) {
         const firstLine = lines[0];
@@ -65,11 +119,12 @@ export function Cart() {
             ? `${firstLine.qty}x ${firstLine.product.name}`
             : `${lines.length} Products: ${lines.map((l) => `${l.qty}x ${l.product.name}`).join(", ")}`;
 
-        const res = await createQuoteMutation.mutateAsync({
-          companyName: formData.companyName,
-          contactName: formData.contactName || formData.companyName,
-          phone: formData.phone,
-          email: formData.email || "client@workshop.bd",
+        const res = await verifyAndSubmitMutation.mutateAsync({
+          otp: cleanOtp,
+          companyName: formData.companyName.trim(),
+          contactName: formData.contactName.trim() || formData.companyName.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
           productSlug: firstLine ? firstLine.product.slug : "",
           productName: productSummary,
           qty: totalUnits,
@@ -90,15 +145,16 @@ export function Cart() {
           setRefId(res.quoteNumber);
         }
       }
-    } catch (err) {
-      console.error("Failed to add quotation from cart:", err);
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Invalid verification code. Please check your email.");
     }
-
-    setSubmitted(true);
   };
 
   const handleReset = () => {
     setSubmitted(false);
+    setCartStep("form");
+    setOtp("");
     clear();
   };
 
@@ -364,139 +420,232 @@ export function Cart() {
             <aside className="h-fit rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-card p-6 text-foreground shadow-xl">
               <div className="border-b border-border pb-3.5">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-primary" />
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-primary">
-                    Multi-Product RFQ
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                    No Account Required • Instant RFQ
                   </span>
                 </div>
                 <h2 className="text-base font-display font-bold uppercase tracking-tight text-foreground mt-0.5">
                   Request Commercial Pricing
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Admin will calculate exact bulk pricing, tax invoices, and shipping estimates for
+                  Admin will prepare exact bulk pricing, tax invoices, and shipping estimates for
                   all {lines.length} items.
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="mt-4 space-y-3.5 text-xs">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                    Company / Workshop Name <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Dhaka Premier Motors Ltd."
-                    className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  />
-                </div>
+              {cartStep === "otp" ? (
+                /* Step 2: OTP Entry */
+                <form onSubmit={handleVerifyOtpAndSubmit} className="mt-4 space-y-4 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCartStep("form");
+                      setErrorMsg(null);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <span>← Edit Details</span>
+                  </button>
 
-                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-xl bg-secondary/50 border border-border text-center space-y-1">
+                    <span className="text-xs font-bold text-foreground block">
+                      Verification Code Sent
+                    </span>
+                    <p className="text-[11px] text-muted-foreground">
+                      We sent a 6-digit code to{" "}
+                      <strong className="text-foreground">{formData.email}</strong>. Enter it below
+                      to confirm your quotation request:
+                    </p>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="cart-otp-input"
+                      className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center mb-1.5"
+                    >
+                      Enter 6-Digit Code
+                    </label>
+                    <input
+                      id="cart-otp-input"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      autoFocus
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                      placeholder="------"
+                      className="w-full h-12 text-center font-mono font-bold text-2xl tracking-[0.4em] rounded-xl border border-input bg-background text-foreground focus:border-primary focus:outline-none"
+                    />
+                  </div>
+
+                  {errorMsg && (
+                    <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-500 text-center">
+                      {errorMsg}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={otp.length < 6 || verifyAndSubmitMutation.isPending}
+                    className="btn btn-primary w-full h-11 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-md disabled:opacity-50 cursor-pointer"
+                  >
+                    <span>
+                      {verifyAndSubmitMutation.isPending
+                        ? "Verifying Code..."
+                        : "Verify Email & Confirm Quotation"}
+                    </span>
+                  </button>
+
+                  <div className="text-center text-xs text-muted-foreground">
+                    {cooldown > 0 ? (
+                      <span>Resend code in {cooldown}s</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleInitiateOtp}
+                        disabled={sendOtpMutation.isPending}
+                        className="text-primary font-semibold hover:underline cursor-pointer"
+                      >
+                        Resend Verification Code
+                      </button>
+                    )}
+                  </div>
+                </form>
+              ) : (
+                /* Step 1: Client Information Form */
+                <form onSubmit={handleInitiateOtp} className="mt-4 space-y-3.5 text-xs">
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                      Contact Person
+                      Company / Workshop Name <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="Engineer / Manager"
-                      className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      value={formData.contactName}
-                      onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                      Contact Phone <span className="text-destructive">*</span>
-                    </label>
-                    <input
-                      type="tel"
                       required
-                      placeholder="+880 17XX-XXXXXX"
-                      className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                      Business Email
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="procurement@corp.com"
+                      placeholder="e.g. Dhaka Premier Motors Ltd."
                       className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      value={formData.companyName}
+                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                        Contact Person
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Engineer / Manager"
+                        className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        value={formData.contactName}
+                        onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                        Contact Phone <span className="text-destructive">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="+880 17XX-XXXXXX"
+                        className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                        Work Email (For OTP Code) <span className="text-destructive">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="procurement@corp.com"
+                        className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                        Delivery Region
+                      </label>
+                      <select
+                        className="w-full h-9.5 px-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      >
+                        <option value="Dhaka">Dhaka Division</option>
+                        <option value="Chittagong">Chittagong Division</option>
+                        <option value="Sylhet">Sylhet Division</option>
+                        <option value="Rajshahi">Rajshahi Division</option>
+                        <option value="Khulna">Khulna Division</option>
+                        <option value="Nationwide">Nationwide Delivery</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                      Delivery Region
+                      Procurement Notes / Project Requirements
                     </label>
-                    <select
-                      className="w-full h-9.5 px-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    >
-                      <option value="Dhaka">Dhaka Division</option>
-                      <option value="Chittagong">Chittagong Division</option>
-                      <option value="Sylhet">Sylhet Division</option>
-                      <option value="Rajshahi">Rajshahi Division</option>
-                      <option value="Khulna">Khulna Division</option>
-                      <option value="Nationwide">Nationwide Delivery</option>
-                    </select>
+                    <textarea
+                      rows={2}
+                      placeholder="Specific delivery timeline, foundation bolt specs, or power requirements..."
+                      className="w-full p-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                    Procurement Notes / Project Requirements
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="Specific delivery timeline, foundation bolt specs, or power requirements..."
-                    className="w-full p-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  />
-                </div>
+                  {errorMsg && (
+                    <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-500">
+                      {errorMsg}
+                    </div>
+                  )}
 
-                <div className="rounded-lg bg-secondary/50 p-3 text-[11px] text-muted-foreground space-y-1">
-                  <div className="flex justify-between">
-                    <span>Products for Quotation:</span>
-                    <span className="font-semibold text-foreground">{lines.length} items</span>
+                  <div className="rounded-lg bg-secondary/50 p-3 text-[11px] text-muted-foreground space-y-1">
+                    <div className="flex justify-between">
+                      <span>Products for Quotation:</span>
+                      <span className="font-semibold text-foreground">{lines.length} items</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total Quantity:</span>
+                      <span className="font-mono font-semibold text-foreground">
+                        {totalUnits} units
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Quotation Turnaround:</span>
+                      <span className="font-semibold text-primary">2–4 business hours</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total Quantity:</span>
-                    <span className="font-mono font-semibold text-foreground">
-                      {totalUnits} units
+
+                  <button
+                    type="submit"
+                    disabled={sendOtpMutation.isPending}
+                    className="btn btn-primary w-full h-11 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-md cursor-pointer disabled:opacity-50"
+                  >
+                    <Send className="h-4 w-4" />
+                    <span>
+                      {sendOtpMutation.isPending
+                        ? "Sending Verification Code..."
+                        : `Send Email OTP & Submit (${lines.length} Items)`}
                     </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Quotation Turnaround:</span>
-                    <span className="font-semibold text-primary">2–4 business hours</span>
-                  </div>
-                </div>
+                  </button>
 
-                <button
-                  type="submit"
-                  className="btn btn-primary w-full h-11 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-md"
-                >
-                  <Send className="h-4 w-4" />
-                  <span>Submit RFQ for {lines.length} Items</span>
-                </button>
-
-                <p className="text-[10px] text-center text-muted-foreground pt-1">
-                  Includes formal pro-forma invoice, warranty documents & freight schedule.
-                </p>
-              </form>
+                  <p className="text-[10px] text-center text-muted-foreground pt-1">
+                    No account registration required. Zero-password verification.
+                  </p>
+                </form>
+              )}
             </aside>
           </div>
         )}

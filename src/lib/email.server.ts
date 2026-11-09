@@ -274,6 +274,35 @@ function baseEmailWrapper(title: string, contentHtml: string): string {
 </html>`;
 }
 
+export function renderQuoteOtpEmail(params: {
+  otp: string;
+  email: string;
+  companyName?: string | undefined;
+  productName?: string | undefined;
+  expiresInMinutes?: number | undefined;
+}): { html: string; text: string } {
+  const expiresIn = params.expiresInMinutes || 10;
+  const content = `
+    <div class="pill">QUOTATION VERIFICATION CODE</div>
+    <h2>Email Verification Code</h2>
+    <p>Please enter the following 6-digit one-time verification code to verify your email and confirm your commercial price quotation request:</p>
+    <div style="text-align: center; margin: 28px 0;">
+      <span style="display: inline-block; font-family: monospace; font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #ffffff; background: #e11d48; padding: 14px 28px; border-radius: 8px; border: 1px solid #f43f5e; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);">
+        ${params.otp}
+      </span>
+    </div>
+    <div class="card">
+      <div class="card-title">Quotation Details</div>
+      ${params.companyName ? `<div class="detail-row"><span class="label">Workshop / Company:</span><span class="value">${params.companyName}</span></div>` : ""}
+      ${params.productName ? `<div class="detail-row"><span class="label">Equipment:</span><span class="value">${params.productName}</span></div>` : ""}
+      <div class="detail-row"><span class="label">Code Expiry:</span><span class="value">${expiresIn} minutes</span></div>
+    </div>
+    <p style="font-size: 12px; color: #71717a;">No account registration or password is required. If you did not request a price quotation from PAGE International, you can safely disregard this email.</p>
+  `;
+  const text = `Your PAGE International quotation verification code is: ${params.otp}\n\nValid for ${expiresIn} minutes. No account creation or password required.\n\nPAGE International Ltd.`;
+  return { html: baseEmailWrapper("Verification Code for Quotation", content), text };
+}
+
 export function renderQuoteConfirmationEmail(params: {
   quoteNumber: string;
   contactName: string;

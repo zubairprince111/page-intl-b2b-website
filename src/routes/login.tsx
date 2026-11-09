@@ -151,8 +151,12 @@ function LoginPage() {
             PAGE Workshop Portal
           </h1>
           <p className="text-xs text-zinc-500 mt-1">
-            Access your B2B machinery quotations, bookings & official orders
+            Access registered workshop accounts, recurring orders & equipment history
           </p>
+          <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-semibold text-emerald-700">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>Quotations do not require an account — verify with Email OTP instead</span>
+          </div>
         </div>
 
         {/* Tab Toggle */}

@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  sendQuoteOtpServerFn,
+  verifyQuoteOtpAndSubmitServerFn,
   createQuoteServerFn,
   listQuotesServerFn,
   updateQuoteServerFn,
@@ -55,6 +57,31 @@ export function useQuotes(filter?: { status?: string | undefined; search?: strin
     queryKey: ["quotes", filter?.status, filter?.search],
     queryFn: async () => {
       return await listQuotesServerFn({ data: filter || {} });
+    },
+  });
+}
+
+export function useSendQuoteOtp() {
+  return useMutation({
+    mutationFn: async (data: {
+      email: string;
+      companyName?: string | undefined;
+      productName?: string | undefined;
+    }) => {
+      return await sendQuoteOtpServerFn({ data });
+    },
+  });
+}
+
+export function useVerifyAndSubmitQuote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: CreateQuoteInput & { otp: string }) => {
+      return await verifyQuoteOtpAndSubmitServerFn({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
   });
 }
