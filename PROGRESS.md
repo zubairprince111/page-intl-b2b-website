@@ -17,8 +17,8 @@
 | **Phase 5** | Transactional Email & Persistent Storage           | **DONE**        | Async email queuing (Console, SMTP via nodemailer, Resend), DB logging, media storage          |
 | **Phase 6** | Performance & "Smooth Like Butter" UX              | **DONE**        | Skeletons, code splitting (charts, radix, lucide isolated), zero chunks > 600kB, image loading |
 | **Phase 7** | Accessibility (WCAG AA), SEO & Polish              | **DONE**        | Semantic HTML, JSON-LD on / & /shop/$slug, sitemap.xml, robots.txt, form htmlFor & id labels   |
-| **Phase 8** | Testing (Vitest Unit/Integration & Playwright E2E) | **IN PROGRESS** | Full user journey tests, order pricing test, auth rate limit test                              |
-| **Phase 9** | Operations, CI/CD, Docs & Verification             | **PENDING**     | Health checks, pino logging, GitHub Actions, README & DEPLOYMENT.md rewrite, V2 Audit          |
+| **Phase 8** | Testing (Vitest Unit/Integration & Playwright E2E) | **DONE**        | 14 Vitest unit/integration tests (auth, rate limiting, pricing, media) + 6 Playwright E2E journeys |
+| **Phase 9** | Operations, CI/CD, Docs & Verification             | **IN PROGRESS** | Health checks (/api/health), Docker Compose verify, DEPLOYMENT.md, V2 Audit Report            |
 
 ---
 
@@ -132,4 +132,19 @@
 - [x] Injected JSON-LD structured data on product detail pages (`Product`, `Offer`, and stock availability).
 - [x] Fixed form accessibility: mapped `htmlFor` and `id` across all input fields, selects, and textareas in `QuoteModal.tsx` and `services.book.tsx`.
 - [x] Verified responsive layouts down to 360px mobile viewports.
+
+### Phase 8: Testing (Vitest Unit/Integration & Playwright E2E)
+
+- [x] Built sliding-window rate limiter test suite (`src/test/rate-limiter.test.ts`): verified bucket windowing, blocking, remaining counter, and key isolation.
+- [x] Built authentication & security core test suite (`src/test/auth-security.test.ts`): verified bcrypt cost >= 12 password hashing and 256-bit crypto session token entropy.
+- [x] Built zero-trust order price calculation test suite (`src/test/order-pricing.test.ts`): verified server-side price enforcement, quantity normalization, shipping rules, and invalid slug rejection.
+- [x] Built media upload magic-bytes test suite (`src/test/media-security.test.ts`): verified authentication of genuine JPEG/PNG/WEBP/PDF headers and rejection of spoofed scripts.
+- [x] Configured Playwright end-to-end framework (`playwright.config.ts`, `e2e/user-journeys.spec.ts`) covering all 6 critical business journeys:
+  1. RFQ quotation submission and generated reference code.
+  2. Technical consultation & equipment demonstration booking.
+  3. Direct order procurement & commercial checkout.
+  4. Admin authentication & live management dashboard session.
+  5. Admin quotation management & review.
+  6. Customer portal registration and authenticated account access.
+- [x] All 14 Vitest unit and integration tests passing cleanly (`npm test`).
 

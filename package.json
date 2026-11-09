@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "db:seed": "npx vite-node src/db/seed.ts",
     "db:status": "npx vite-node src/db/status.ts",
     "db:migrate": "npx vite-node src/db/migrate.ts",
@@ -93,6 +94,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.65.0",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",
     "@types/bcryptjs": "^2.4.6",

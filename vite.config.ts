@@ -47,7 +47,7 @@ export default defineConfig(({ command }) => ({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        manualChunks(id: string) {
           if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) {
             return "vendor-charts";
           }
@@ -57,6 +57,7 @@ export default defineConfig(({ command }) => ({
           if (id.includes("node_modules/lucide-react")) {
             return "vendor-lucide";
           }
+          return undefined;
         },
       },
     },

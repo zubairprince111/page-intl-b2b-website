@@ -54,3 +54,7 @@ export function checkRateLimit(
     resetInSeconds: Math.ceil((bucket.resetAt - now) / 1000),
   };
 }
+
+export function resetRateLimits() {
+  buckets.clear();
+}
