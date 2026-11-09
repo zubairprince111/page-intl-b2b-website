@@ -416,21 +416,13 @@ export function Cart() {
               </div>
             </div>
 
-            {/* Right Column: Multi-Product Quotation Request Form */}
-            <aside className="h-fit rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-card p-6 text-foreground shadow-xl">
+            {/* Right Column: Quotation Request Form */}
+            <aside className="h-fit rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-card p-6 text-foreground shadow-sm">
               <div className="border-b border-border pb-3.5">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                    No Account Required • Instant RFQ
-                  </span>
-                </div>
-                <h2 className="text-base font-display font-bold uppercase tracking-tight text-foreground mt-0.5">
-                  Request Commercial Pricing
-                </h2>
+                <h2 className="text-base font-semibold text-foreground">Request Quotation</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Admin will prepare exact bulk pricing, tax invoices, and shipping estimates for
-                  all {lines.length} items.
+                  Receive pricing and delivery details for your {lines.length}{" "}
+                  {lines.length === 1 ? "item" : "items"}.
                 </p>
               </div>
 
@@ -449,23 +441,16 @@ export function Cart() {
                   </button>
 
                   <div className="p-3.5 rounded-xl bg-secondary/50 border border-border text-center space-y-1">
-                    <span className="text-xs font-bold text-foreground block">
+                    <span className="text-xs font-semibold text-foreground block">
                       Verification Code Sent
                     </span>
                     <p className="text-[11px] text-muted-foreground">
                       We sent a 6-digit code to{" "}
-                      <strong className="text-foreground">{formData.email}</strong>. Enter it below
-                      to confirm your quotation request:
+                      <strong className="text-foreground">{formData.email}</strong>. Enter it below:
                     </p>
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="cart-otp-input"
-                      className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center mb-1.5"
-                    >
-                      Enter 6-Digit Code
-                    </label>
                     <input
                       id="cart-otp-input"
                       type="text"
@@ -475,7 +460,7 @@ export function Cart() {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
                       placeholder="------"
-                      className="w-full h-12 text-center font-mono font-bold text-2xl tracking-[0.4em] rounded-xl border border-input bg-background text-foreground focus:border-primary focus:outline-none"
+                      className="w-full h-11 text-center font-mono font-bold text-xl tracking-[0.3em] rounded-xl border border-input bg-background text-foreground focus:border-primary focus:outline-none"
                     />
                   </div>
 
@@ -488,12 +473,12 @@ export function Cart() {
                   <button
                     type="submit"
                     disabled={otp.length < 6 || verifyAndSubmitMutation.isPending}
-                    className="btn btn-primary w-full h-11 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-md disabled:opacity-50 cursor-pointer"
+                    className="btn btn-primary w-full h-10 text-xs font-semibold flex items-center justify-center gap-2 rounded-xl shadow-sm disabled:opacity-50 cursor-pointer"
                   >
                     <span>
                       {verifyAndSubmitMutation.isPending
                         ? "Verifying Code..."
-                        : "Verify Email & Confirm Quotation"}
+                        : "Verify & Submit Quotation"}
                     </span>
                   </button>
 
@@ -505,7 +490,7 @@ export function Cart() {
                         type="button"
                         onClick={handleInitiateOtp}
                         disabled={sendOtpMutation.isPending}
-                        className="text-primary font-semibold hover:underline cursor-pointer"
+                        className="text-primary font-medium hover:underline cursor-pointer"
                       >
                         Resend Verification Code
                       </button>
@@ -516,13 +501,13 @@ export function Cart() {
                 /* Step 1: Client Information Form */
                 <form onSubmit={handleInitiateOtp} className="mt-4 space-y-3.5 text-xs">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                      Company / Workshop Name <span className="text-destructive">*</span>
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      Company / Workshop <span className="text-destructive">*</span>
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Dhaka Premier Motors Ltd."
+                      placeholder="e.g. Master Motors Ltd."
                       className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       value={formData.companyName}
                       onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
@@ -531,21 +516,8 @@ export function Cart() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                        Contact Person
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Engineer / Manager"
-                        className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                        value={formData.contactName}
-                        onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                        Contact Phone <span className="text-destructive">*</span>
+                      <label className="block text-xs font-medium text-foreground mb-1">
+                        Phone Number <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="tel"
@@ -556,12 +528,10 @@ export function Cart() {
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                        Work Email (For OTP Code) <span className="text-destructive">*</span>
+                      <label className="block text-xs font-medium text-foreground mb-1">
+                        Email Address <span className="text-destructive">*</span>
                       </label>
                       <input
                         type="email"
@@ -572,34 +542,16 @@ export function Cart() {
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       />
                     </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                        Delivery Region
-                      </label>
-                      <select
-                        className="w-full h-9.5 px-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      >
-                        <option value="Dhaka">Dhaka Division</option>
-                        <option value="Chittagong">Chittagong Division</option>
-                        <option value="Sylhet">Sylhet Division</option>
-                        <option value="Rajshahi">Rajshahi Division</option>
-                        <option value="Khulna">Khulna Division</option>
-                        <option value="Nationwide">Nationwide Delivery</option>
-                      </select>
-                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                      Procurement Notes / Project Requirements
+                    <label className="block text-xs font-medium text-foreground mb-1">
+                      Note <span className="text-muted-foreground font-normal">(Optional)</span>
                     </label>
-                    <textarea
-                      rows={2}
-                      placeholder="Specific delivery timeline, foundation bolt specs, or power requirements..."
-                      className="w-full p-2.5 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                    <input
+                      type="text"
+                      placeholder="Any specific delivery or project requirements..."
+                      className="w-full h-9.5 px-3 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     />
@@ -611,39 +563,16 @@ export function Cart() {
                     </div>
                   )}
 
-                  <div className="rounded-lg bg-secondary/50 p-3 text-[11px] text-muted-foreground space-y-1">
-                    <div className="flex justify-between">
-                      <span>Products for Quotation:</span>
-                      <span className="font-semibold text-foreground">{lines.length} items</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Total Quantity:</span>
-                      <span className="font-mono font-semibold text-foreground">
-                        {totalUnits} units
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Quotation Turnaround:</span>
-                      <span className="font-semibold text-primary">2–4 business hours</span>
-                    </div>
-                  </div>
-
                   <button
                     type="submit"
                     disabled={sendOtpMutation.isPending}
-                    className="btn btn-primary w-full h-11 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-md cursor-pointer disabled:opacity-50"
+                    className="btn btn-primary w-full h-10 text-xs font-semibold flex items-center justify-center gap-2 rounded-xl shadow-sm cursor-pointer disabled:opacity-50 mt-1"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-3.5 w-3.5" />
                     <span>
-                      {sendOtpMutation.isPending
-                        ? "Sending Verification Code..."
-                        : `Send Email OTP & Submit (${lines.length} Items)`}
+                      {sendOtpMutation.isPending ? "Sending Code..." : "Verify with Email OTP"}
                     </span>
                   </button>
-
-                  <p className="text-[10px] text-center text-muted-foreground pt-1">
-                    No account registration required. Zero-password verification.
-                  </p>
                 </form>
               )}
             </aside>

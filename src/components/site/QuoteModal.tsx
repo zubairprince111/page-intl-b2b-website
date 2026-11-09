@@ -378,14 +378,13 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
           /* STEP 1: QUOTATION DETAILS FORM */
           <>
             {/* Header */}
-            <div className="border-b border-border pb-3 pr-8 space-y-1">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Zero Account or Password Needed • Quick Email OTP</span>
-              </div>
-              <h2 className="text-lg sm:text-xl font-display font-bold uppercase tracking-tight text-foreground">
+            <div className="border-b border-border pb-3 pr-8">
+              <h2 className="text-base sm:text-lg font-bold text-foreground">
                 Request Price Quotation
               </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                We will prepare an official commercial quote and availability.
+              </p>
             </div>
 
             {/* Product Summary Box */}
@@ -434,9 +433,9 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 <div>
                   <label
                     htmlFor="quote-company"
-                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    className="block text-xs font-medium text-foreground mb-1"
                   >
-                    Company / Workshop *
+                    Company / Workshop <span className="text-destructive">*</span>
                   </label>
                   <input
                     id="quote-company"
@@ -451,9 +450,10 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 <div>
                   <label
                     htmlFor="quote-contact"
-                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    className="block text-xs font-medium text-foreground mb-1"
                   >
-                    Contact Person Name
+                    Contact Person{" "}
+                    <span className="text-muted-foreground font-normal">(Optional)</span>
                   </label>
                   <input
                     id="quote-contact"
@@ -470,9 +470,9 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 <div>
                   <label
                     htmlFor="quote-phone"
-                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    className="block text-xs font-medium text-foreground mb-1"
                   >
-                    Mobile Phone / WhatsApp *
+                    Phone Number <span className="text-destructive">*</span>
                   </label>
                   <input
                     id="quote-phone"
@@ -481,15 +481,15 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                     value={formData.phone}
                     placeholder="+880 1711-XXXXXX"
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
+                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs font-mono text-foreground focus:border-primary focus:outline-none"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="quote-email"
-                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                    className="block text-xs font-medium text-foreground mb-1"
                   >
-                    Work Email (For OTP Code) *
+                    Email Address <span className="text-destructive">*</span>
                   </label>
                   <input
                     id="quote-email"
@@ -503,59 +503,20 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label
-                    htmlFor="quote-business-type"
-                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
-                  >
-                    Business Sector
-                  </label>
-                  <select
-                    id="quote-business-type"
-                    value={formData.businessType}
-                    onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                    className="w-full h-8 rounded-lg border border-input bg-card px-2 text-xs text-foreground focus:border-primary focus:outline-none"
-                  >
-                    <option value="Workshop / Garage">Independent Garage / Service Center</option>
-                    <option value="Dealership 3S">Authorized Dealership (3S / 4S)</option>
-                    <option value="Commercial Fleet">Commercial Logistics Fleet Depot</option>
-                    <option value="Distributor / Wholesale">Distributor / Reseller</option>
-                    <option value="EV Workshop">EV Conversion / Battery Workshop</option>
-                  </select>
-                </div>
-                <div>
-                  <label
-                    htmlFor="quote-city"
-                    className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
-                  >
-                    Region / City
-                  </label>
-                  <input
-                    id="quote-city"
-                    type="text"
-                    value={formData.city}
-                    placeholder="Dhaka"
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label
                   htmlFor="quote-notes"
-                  className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1"
+                  className="block text-xs font-medium text-foreground mb-1"
                 >
-                  Specific Requirements or Notes
+                  Notes <span className="text-muted-foreground font-normal">(Optional)</span>
                 </label>
-                <textarea
+                <input
                   id="quote-notes"
-                  rows={2}
+                  type="text"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Need floor anchoring, 3-phase power verification, or expedited delivery..."
-                  className="w-full rounded-lg border border-input bg-card p-2 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  placeholder="Specific requirements or delivery timeline..."
+                  className="w-full h-8 rounded-lg border border-input bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 />
               </div>
 
@@ -582,7 +543,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 <button
                   type="submit"
                   disabled={sendOtpMutation.isPending}
-                  className="btn btn-primary w-full h-10 text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="btn btn-primary w-full h-10 text-xs font-semibold rounded-xl shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {sendOtpMutation.isPending ? (
                     <>
@@ -592,7 +553,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                   ) : (
                     <>
                       <Mail className="h-4 w-4" />
-                      <span>Send Email OTP & Continue</span>
+                      <span>Verify with Email OTP</span>
                     </>
                   )}
                 </button>
