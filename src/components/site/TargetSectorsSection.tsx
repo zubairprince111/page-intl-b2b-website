@@ -192,42 +192,22 @@ export function TargetSectorsSection() {
             </div>
           </div>
 
-          {/* Bottom Dynamic Spec Card (Updates with active sector) */}
-          <div className="relative z-10 p-5 sm:p-7 max-w-lg">
-            <div className="inline-block px-2.5 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
-              {current.tagline}
-            </div>
+          {/* Bottom Minimal Sector Overlay */}
+          <div className="relative z-10 p-5 sm:p-7 max-w-sm">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-red-500 block mb-1">
+              Sector {current.num} / 05
+            </span>
             <h3 className="font-display font-black text-xl sm:text-2xl text-white uppercase tracking-tight leading-tight">
               {current.title}
             </h3>
-            <p className="text-xs sm:text-sm text-zinc-300 mt-1 leading-snug font-sans">
-              {current.desc}
-            </p>
-
-            {/* Equipment Chips */}
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {current.highlights.map((h) => (
-                <span
-                  key={h}
-                  className="px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[10.5px] font-sans font-medium text-white/90"
-                >
-                  {h}
-                </span>
-              ))}
-            </div>
-
-            {/* Direct Shop Equipment Action */}
-            <div className="mt-4 pt-3 border-t border-white/15 flex items-center justify-between">
-              <Link
-                to={current.link as any}
-                search={(current.search || {}) as any}
-                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white hover:text-red-400 transition-colors group cursor-pointer"
-              >
-                <span>View {current.title} Equipment</span>
-                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform text-red-500" />
-              </Link>
-              <span className="text-[11px] font-mono text-zinc-400">Sector {current.num} / 05</span>
-            </div>
+            <Link
+              to={current.link as any}
+              search={(current.search || {}) as any}
+              className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/90 hover:text-red-400 transition-colors mt-2 group cursor-pointer"
+            >
+              <span>Explore Equipment</span>
+              <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform text-red-500" />
+            </Link>
           </div>
 
           {/* Dynamic Aerodynamic Angled Red & White Faceted Ribbon (Center Divider) */}
