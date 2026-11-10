@@ -10,7 +10,6 @@ import {
   Radio,
 } from "lucide-react";
 import { useUpdates } from "@/lib/data-client";
-import { type UpdateCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // Real image assets
@@ -50,51 +49,14 @@ export const Route = createFileRoute("/updates")({
   component: UpdatesFeedPage,
 });
 
-// Category Styling & Metadata
-const CATEGORY_CONFIG: Record<
-  UpdateCategory,
-  {
-    label: string;
-    badgeClass: string;
-    dotColor: string;
-  }
-> = {
-  shipment_inbound: {
-    label: "Shipment Inbound",
-    badgeClass: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30",
-    dotColor: "bg-sky-500",
-  },
-  client_delivery: {
-    label: "Client Delivery",
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-    dotColor: "bg-emerald-500",
-  },
-  commissioning: {
-    label: "Commissioning & Trial",
-    badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
-    dotColor: "bg-amber-500",
-  },
-  tech_bulletin: {
-    label: "Tech Bulletin",
-    badgeClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30",
-    dotColor: "bg-purple-500",
-  },
-  product_launch: {
-    label: "Product Launch",
-    badgeClass: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
-    dotColor: "bg-rose-500",
-  },
-};
-
 export interface InstagramPost {
   id: string;
   slug: string;
   title: string;
-  category: UpdateCategory;
-  categoryLabel?: string | undefined;
   location: string;
   date: string;
   images: string[];
+  summary: string;
   caption: string;
   pinned?: boolean | undefined;
 }
@@ -105,10 +67,11 @@ const CURATED_FIELD_POSTS: InstagramPost[] = [
     id: "post-1",
     slug: "container-arrival-chittagong-port-hydraulic-lifts",
     title: "Inbound Container Arrival: 16 Units of 4.0T Hydraulic Lifts",
-    category: "shipment_inbound",
     location: "Chittagong Container Terminal (CCT), Port of Chittagong",
     date: "2026-11-08",
     images: [heroWorkshopImg, liftImg],
+    summary:
+      "16 certified 4.0T electro-hydraulic two-post lifts cleared through Chittagong Port for Dhaka & Sylhet hubs.",
     caption:
       "40ft High-Cube container cleared through Chittagong customs carrying 16 units of our certified 4.0T electro-hydraulic two-post lifts. Pre-ordered bays for Dhaka & Sylhet service hubs are moving onto transport trailers today. All hydraulic cylinders pressure-tested at 210 bar before dispatch.",
     pinned: true,
@@ -117,10 +80,11 @@ const CURATED_FIELD_POSTS: InstagramPost[] = [
     id: "post-2",
     slug: "turnkey-ev-diagnostic-bay-commissioning-tejgaon",
     title: "Turnkey Commissioning: High-Voltage EV Diagnostic Bay",
-    category: "commissioning",
     location: "Tejgaon Industrial Area, Dhaka",
     date: "2026-11-06",
     images: [evWorkshopBayImg, scannerImg],
+    summary:
+      "Dedicated 1,000V VDE insulated EV diagnostic workstation handed over and calibrated in Tejgaon.",
     caption:
       "Live commissioning of the first dedicated EV diagnostic bay in Tejgaon. Complete 1,000V VDE insulated setup, CAT IV battery state-of-health analyzer, and digital cell balance workstation handed over to AutoFix Engineering team. Calibration completed with zero earth-leakage variance.",
     pinned: true,
@@ -129,10 +93,11 @@ const CURATED_FIELD_POSTS: InstagramPost[] = [
     id: "post-3",
     slug: "rapid-2w-pneumatic-motorcycle-lift-installation-mirpur",
     title: "Rapid 2-Wheeler Service Bays: Pneumatic Motorcycle Scissor Lifts",
-    category: "client_delivery",
     location: "Mirpur Sector 10, Dhaka",
     date: "2026-11-04",
     images: [motoLiftImg, targetSectorsWorkshopImg],
+    summary:
+      "Four pneumatic foot-pedal motorcycle lifts commissioned in Mirpur with 14-second full-height lift cycles.",
     caption:
       "Four pneumatic foot-pedal motorcycle lifts installed and commissioned for Speed Motors Mirpur. Cycle time to full 1.0m height: 14 seconds flat. Floor-mounted safety drops ensure technicians work at eye-level with zero back strain across 60+ daily bike turnarounds.",
   },
@@ -140,10 +105,11 @@ const CURATED_FIELD_POSTS: InstagramPost[] = [
     id: "post-4",
     slug: "3d-wheel-alignment-dynamic-balancer-sylhet",
     title: "Precision Calibration: Dynamic Wheel Balancer & 3D Laser Alignment",
-    category: "commissioning",
     location: "Agrabad Commercial Area, Chittagong",
     date: "2026-11-02",
     images: [wheelBalancerImg, tyreChangerImg],
+    summary:
+      "Laser-guided wheel balancing and robotic-arm tyre changing line commissioned in Agrabad, Chittagong.",
     caption:
       'Precision dynamic wheel balancing line operational at Dhaka Tyre Chittagong branch. Direct laser pointer indicates exact clip-on and stick-on lead weight positioning down to 1 gram accuracy. Tyre changer features robotic helper arm for 22" low-profile alloy wheel mounting.',
   },
@@ -151,10 +117,11 @@ const CURATED_FIELD_POSTS: InstagramPost[] = [
     id: "post-5",
     slug: "centralized-10bar-screw-compressor-gazipur",
     title: "Continuous Air Power: 15HP Rotary Screw Compressor Installation",
-    category: "client_delivery",
     location: "Gazipur Industrial Corridor, Dhaka",
     date: "2026-10-29",
     images: [compressorImg, consultationImg],
+    summary:
+      "10-bar compressed air distribution with integrated dryer installed across 8 service bays in Gazipur.",
     caption:
       "Continuous 10-bar compressed air line installed for 8 simultaneous pneumatic bays at GreenFleet Logistics Gazipur hub. Integrated refrigerated air dryer and particulate coalescing filters prevent moisture buildup inside air impact wrenches and tire inflators.",
   },
@@ -162,10 +129,11 @@ const CURATED_FIELD_POSTS: InstagramPost[] = [
     id: "post-6",
     slug: "cat-iv-high-voltage-safety-standards-bulletin",
     title: "Technical Field Bulletin: 1,000V VDE Safety Compliance for EV Garages",
-    category: "tech_bulletin",
     location: "PAGE National Technical Training Academy, Dhaka",
     date: "2026-10-25",
     images: [scannerImg, evWorkshopBayImg],
+    summary:
+      "Zero-voltage verification checklist and CAT III/IV isolation protocol for hybrid and EV service teams.",
     caption:
       "Field bulletin for automotive technicians handling hybrid & EV high-voltage safety interlocks. Always verify zero voltage across DC bus capacitors with certified CAT III 1000V / CAT IV 600V probes before detaching orange shielding harnesses. Download our 12-point EV inspection checklist.",
   },
@@ -192,13 +160,12 @@ export function UpdatesFeedPage() {
       id: u.id,
       slug: u.slug || `upd-${u.id}`,
       title: u.title,
-      category: (u.category as UpdateCategory) || "shipment_inbound",
-      categoryLabel: CATEGORY_CONFIG[u.category as UpdateCategory]?.label || u.category,
       location: "Tejgaon Central Hub, Dhaka",
       date: u.publishedAt
         ? new Date(u.publishedAt).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10),
       images: u.coverImage ? [u.coverImage] : [evWorkshopBayImg],
+      summary: u.excerpt || u.content || "",
       caption: u.content || u.excerpt || "",
       pinned: false,
     }));
@@ -339,7 +306,6 @@ export function UpdatesFeedPage() {
       <main className="container-page max-w-6xl mx-auto py-8 sm:py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           {allPosts.map((post) => {
-            const cfg = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.shipment_inbound;
             const activeIdx = slideIndices[post.id] ?? 0;
             const currentImg = post.images[activeIdx] || post.images[0];
 
@@ -349,49 +315,37 @@ export function UpdatesFeedPage() {
                 className="flex flex-col rounded-2xl border border-border/80 bg-card shadow-[0_4px_24px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-hidden transition-shadow"
               >
                 {/* CARD HEADER */}
-                <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/40">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    {/* Avatar with gradient ring */}
-                    <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 shrink-0">
-                      <img
-                        src="/page-logo-square.png"
-                        alt="PAGE International"
-                        className="h-8 w-8 rounded-full object-cover bg-white"
-                      />
-                    </div>
-
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-bold font-display text-foreground truncate">
-                          page.international
-                        </span>
-                        <CheckCircle2 className="h-3.5 w-3.5 text-sky-500 fill-sky-500/20 shrink-0" />
-                        <span className="text-muted-foreground text-xs">•</span>
-                        <span className="text-[11px] text-muted-foreground font-mono shrink-0">
-                          {new Date(post.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
-
-                      {/* Location Geotag */}
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <MapPin className="h-3 w-3 text-red-500 shrink-0" />
-                        <span className="truncate font-medium">{post.location}</span>
-                      </div>
-                    </div>
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border/40 min-w-0">
+                  {/* Avatar with gradient ring */}
+                  <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 shrink-0">
+                    <img
+                      src="/page-logo-square.png"
+                      alt="PAGE International"
+                      className="h-8 w-8 rounded-full object-cover bg-white"
+                    />
                   </div>
 
-                  {/* Category badge */}
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border shrink-0",
-                      cfg.badgeClass,
-                    )}
-                  >
-                    {cfg.label}
-                  </span>
+                  <div className="min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-bold font-display text-foreground truncate">
+                        page.international
+                      </span>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-sky-500 fill-sky-500/20 shrink-0" />
+                      <span className="text-muted-foreground text-xs">•</span>
+                      <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                        {new Date(post.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Location Geotag */}
+                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <MapPin className="h-3 w-3 text-red-500 shrink-0" />
+                      <span className="truncate font-medium">{post.location}</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* CARD MEDIA (PHOTO / CAROUSEL) */}
@@ -450,6 +404,19 @@ export function UpdatesFeedPage() {
                       </div>
                     </>
                   )}
+                </div>
+
+                {/* MINIMAL DISPATCH INFO */}
+                <div
+                  onClick={() => setActiveDetailPost(post)}
+                  className="px-4 py-3.5 sm:px-5 sm:py-4 flex-1 flex flex-col gap-1.5 cursor-pointer"
+                >
+                  <h2 className="font-bold text-foreground font-display text-sm sm:text-base leading-snug line-clamp-2 hover:text-primary transition-colors">
+                    {post.title}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                    {post.summary}
+                  </p>
                 </div>
               </article>
             );
@@ -542,30 +509,12 @@ export function UpdatesFeedPage() {
 
               {/* Body */}
               <div className="p-5 flex-1 overflow-y-auto space-y-3 text-xs sm:text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className={cn(
-                      "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
-                      (
-                        CATEGORY_CONFIG[activeDetailPost.category] ||
-                        CATEGORY_CONFIG.shipment_inbound
-                      ).badgeClass,
-                    )}
-                  >
-                    {
-                      (
-                        CATEGORY_CONFIG[activeDetailPost.category] ||
-                        CATEGORY_CONFIG.shipment_inbound
-                      ).label
-                    }
-                  </span>
-                  <span className="text-[11px] font-mono text-muted-foreground">
-                    {new Date(activeDetailPost.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
+                <div className="text-[11px] font-mono text-muted-foreground">
+                  {new Date(activeDetailPost.date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </div>
 
                 <h2 className="font-bold text-foreground font-display text-base leading-snug">
