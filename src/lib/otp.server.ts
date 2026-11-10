@@ -6,7 +6,7 @@ import {
   sendTransactionalEmail,
   renderQuoteOtpEmail,
   getEmailProvider,
-  isResendSandboxFrom,
+  isEmailProviderReady,
 } from "./email.server";
 import { createQuoteCore, type CreateQuoteInput } from "./data.server";
 
@@ -63,14 +63,7 @@ export function isQuoteEmailOtpRequired(): boolean {
     return false;
   }
 
-  const provider = getEmailProvider();
-  if (provider.name === "smtp") {
-    return true;
-  }
-  if (provider.name === "resend") {
-    return !isResendSandboxFrom();
-  }
-  return false;
+  return isEmailProviderReady(getEmailProvider());
 }
 
 /**

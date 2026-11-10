@@ -29,6 +29,8 @@ import {
   renderAdminQuoteNotificationEmail,
   renderBookingConfirmationEmail,
   renderOrderConfirmationEmail,
+  getEmailProvider,
+  isEmailProviderReady,
   isResendSandboxFrom,
 } from "./email.server";
 import { ensureServerEnvLoaded } from "./env.server";
@@ -140,8 +142,12 @@ export async function createQuoteCore(data: CreateQuoteInput) {
     });
 
     ensureServerEnvLoaded();
+    const emailProvider = getEmailProvider();
+    const isSandboxResend = isResendSandboxFrom();
+    const canDispatchMail =
+      emailProvider.name === "console" || isEmailProviderReady(emailProvider) || isSandboxResend;
 
-    if (!isResendSandboxFrom()) {
+    if (canDispatchMail && !isSandboxResend) {
       const emailData = renderQuoteConfirmationEmail({
         quoteNumber,
         contactName,
@@ -159,7 +165,7 @@ export async function createQuoteCore(data: CreateQuoteInput) {
     }
 
     const adminNotifyEmail = (process.env["MAIL_ADMIN_NOTIFICATION"] || "").trim().toLowerCase();
-    if (adminNotifyEmail && emailRegex.test(adminNotifyEmail)) {
+    if (canDispatchMail && adminNotifyEmail && emailRegex.test(adminNotifyEmail)) {
       const adminEmailData = renderAdminQuoteNotificationEmail({
         quoteNumber,
         companyName,

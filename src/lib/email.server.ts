@@ -8,6 +8,50 @@ ensureServerEnvLoaded();
 const DEFAULT_RESEND_FROM = "PAGE International <onboarding@resend.dev>";
 const DEFAULT_SMTP_FROM = "PAGE International <no-reply@pageinternational.com>";
 
+const PLACEHOLDER_VALUE_PATTERNS = [
+  /^replace[-_]?with/i,
+  /^your[-_.]/i,
+  /^<[^<>]+>$/,
+  /^(changeme|paste[-_]?here|todo)$/i,
+  /^[\w.+-]+@your[-_.]?domain\.[a-z]+$/i,
+  /^your[-_.]?(?:gmail|email|password|app[-_]?password)/i,
+];
+
+function isPlaceholderValue(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+  return PLACEHOLDER_VALUE_PATTERNS.some((pattern) => pattern.test(trimmed));
+}
+
+function isGmailHost(host: string): boolean {
+  return /(^|\.)(gmail|googlemail)\.com$/i.test(host.trim());
+}
+
+function isHostedAuthRequiredSmtpHost(host: string): boolean {
+  const normalized = host.trim().toLowerCase();
+  return (
+    isGmailHost(normalized) ||
+    normalized.startsWith("smtp.zoho.") ||
+    normalized === "smtp.office365.com" ||
+    normalized === "smtp-mail.outlook.com" ||
+    normalized === "smtp.mail.yahoo.com" ||
+    normalized === "smtp.mail.me.com" ||
+    normalized === "smtp.sendgrid.net" ||
+    normalized === "smtp-relay.brevo.com" ||
+    normalized === "smtp.postmarkapp.com" ||
+    normalized === "smtp.fastmail.com" ||
+    normalized.startsWith("smtp.mailgun.") ||
+    normalized.startsWith("email-smtp.")
+  );
+}
+
+function normalizeSmtpPass(host: string, pass: string): string {
+  const trimmed = pass.trim();
+  return isGmailHost(host) ? trimmed.replace(/\s+/g, "") : trimmed;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -18,7 +62,16 @@ function escapeHtml(value: string): string {
 }
 
 function sanitizeEmailError(message: string): string {
-  return message.replace(/re_[A-Za-z0-9_]{8,}/g, "[REDACTED_API_KEY]");
+  let sanitized = message.replace(/re_[A-Za-z0-9_]{8,}/g, "[REDACTED_API_KEY]");
+  const rawPass = (process.env["SMTP_PASS"] || process.env["SMTP_PASSWORD"] || "").trim();
+  if (rawPass.length >= 6) {
+    sanitized = sanitized.replaceAll(rawPass, "[REDACTED_SMTP_PASS]");
+    const collapsed = rawPass.replace(/\s+/g, "");
+    if (collapsed.length >= 6) {
+      sanitized = sanitized.replaceAll(collapsed, "[REDACTED_SMTP_PASS]");
+    }
+  }
+  return sanitized;
 }
 
 export function getConfiguredFromAddress(fallback = DEFAULT_RESEND_FROM): string {
@@ -28,7 +81,7 @@ export function getConfiguredFromAddress(fallback = DEFAULT_RESEND_FROM): string
 
 export function isResendSandboxFrom(): boolean {
   const provider = getEmailProvider();
-  if (provider.name !== "resend") {
+  if (provider.name !== "resend" || !isEmailProviderConfiguredInstance(provider)) {
     return false;
   }
   return getConfiguredFromAddress(DEFAULT_RESEND_FROM).toLowerCase().includes("@resend.dev");
@@ -142,6 +195,17 @@ export class ResendEmailProvider implements EmailProvider {
 // =============================================================================
 // 3. SMTP PROVIDER (Nodemailer)
 // =============================================================================
+export function resolveSmtpFromAddress(configuredFrom?: string, smtpUser?: string): string {
+  const explicit = configuredFrom?.trim() || getConfiguredFromAddress("");
+  if (explicit && !explicit.toLowerCase().includes("@resend.dev")) {
+    return explicit;
+  }
+  if (smtpUser && smtpUser.includes("@")) {
+    return `PAGE International <${smtpUser.trim()}>`;
+  }
+  return DEFAULT_SMTP_FROM;
+}
+
 export class SmtpEmailProvider implements EmailProvider {
   name = "smtp";
   private transporter: Transporter;
@@ -155,19 +219,39 @@ export class SmtpEmailProvider implements EmailProvider {
     secure?: boolean | undefined;
     from?: string | undefined;
   }) {
-    this.from = config.from?.trim() || getConfiguredFromAddress(DEFAULT_SMTP_FROM);
+    const trimmedUser = config.user?.trim() || undefined;
+    const normalizedPass =
+      trimmedUser && config.pass ? normalizeSmtpPass(config.host, config.pass) : undefined;
+    this.from = resolveSmtpFromAddress(config.from, trimmedUser);
     this.transporter = nodemailer.createTransport({
-      host: config.host,
+      host: config.host.trim(),
       port: config.port,
       secure: config.secure ?? config.port === 465,
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
       auth:
-        config.user && config.pass
+        trimmedUser && normalizedPass
           ? {
-              user: config.user,
-              pass: config.pass,
+              user: trimmedUser,
+              pass: normalizedPass,
             }
           : undefined,
     });
+  }
+
+  getFromAddress(): string {
+    return this.from;
+  }
+
+  async verifyConnection(): Promise<{ ok: boolean; error?: string | undefined }> {
+    try {
+      await this.transporter.verify();
+      return { ok: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "SMTP verification failed";
+      return { ok: false, error: sanitizeEmailError(msg) };
+    }
   }
 
   async send(
@@ -213,6 +297,10 @@ class MisconfiguredEmailProvider implements EmailProvider {
     this.message = message;
   }
 
+  getErrorMessage(): string {
+    return this.message;
+  }
+
   async send(): Promise<{
     success: boolean;
     messageId?: string | undefined;
@@ -220,6 +308,42 @@ class MisconfiguredEmailProvider implements EmailProvider {
   }> {
     return { success: false, error: this.message };
   }
+}
+
+function isEmailProviderConfiguredInstance(provider: EmailProvider): boolean {
+  return !(provider instanceof MisconfiguredEmailProvider);
+}
+
+export function isEmailProviderReady(provider: EmailProvider = getEmailProvider()): boolean {
+  if (!isEmailProviderConfiguredInstance(provider)) {
+    return false;
+  }
+  if (provider.name === "resend") {
+    return !isResendSandboxFrom();
+  }
+  return provider.name === "smtp";
+}
+
+export async function verifyEmailTransport(): Promise<{
+  ok: boolean;
+  provider: string;
+  from?: string | undefined;
+  error?: string | undefined;
+}> {
+  const provider = getEmailProvider();
+  if (provider instanceof MisconfiguredEmailProvider) {
+    return { ok: false, provider: provider.name, error: provider.getErrorMessage() };
+  }
+  if (provider instanceof SmtpEmailProvider) {
+    const res = await provider.verifyConnection();
+    return {
+      ok: res.ok,
+      provider: provider.name,
+      from: provider.getFromAddress(),
+      error: res.error,
+    };
+  }
+  return { ok: true, provider: provider.name };
 }
 
 export function getEmailProvider(): EmailProvider {
@@ -261,6 +385,26 @@ export function getEmailProvider(): EmailProvider {
     return provider;
   };
 
+  const hasValidSmtpHost = Boolean(smtpHost) && !isPlaceholderValue(smtpHost);
+  const hasPartialSmtpAuth = (Boolean(smtpUser) && !smtpPass) || (!smtpUser && Boolean(smtpPass));
+  const hasPlaceholderSmtpAuth =
+    (Boolean(smtpUser) && isPlaceholderValue(smtpUser)) ||
+    (Boolean(smtpPass) && isPlaceholderValue(smtpPass));
+  const missingHostedSmtpAuth =
+    hasValidSmtpHost && isHostedAuthRequiredSmtpHost(smtpHost) && (!smtpUser || !smtpPass);
+  const canUseSmtp =
+    hasValidSmtpHost && !hasPartialSmtpAuth && !hasPlaceholderSmtpAuth && !missingHostedSmtpAuth;
+
+  const buildSmtpProvider = () =>
+    new SmtpEmailProvider({
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser || undefined,
+      pass: smtpPass || undefined,
+      secure: smtpSecure,
+      from: emailFrom || undefined,
+    });
+
   // Explicit console override
   if (mailProvider === "console") {
     return cache(new ConsoleEmailProvider());
@@ -268,7 +412,7 @@ export function getEmailProvider(): EmailProvider {
 
   // Explicit Resend selection
   if (mailProvider === "resend") {
-    if (!resendApiKey) {
+    if (!resendApiKey || isPlaceholderValue(resendApiKey)) {
       return cache(
         new MisconfiguredEmailProvider(
           "resend",
@@ -281,7 +425,7 @@ export function getEmailProvider(): EmailProvider {
 
   // Explicit SMTP selection
   if (mailProvider === "smtp") {
-    if (!smtpHost) {
+    if (!hasValidSmtpHost) {
       return cache(
         new MisconfiguredEmailProvider(
           "smtp",
@@ -289,34 +433,32 @@ export function getEmailProvider(): EmailProvider {
         ),
       );
     }
-    return cache(
-      new SmtpEmailProvider({
-        host: smtpHost,
-        port: smtpPort,
-        user: smtpUser || undefined,
-        pass: smtpPass || undefined,
-        secure: smtpSecure,
-        from: emailFrom || undefined,
-      }),
-    );
+    if (missingHostedSmtpAuth || hasPartialSmtpAuth || hasPlaceholderSmtpAuth) {
+      return cache(
+        new MisconfiguredEmailProvider(
+          "smtp",
+          `SMTP authentication for ${smtpHost} requires valid SMTP_USER and SMTP_PASS (for Gmail, use a 16-character Google App Password).`,
+        ),
+      );
+    }
+    return cache(buildSmtpProvider());
   }
 
-  // Auto-detection (when MAIL_PROVIDER is unset or "auto"): Resend -> SMTP -> Console
-  if (resendApiKey) {
+  // Auto-detection: Verified Resend domain -> Usable SMTP -> Resend Sandbox -> Console
+  const hasResendKey = Boolean(resendApiKey) && !isPlaceholderValue(resendApiKey);
+  const hasVerifiedResendSender =
+    Boolean(emailFrom) && !emailFrom.toLowerCase().includes("@resend.dev");
+
+  if (hasResendKey && hasVerifiedResendSender) {
     return cache(new ResendEmailProvider(resendApiKey, emailFrom || undefined));
   }
 
-  if (smtpHost) {
-    return cache(
-      new SmtpEmailProvider({
-        host: smtpHost,
-        port: smtpPort,
-        user: smtpUser || undefined,
-        pass: smtpPass || undefined,
-        secure: smtpSecure,
-        from: emailFrom || undefined,
-      }),
-    );
+  if (canUseSmtp) {
+    return cache(buildSmtpProvider());
+  }
+
+  if (hasResendKey) {
+    return cache(new ResendEmailProvider(resendApiKey, emailFrom || undefined));
   }
 
   return cache(new ConsoleEmailProvider());

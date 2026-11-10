@@ -31,6 +31,11 @@ describe("Quotation Email OTP Verification System", () => {
     delete process.env["EMAIL_FROM"];
     delete process.env["MAIL_FROM"];
     delete process.env["SMTP_HOST"];
+    delete process.env["SMTP_PORT"];
+    delete process.env["SMTP_SECURE"];
+    delete process.env["SMTP_USER"];
+    delete process.env["SMTP_PASS"];
+    delete process.env["SMTP_PASSWORD"];
     delete process.env["REQUIRE_QUOTE_EMAIL_OTP"];
     resetEmailProviderCache();
   });
@@ -148,6 +153,20 @@ describe("Quotation Email OTP Verification System", () => {
       delete process.env["RESEND_API_KEY"];
       delete process.env["EMAIL_FROM"];
       process.env["SMTP_HOST"] = "smtp.example.com";
+      resetEmailProviderCache();
+      expect(isQuoteEmailOtpRequired()).toBe(true);
+    });
+
+    it("requires OTP for Gmail SMTP only once SMTP_USER and SMTP_PASS are populated", () => {
+      process.env["MAIL_PROVIDER"] = "smtp";
+      process.env["SMTP_HOST"] = "smtp.gmail.com";
+      process.env["SMTP_PORT"] = "587";
+      process.env["REQUIRE_QUOTE_EMAIL_OTP"] = "auto";
+      resetEmailProviderCache();
+      expect(isQuoteEmailOtpRequired()).toBe(false);
+
+      process.env["SMTP_USER"] = "pageon18@gmail.com";
+      process.env["SMTP_PASS"] = "abcd efgh ijkl mnop";
       resetEmailProviderCache();
       expect(isQuoteEmailOtpRequired()).toBe(true);
     });

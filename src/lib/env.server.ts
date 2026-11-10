@@ -4,6 +4,7 @@ import path from "node:path";
 
 let envLoaded = false;
 let lastEnvMtimeMs: number | null = null;
+const loadedFromEnvFileKeys = new Set<string>();
 const bootDefinedKeys = new Set(
   Object.keys(process.env).filter((key) => {
     const val = process.env[key];
@@ -40,9 +41,16 @@ export function ensureServerEnvLoaded(): void {
     }
 
     const parsed = dotenv.parse(fs.readFileSync(envPath, "utf8"));
+    for (const prevKey of loadedFromEnvFileKeys) {
+      if (!bootDefinedKeys.has(prevKey) && !(prevKey in parsed)) {
+        delete process.env[prevKey];
+        loadedFromEnvFileKeys.delete(prevKey);
+      }
+    }
     for (const [key, value] of Object.entries(parsed)) {
       if (!bootDefinedKeys.has(key)) {
         process.env[key] = value;
+        loadedFromEnvFileKeys.add(key);
       }
     }
 

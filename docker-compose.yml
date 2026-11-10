@@ -46,9 +46,10 @@ services:
       APP_URL: ${APP_URL:-http://localhost:8080}
       MAIL_PROVIDER: ${MAIL_PROVIDER:-auto}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-${MAIL_FROM:-PAGE International <onboarding@resend.dev>}}
+      EMAIL_FROM: ${EMAIL_FROM:-${MAIL_FROM:-}}
       MAIL_FROM: ${MAIL_FROM:-}
       MAIL_ADMIN_NOTIFICATION: ${MAIL_ADMIN_NOTIFICATION:-}
+      REQUIRE_QUOTE_EMAIL_OTP: ${REQUIRE_QUOTE_EMAIL_OTP:-auto}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_SECURE: ${SMTP_SECURE:-false}

@@ -1,13 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import nodemailer from "nodemailer";
 import {
   ConsoleEmailProvider,
   ResendEmailProvider,
+  SmtpEmailProvider,
   getEmailProvider,
+  isEmailProviderReady,
   isResendSandboxFrom,
   renderAdminQuoteNotificationEmail,
   renderQuoteOtpEmail,
   resetEmailProviderCache,
+  resolveSmtpFromAddress,
   sendTransactionalEmail,
+  verifyEmailTransport,
 } from "@/lib/email.server";
 
 const { insertValuesMock } = vi.hoisted(() => ({
@@ -40,6 +45,7 @@ describe("Resend Email Provider & Transactional Dispatch", () => {
     delete process.env["MAIL_FROM"];
     delete process.env["SMTP_HOST"];
     delete process.env["SMTP_PORT"];
+    delete process.env["SMTP_SECURE"];
     delete process.env["SMTP_USER"];
     delete process.env["SMTP_PASS"];
     delete process.env["SMTP_PASSWORD"];
@@ -49,6 +55,7 @@ describe("Resend Email Provider & Transactional Dispatch", () => {
   afterEach(() => {
     process.env = { ...originalEnv };
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     resetEmailProviderCache();
   });
 
@@ -265,5 +272,173 @@ describe("Resend Email Provider & Transactional Dispatch", () => {
       verifiedViaOtp: true,
     });
     expect(otpMail.html).toContain("EMAIL OTP VERIFIED RFQ");
+  });
+});
+
+describe("SMTP & Gmail App Password Provider", () => {
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    insertValuesMock.mockReset();
+    insertValuesMock.mockResolvedValue(undefined);
+    delete process.env["MAIL_PROVIDER"];
+    delete process.env["RESEND_API_KEY"];
+    delete process.env["EMAIL_FROM"];
+    delete process.env["MAIL_FROM"];
+    delete process.env["SMTP_HOST"];
+    delete process.env["SMTP_PORT"];
+    delete process.env["SMTP_SECURE"];
+    delete process.env["SMTP_USER"];
+    delete process.env["SMTP_PASS"];
+    delete process.env["SMTP_PASSWORD"];
+    resetEmailProviderCache();
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+    vi.restoreAllMocks();
+    resetEmailProviderCache();
+  });
+
+  it("treats Gmail SMTP without credentials or with placeholders as misconfigured/not-ready", async () => {
+    process.env["MAIL_PROVIDER"] = "smtp";
+    process.env["SMTP_HOST"] = "smtp.gmail.com";
+    process.env["SMTP_PORT"] = "587";
+
+    expect(isEmailProviderReady()).toBe(false);
+    const missingResult = await sendTransactionalEmail({
+      to: "buyer@workshop.bd",
+      subject: "OTP",
+      html: "<p>Code</p>",
+      template: "quote_otp",
+    });
+    expect(missingResult.success).toBe(false);
+    expect(missingResult.error).toContain("requires valid SMTP_USER and SMTP_PASS");
+
+    process.env["SMTP_USER"] = "your-gmail@gmail.com";
+    process.env["SMTP_PASS"] = "your-app-password";
+    resetEmailProviderCache();
+    expect(isEmailProviderReady()).toBe(false);
+
+    const verifyRes = await verifyEmailTransport();
+    expect(verifyRes.ok).toBe(false);
+    expect(verifyRes.provider).toBe("smtp");
+  });
+
+  it("strips spaces from Gmail App Passwords and replaces leftover @resend.dev sender", async () => {
+    const sendMailMock = vi.fn().mockResolvedValue({ messageId: "<gmail-msg-1@smtp.gmail.com>" });
+    const verifyMock = vi.fn().mockResolvedValue(true);
+    const createTransportSpy = vi.spyOn(nodemailer, "createTransport").mockReturnValue({
+      sendMail: sendMailMock,
+      verify: verifyMock,
+    } as unknown as ReturnType<typeof nodemailer.createTransport>);
+
+    process.env["MAIL_PROVIDER"] = "smtp";
+    process.env["SMTP_HOST"] = "smtp.gmail.com";
+    process.env["SMTP_PORT"] = "587";
+    process.env["SMTP_USER"] = "pageon18@gmail.com";
+    process.env["SMTP_PASS"] = "abcd efgh ijkl mnop";
+    process.env["EMAIL_FROM"] = "PAGE International <onboarding@resend.dev>";
+    resetEmailProviderCache();
+
+    const provider = getEmailProvider();
+    expect(provider).toBeInstanceOf(SmtpEmailProvider);
+    expect(isEmailProviderReady(provider)).toBe(true);
+    expect(createTransportSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+        auth: {
+          user: "pageon18@gmail.com",
+          pass: "abcdefghijklmnop",
+        },
+      }),
+    );
+
+    const transportCheck = await verifyEmailTransport();
+    expect(transportCheck).toEqual({
+      ok: true,
+      provider: "smtp",
+      from: "PAGE International <pageon18@gmail.com>",
+      error: undefined,
+    });
+
+    const result = await sendTransactionalEmail({
+      to: "external-buyer@company.com",
+      subject: "Your Verification Code: 739102 — PAGE International",
+      html: "<p>739102</p>",
+      text: "739102",
+      template: "quote_otp",
+    });
+
+    expect(result).toEqual({ success: true, messageId: "<gmail-msg-1@smtp.gmail.com>" });
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: "PAGE International <pageon18@gmail.com>",
+        to: "external-buyer@company.com",
+      }),
+    );
+  });
+
+  it("redacts leaked SMTP_PASS strings in Nodemailer failure messages", async () => {
+    vi.spyOn(nodemailer, "createTransport").mockReturnValue({
+      sendMail: vi.fn().mockRejectedValue(new Error("Auth failed using wxyz1234abcd5678")),
+      verify: vi.fn(),
+    } as unknown as ReturnType<typeof nodemailer.createTransport>);
+
+    process.env["MAIL_PROVIDER"] = "smtp";
+    process.env["SMTP_HOST"] = "smtp.gmail.com";
+    process.env["SMTP_USER"] = "pageon18@gmail.com";
+    process.env["SMTP_PASS"] = "wxyz 1234 abcd 5678";
+    resetEmailProviderCache();
+
+    const result = await sendTransactionalEmail({
+      to: "buyer@example.com",
+      subject: "OTP",
+      html: "<p>123456</p>",
+      template: "quote_otp",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("[REDACTED_SMTP_PASS]");
+    expect(result.error).not.toContain("wxyz1234abcd5678");
+  });
+
+  it("prefers working SMTP over @resend.dev sandbox in auto mode while keeping verified Resend first", () => {
+    vi.spyOn(nodemailer, "createTransport").mockReturnValue({
+      sendMail: vi.fn(),
+      verify: vi.fn(),
+    } as unknown as ReturnType<typeof nodemailer.createTransport>);
+
+    process.env["MAIL_PROVIDER"] = "auto";
+    process.env["RESEND_API_KEY"] = "re_test_sandbox_123";
+    process.env["EMAIL_FROM"] = "PAGE International <onboarding@resend.dev>";
+    process.env["SMTP_HOST"] = "smtp.gmail.com";
+    process.env["SMTP_USER"] = "pageon18@gmail.com";
+    process.env["SMTP_PASS"] = "abcd efgh ijkl mnop";
+    resetEmailProviderCache();
+
+    expect(getEmailProvider()).toBeInstanceOf(SmtpEmailProvider);
+
+    process.env["EMAIL_FROM"] = "PAGE International <sales@pageinternational.com>";
+    resetEmailProviderCache();
+
+    expect(getEmailProvider()).toBeInstanceOf(ResendEmailProvider);
+  });
+
+  it("resolves SMTP sender safely when EMAIL_FROM is empty or @resend.dev", () => {
+    expect(resolveSmtpFromAddress("", "pageon18@gmail.com")).toBe(
+      "PAGE International <pageon18@gmail.com>",
+    );
+    expect(
+      resolveSmtpFromAddress("PAGE International <onboarding@resend.dev>", "pageon18@gmail.com"),
+    ).toBe("PAGE International <pageon18@gmail.com>");
+    expect(
+      resolveSmtpFromAddress("PAGE International <quotes@page-asia.com>", "pageon18@gmail.com"),
+    ).toBe("PAGE International <quotes@page-asia.com>");
   });
 });
