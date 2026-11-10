@@ -213,10 +213,6 @@ export function UpdatesFeedPage() {
                     <span title="Verified Commercial Automotive Partner">
                       <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-sky-500 fill-sky-500/20" />
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 border border-red-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-600">
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-600 animate-pulse" />
-                      Field Dispatches
-                    </span>
                   </div>
 
                   <p className="text-xs sm:text-sm font-semibold text-foreground">
@@ -229,20 +225,11 @@ export function UpdatesFeedPage() {
                     Bangladesh.
                   </p>
 
-                  <div className="pt-0.5 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-[11px] font-mono text-primary font-semibold">
+                  <div className="pt-0.5 flex items-center justify-center sm:justify-start text-[11px] font-mono text-primary font-semibold">
                     <span className="inline-flex items-center gap-1">
                       <MapPin className="h-3 w-3 shrink-0" />
                       Tejgaon Central Logistics Bay, Dhaka
                     </span>
-                    <span className="text-border hidden sm:inline">•</span>
-                    <a
-                      href="https://page.com.bd"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="hover:underline inline-flex items-center gap-1"
-                    >
-                      page.com.bd
-                    </a>
                   </div>
                 </div>
               </div>
