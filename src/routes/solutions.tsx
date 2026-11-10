@@ -151,6 +151,8 @@ export function Solutions() {
         eyebrow="B2B Commercial Solutions"
         title="Solutions for Automotive Businesses"
         intro="PAGE International equips the businesses that service vehicles. Whether setting up a new garage, transitioning to EV service, or outfitting a commercial fleet depot, we supply industrial machinery, verified spare parts, and workshop engineering."
+        image={images.solutionsHero}
+        imageAlt="PAGE International turnkey automotive workshop bay with 2-post lift, wheel balancer, EV diagnostics cart, and solutions engineer"
       >
         <div className="flex flex-wrap gap-3">
           <a
@@ -161,7 +163,7 @@ export function Solutions() {
           </a>
           <Link
             to="/shop"
-            className="btn btn-outline border-ink-border text-ink-foreground hover:bg-ink-2 h-11 px-6 text-xs font-bold uppercase tracking-wider"
+            className="btn btn-outline border-ink-border bg-black/35 text-ink-foreground hover:bg-ink-2 h-11 px-6 text-xs font-bold uppercase tracking-wider backdrop-blur-xs"
           >
             Browse Products
           </Link>

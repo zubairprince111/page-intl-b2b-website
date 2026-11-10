@@ -17,6 +17,7 @@ import motoLift from "@/assets/p-moto-lift.jpg";
 import evWorkshopBay from "@/assets/ev-workshop-bay.jpg";
 import commercial3wHub from "@/assets/commercial-3w-hub.jpg";
 import supportHero from "@/assets/support-hero.jpg";
+import solutionsHero from "@/assets/solutions-hero.jpg";
 
 export const images = {
   brakes,
@@ -34,6 +35,7 @@ export const images = {
   evWorkshopBay,
   commercial3wHub,
   supportHero,
+  solutionsHero,
   scanner,
   brakepads,
   battery,
