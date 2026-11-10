@@ -20,10 +20,16 @@ import supportHero from "@/assets/support-hero.jpg";
 import solutionsHero from "@/assets/solutions-hero.jpg";
 import {
   deriveProductStockStatus,
+  getDefaultProductPresentation,
   getDistinctProductFeatures,
   inferIsEquipment,
   resolveOrderedSpecs,
+  sanitizeGuaranteeBadges,
+  sanitizeHighlightTuples,
+  sanitizeVariantGroups,
+  type ProductGuaranteeBadge,
   type ProductLikeRow,
+  type ProductVariantGroup,
 } from "./product-utils";
 
 export const images = {
@@ -73,6 +79,11 @@ export type Product = {
   sku: string;
   description: string;
   specs: [string, string][];
+  highlights?: [string, string][] | undefined;
+  variantOptions?: ProductVariantGroup[] | undefined;
+  guarantees?: ProductGuaranteeBadge[] | undefined;
+  dispatchHub?: string | undefined;
+  priceLabel?: string | undefined;
   isEquipment?: boolean | undefined;
   requiresQuote?: boolean | undefined;
 };
@@ -1415,11 +1426,57 @@ export function mapDbProductToProduct(row: ProductLikeRow): Product {
       ? row.requiresQuote
       : (fallback?.requiresQuote ?? (isEquipment || price >= 50000));
 
+  const resolvedCategory =
+    row.category || fallback?.category || categories[0] || "Garage Equipment";
+  const resolvedSpecs = resolveOrderedSpecs(row.specs, fallback?.specs);
+  const defaults = getDefaultProductPresentation({
+    slug: row.slug,
+    category: resolvedCategory,
+    isEquipment,
+    requiresQuote,
+    specs: resolvedSpecs,
+  });
+
+  const resolvedHighlights =
+    row.highlights !== undefined && row.highlights !== null
+      ? sanitizeHighlightTuples(row.highlights)
+      : fallback?.highlights !== undefined
+        ? fallback.highlights
+        : defaults.highlights;
+
+  const resolvedVariants =
+    row.variantOptions !== undefined && row.variantOptions !== null
+      ? sanitizeVariantGroups(row.variantOptions)
+      : fallback?.variantOptions !== undefined
+        ? fallback.variantOptions
+        : defaults.variantOptions;
+
+  const resolvedGuarantees =
+    row.guarantees !== undefined && row.guarantees !== null
+      ? sanitizeGuaranteeBadges(row.guarantees)
+      : fallback?.guarantees !== undefined
+        ? fallback.guarantees
+        : defaults.guarantees;
+
+  const resolvedDispatchHub =
+    row.dispatchHub !== undefined && row.dispatchHub !== null
+      ? row.dispatchHub.trim()
+      : fallback?.dispatchHub !== undefined
+        ? fallback.dispatchHub
+        : defaults.dispatchHub;
+
+  const resolvedPriceLabel =
+    row.priceLabel !== undefined && row.priceLabel !== null
+      ? row.priceLabel.trim()
+      : fallback?.priceLabel !== undefined
+        ? fallback.priceLabel
+        : defaults.priceLabel;
+
   return {
     slug: row.slug,
     name: row.name,
     brand: row.brand || fallback?.brand || "PAGE Genuine",
-    category: row.category || fallback?.category || categories[0] || "Garage Equipment",
+    category: resolvedCategory,
     subcategory: row.subcategory || fallback?.subcategory || undefined,
     mobility: resolvedMobility.length > 0 ? resolvedMobility : ["4-Wheeler"],
     price,
@@ -1440,7 +1497,12 @@ export function mapDbProductToProduct(row: ProductLikeRow): Product {
     features: resolvedFeatures,
     sku: (row.sku && row.sku.trim()) || fallback?.sku || `PG-${row.slug.slice(0, 6).toUpperCase()}`,
     description: row.description || fallback?.description || row.name,
-    specs: resolveOrderedSpecs(row.specs, fallback?.specs),
+    specs: resolvedSpecs,
+    highlights: resolvedHighlights,
+    variantOptions: resolvedVariants,
+    guarantees: resolvedGuarantees,
+    dispatchHub: resolvedDispatchHub,
+    priceLabel: resolvedPriceLabel,
     isEquipment,
     requiresQuote,
   };

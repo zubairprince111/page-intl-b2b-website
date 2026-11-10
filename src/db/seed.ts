@@ -14,7 +14,7 @@ import {
 } from "./schema";
 import { runMigrations } from "./migrate";
 import { products } from "../lib/data";
-import { normalizeSpecsToTuples } from "../lib/product-utils";
+import { getDefaultProductPresentation, normalizeSpecsToTuples } from "../lib/product-utils";
 import { reviewsData } from "../lib/reviews";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
@@ -124,6 +124,13 @@ export async function initAndSeedDatabase() {
   // 3. Seed Machinery & Tools Catalog
   for (const p of products) {
     const specsTuples = normalizeSpecsToTuples(p.specs);
+    const presentation = getDefaultProductPresentation({
+      slug: p.slug,
+      category: p.category,
+      isEquipment: Boolean(p.isEquipment),
+      requiresQuote: Boolean(p.requiresQuote),
+      specs: specsTuples,
+    });
     await db
       .insert(productsTable)
       .values({
@@ -142,6 +149,11 @@ export async function initAndSeedDatabase() {
         badge: p.badge || null,
         description: p.description || p.name,
         specs: specsTuples,
+        highlights: presentation.highlights,
+        variantOptions: presentation.variantOptions,
+        guarantees: presentation.guarantees,
+        dispatchHub: presentation.dispatchHub,
+        priceLabel: presentation.priceLabel,
         features: p.features || [],
         images: [p.image],
         fits: p.fits || [],
@@ -158,6 +170,17 @@ export async function initAndSeedDatabase() {
         requiresQuote: Boolean(p.requiresQuote),
       })
       .where(and(eq(productsTable.slug, p.slug), isNull(productsTable.sku)));
+
+    await db
+      .update(productsTable)
+      .set({
+        highlights: presentation.highlights,
+        variantOptions: presentation.variantOptions,
+        guarantees: presentation.guarantees,
+        dispatchHub: presentation.dispatchHub,
+        priceLabel: presentation.priceLabel,
+      })
+      .where(and(eq(productsTable.slug, p.slug), isNull(productsTable.highlights)));
   }
 
   // 4. Seed Homepage Machinery Banners (2100x654 High-Resolution Showcases)

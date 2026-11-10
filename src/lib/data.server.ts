@@ -39,6 +39,12 @@ import {
   inferIsEquipment,
   normalizeSpecsToTuples,
   sanitizeFeatureLines,
+  sanitizeGuaranteeBadges,
+  sanitizeHighlightTuples,
+  sanitizeVariantGroups,
+  type ProductGuaranteeBadge,
+  type ProductVariantGroup,
+  type SpecTuple,
   type SpecsInput,
 } from "./product-utils";
 
@@ -789,6 +795,11 @@ export interface UpdateInventoryItemInput {
   badge?: string | undefined;
   description?: string | undefined;
   specs?: SpecsInput;
+  highlights?: SpecTuple[] | undefined;
+  variantOptions?: ProductVariantGroup[] | undefined;
+  guarantees?: ProductGuaranteeBadge[] | undefined;
+  dispatchHub?: string | undefined;
+  priceLabel?: string | undefined;
   features?: string[] | undefined;
   images?: string[] | undefined;
   fits?: string[] | undefined;
@@ -798,6 +809,12 @@ export async function updateInventoryItemCore(data: UpdateInventoryItemInput) {
   const admin = await requireAdmin();
 
   const normalizedSpecs = data.specs !== undefined ? normalizeSpecsToTuples(data.specs) : undefined;
+  const normalizedHighlights =
+    data.highlights !== undefined ? sanitizeHighlightTuples(data.highlights) : undefined;
+  const normalizedVariantOptions =
+    data.variantOptions !== undefined ? sanitizeVariantGroups(data.variantOptions) : undefined;
+  const normalizedGuarantees =
+    data.guarantees !== undefined ? sanitizeGuaranteeBadges(data.guarantees) : undefined;
   const normalizedFeatures =
     data.features !== undefined ? sanitizeFeatureLines(data.features) : undefined;
   const normalizedFits = data.fits !== undefined ? sanitizeFeatureLines(data.fits) : undefined;
@@ -824,6 +841,13 @@ export async function updateInventoryItemCore(data: UpdateInventoryItemInput) {
       ...(data.badge !== undefined ? { badge: data.badge || null } : {}),
       ...(data.description !== undefined ? { description: data.description.trim() } : {}),
       ...(normalizedSpecs !== undefined ? { specs: normalizedSpecs } : {}),
+      ...(normalizedHighlights !== undefined ? { highlights: normalizedHighlights } : {}),
+      ...(normalizedVariantOptions !== undefined
+        ? { variantOptions: normalizedVariantOptions }
+        : {}),
+      ...(normalizedGuarantees !== undefined ? { guarantees: normalizedGuarantees } : {}),
+      ...(data.dispatchHub !== undefined ? { dispatchHub: data.dispatchHub.trim() } : {}),
+      ...(data.priceLabel !== undefined ? { priceLabel: data.priceLabel.trim() } : {}),
       ...(normalizedFeatures !== undefined ? { features: normalizedFeatures } : {}),
       ...(data.images !== undefined ? { images: data.images } : {}),
       ...(normalizedFits !== undefined ? { fits: normalizedFits } : {}),
@@ -875,6 +899,11 @@ export interface CreateInventoryItemInput {
   badge?: string | undefined;
   description: string;
   specs?: SpecsInput;
+  highlights?: SpecTuple[] | undefined;
+  variantOptions?: ProductVariantGroup[] | undefined;
+  guarantees?: ProductGuaranteeBadge[] | undefined;
+  dispatchHub?: string | undefined;
+  priceLabel?: string | undefined;
   features?: string[] | undefined;
   images?: string[] | undefined;
   fits?: string[] | undefined;
@@ -885,6 +914,9 @@ export async function createInventoryItemCore(data: CreateInventoryItemInput) {
   const slug = data.slug.trim();
   const id = `prod-${slug}`;
   const normalizedSpecs = normalizeSpecsToTuples(data.specs);
+  const normalizedHighlights = sanitizeHighlightTuples(data.highlights || []);
+  const normalizedVariantOptions = sanitizeVariantGroups(data.variantOptions || []);
+  const normalizedGuarantees = sanitizeGuaranteeBadges(data.guarantees || []);
   const normalizedFeatures = sanitizeFeatureLines(data.features || []);
   const normalizedFits = sanitizeFeatureLines(data.fits || []);
   const isEquipment =
@@ -917,6 +949,11 @@ export async function createInventoryItemCore(data: CreateInventoryItemInput) {
       badge: data.badge || null,
       description: data.description.trim(),
       specs: normalizedSpecs,
+      highlights: normalizedHighlights,
+      variantOptions: normalizedVariantOptions,
+      guarantees: normalizedGuarantees,
+      dispatchHub: data.dispatchHub !== undefined ? data.dispatchHub.trim() : "",
+      priceLabel: data.priceLabel !== undefined ? data.priceLabel.trim() : "",
       features: normalizedFeatures,
       images: data.images || [],
       fits: normalizedFits,

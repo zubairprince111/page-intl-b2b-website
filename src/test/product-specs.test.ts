@@ -1,14 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   deriveProductStockStatus,
+  getDefaultProductPresentation,
   getDistinctProductFeatures,
+  hasProductWarranty,
   inferIsEquipment,
   normalizeSpecsToTuples,
   parseFitsText,
   parseSpecsText,
   resolveOrderedSpecs,
   sanitizeFeatureLines,
+  sanitizeGuaranteeBadges,
+  sanitizeHighlightRows,
+  sanitizeHighlightTuples,
   sanitizeSpecRows,
+  sanitizeVariantGroups,
 } from "@/lib/product-utils";
 import { mapDbProductToProduct } from "@/lib/data";
 import { createInventoryItemCore, updateInventoryItemCore } from "@/lib/data.server";
@@ -256,6 +262,106 @@ describe("Product Technical Specifications & Overview Utilities", () => {
       "In stock",
     );
   });
+
+  it("sanitizes configurable highlights, variant groups, and guarantee badges", () => {
+    expect(
+      sanitizeHighlightRows([
+        { key: "  Peak Flow  ", value: " 120 L/min " },
+        { key: "", value: " CE Approved High-Flow Nozzle " },
+        { key: "  ", value: "   " },
+      ]),
+    ).toEqual([
+      ["Peak Flow", "120 L/min"],
+      ["", "CE Approved High-Flow Nozzle"],
+    ]);
+
+    expect(
+      sanitizeHighlightTuples([
+        ["Input", " 220V "],
+        ["", ""],
+      ]),
+    ).toEqual([["Input", "220V"]]);
+
+    expect(
+      sanitizeVariantGroups([
+        { name: "  Pack Size ", options: ["1L Bottle", " 4L Can ", "1L Bottle", ""] },
+        { name: "Empty Group", options: [] },
+        { name: "", options: ["A", "B"] },
+      ]),
+    ).toEqual([{ name: "Pack Size", options: ["1L Bottle", "4L Can"] }]);
+
+    expect(
+      sanitizeGuaranteeBadges([
+        { title: " 12-Month ", subtitle: " Commercial Warranty " },
+        { title: "", subtitle: "" },
+      ]),
+    ).toEqual([{ title: "12-Month", subtitle: "Commercial Warranty" }]);
+  });
+
+  it("derives distinct per-product presentation defaults without forcing warranties or lift variants on fluids", () => {
+    const liftDefaults = getDefaultProductPresentation({
+      slug: "heavy-duty-2-post-lift-4t",
+      category: "Garage Equipment",
+      isEquipment: true,
+      requiresQuote: true,
+      specs: [
+        ["Lifting Capacity", "4,000 kg (4.0 Ton)"],
+        ["Max Lifting Height", "1,900 mm"],
+        ["Warranty", "24 months commercial warranty"],
+      ],
+    });
+    expect(liftDefaults.variantOptions.map((g) => g.name)).toEqual([
+      "Power & Voltage Supply",
+      "Lifting Arm Configuration",
+    ]);
+    expect(liftDefaults.guarantees).toContainEqual({
+      title: "2-Year",
+      subtitle: "Parts Warranty",
+    });
+    expect(hasProductWarranty({ guarantees: liftDefaults.guarantees, specs: [] })).toBe(true);
+
+    const fluidDefaults = getDefaultProductPresentation({
+      slug: "synthetic-dot4-high-boiling-brake-fluid-12l",
+      category: "Brakes",
+      isEquipment: false,
+      requiresQuote: false,
+      specs: [
+        ["Standard", "DOT 4 / SAE J1704"],
+        ["Dry Boiling Point", "265°C minimum"],
+      ],
+    });
+    expect(fluidDefaults.variantOptions).toEqual([]);
+    expect(fluidDefaults.guarantees.some((g) => /warranty/i.test(g.subtitle))).toBe(false);
+    expect(hasProductWarranty({ guarantees: fluidDefaults.guarantees, specs: [] })).toBe(false);
+    expect(fluidDefaults.priceLabel).toBe("B2B Unit Price");
+  });
+
+  it("preserves explicit empty presentation overrides in mapDbProductToProduct", () => {
+    const custom = mapDbProductToProduct({
+      slug: "no-warranty-Shop-cleaner",
+      sku: "CLN-01",
+      name: "Industrial Brake Cleaner Spray",
+      brand: "Lubrix",
+      category: "Brakes",
+      isEquipment: false,
+      requiresQuote: false,
+      priceBdt: 850,
+      description: "Fast-drying non-chlorinated brake & parts cleaner.",
+      specs: [["Volume", "500 ml"]],
+      highlights: [],
+      variantOptions: [],
+      guarantees: [],
+      dispatchHub: "",
+      priceLabel: "",
+    });
+
+    expect(custom.requiresQuote).toBe(false);
+    expect(custom.highlights).toEqual([]);
+    expect(custom.variantOptions).toEqual([]);
+    expect(custom.guarantees).toEqual([]);
+    expect(custom.dispatchHub).toBe("");
+    expect(custom.priceLabel).toBe("");
+  });
 });
 
 describe("Admin Inventory Create & Update Persistence", () => {
@@ -304,6 +410,11 @@ describe("Admin Inventory Create & Update Persistence", () => {
       isEquipment: true,
       requiresQuote: true,
       description: "Flush-mount electro-hydraulic 5.0T scissor alignment lift.",
+      highlights: [],
+      variantOptions: [],
+      guarantees: [],
+      dispatchHub: "",
+      priceLabel: "",
       specs: [
         ["Lifting Capacity", "5,000 kg"],
         ["Power Supply", "380V / 3-Phase"],
@@ -315,10 +426,22 @@ describe("Admin Inventory Create & Update Persistence", () => {
     expect(auditRows[0]).toMatchObject({ action: "inventory.create" });
   });
 
-  it("updates ordered specs, overview, SKU, and highlights cleanly without resetting untouched fields", async () => {
+  it("updates ordered specs, presentation badges, variants, highlights, hub, and pricing mode cleanly", async () => {
     const res = await updateInventoryItemCore({
       slug: "test-lift",
       sku: "PG-REV-2",
+      requiresQuote: false,
+      priceLabel: "Per Set Ex-Depot",
+      dispatchHub: "Uttara Equipment Hub",
+      highlights: [
+        ["Rated Load", "4,500 kg"],
+        ["Certification", "CE EN 1493"],
+      ],
+      variantOptions: [{ name: "Voltage", options: ["380V 3-Phase", "220V Single-Phase"] }],
+      guarantees: [
+        { title: "36-Month", subtitle: "Commercial Warranty" },
+        { title: "Same Day", subtitle: "Dhaka Dispatch" },
+      ],
       description: "Updated architectural overview text.",
       specs: [
         ["Rated Load", "4,500 kg"],
@@ -331,6 +454,18 @@ describe("Admin Inventory Create & Update Persistence", () => {
     expect(updatedPayloads).toHaveLength(1);
     expect(updatedPayloads[0]).toMatchObject({
       sku: "PG-REV-2",
+      requiresQuote: false,
+      priceLabel: "Per Set Ex-Depot",
+      dispatchHub: "Uttara Equipment Hub",
+      highlights: [
+        ["Rated Load", "4,500 kg"],
+        ["Certification", "CE EN 1493"],
+      ],
+      variantOptions: [{ name: "Voltage", options: ["380V 3-Phase", "220V Single-Phase"] }],
+      guarantees: [
+        { title: "36-Month", subtitle: "Commercial Warranty" },
+        { title: "Same Day", subtitle: "Dhaka Dispatch" },
+      ],
       description: "Updated architectural overview text.",
       specs: [
         ["Rated Load", "4,500 kg"],

@@ -13,11 +13,19 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { QuoteModal } from "@/components/site/QuoteModal";
-import { products, getProductBySlug, type Product } from "@/lib/data";
-import { getDistinctProductFeatures } from "@/lib/product-utils";
+import { products, getProductBySlug, taka, type Product } from "@/lib/data";
+import {
+  getDefaultProductPresentation,
+  getDistinctProductFeatures,
+  hasProductWarranty,
+  sanitizeGuaranteeBadges,
+  sanitizeHighlightTuples,
+  sanitizeVariantGroups,
+  type ProductVariantGroup,
+} from "@/lib/product-utils";
 import { getProductBySlugServerFn, listCatalogProductsServerFn } from "@/lib/server-functions";
 import { useCatalogProducts, useProductBySlug } from "@/lib/data-client";
 import { useCart } from "@/lib/cart";
@@ -119,25 +127,66 @@ function ProductPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
 
-  // Define configurable options dynamically (pre-select first item as default)
-  const voltageOptions = p.isEquipment
-    ? [
-        { id: "380v", label: "380V 3-Phase", desc: "Commercial High-Torque (Recommended)" },
-        { id: "220v", label: "220V Single-Phase", desc: "Standard Workshop Supply" },
-      ]
-    : [{ id: "standard", label: "OEM Standard Spec", desc: "Factory Specification" }];
+  const presentationDefaults = useMemo(
+    () =>
+      getDefaultProductPresentation({
+        slug: p.slug,
+        category: p.category,
+        isEquipment: Boolean(p.isEquipment),
+        requiresQuote: Boolean(p.requiresQuote),
+        specs: p.specs,
+      }),
+    [p.slug, p.category, p.isEquipment, p.requiresQuote, p.specs],
+  );
 
-  const armOptions =
-    p.isEquipment && p.slug.includes("lift")
-      ? [
-          { id: "standard", label: "Symmetric Telescopic Arms", desc: "Universal Workshop Fleet" },
-          { id: "asymmetric", label: "Asymmetric + EV Bay Arms", desc: "Low-profile EV Clearance" },
-        ]
-      : [];
+  const effectiveHighlights = useMemo(
+    () =>
+      p.highlights !== undefined
+        ? sanitizeHighlightTuples(p.highlights)
+        : presentationDefaults.highlights,
+    [p.highlights, presentationDefaults.highlights],
+  );
 
-  // Default option state (always pre-selected so customer can add directly to cart)
-  const [selectedVoltage, setSelectedVoltage] = useState(voltageOptions[0]?.id || "");
-  const [selectedArmType, setSelectedArmType] = useState(armOptions[0]?.id || "standard");
+  const effectiveVariantGroups = useMemo(
+    () =>
+      p.variantOptions !== undefined
+        ? sanitizeVariantGroups(p.variantOptions)
+        : presentationDefaults.variantOptions,
+    [p.variantOptions, presentationDefaults.variantOptions],
+  );
+
+  const effectiveGuarantees = useMemo(
+    () =>
+      p.guarantees !== undefined
+        ? sanitizeGuaranteeBadges(p.guarantees)
+        : presentationDefaults.guarantees,
+    [p.guarantees, presentationDefaults.guarantees],
+  );
+
+  const effectiveHub =
+    p.dispatchHub !== undefined ? p.dispatchHub.trim() : presentationDefaults.dispatchHub;
+  const effectivePriceLabel =
+    p.priceLabel !== undefined ? p.priceLabel.trim() : presentationDefaults.priceLabel;
+  const showUnitPrice = p.requiresQuote === false && p.price > 0;
+  const productHasWarranty = hasProductWarranty({
+    guarantees: effectiveGuarantees,
+    specs: p.specs,
+  });
+
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setQty(1);
+    setActiveImageIndex(0);
+    setQuoteModalOpen(false);
+    setSelectedOptions({});
+  }, [p.slug]);
+
+  const getActiveOption = (group: ProductVariantGroup): string => {
+    const chosen = selectedOptions[group.name];
+    if (chosen && group.options.includes(chosen)) return chosen;
+    return group.options[0] || "";
+  };
 
   const inCart = lines.some((l) => l.slug === p.slug);
 
@@ -158,16 +207,13 @@ function ProductPage() {
 
   const activeImage = galleryViews[activeImageIndex]?.img || p.image;
 
-  // Key Technical Highlights (First 4 specs for the right-hand highlight box)
-  const quickHighlights = p.specs.slice(0, 4);
-
   // Distinct key engineering advantages/features for the Overview section
   const distinctFeatures = useMemo(
     () => getDistinctProductFeatures(p.features, p.fits),
     [p.features, p.fits],
   );
 
-  // Technical spec rows (merge product specs + canonical catalog metadata without duplicate keys)
+  // Technical spec rows (merge product specs + selected variants + canonical catalog metadata)
   const fullTechnicalSpecRows = useMemo(() => {
     const existingKeys = new Set(p.specs.map(([k]) => k.trim().toLowerCase()));
     const rows: [string, string, boolean?][] = p.specs.map(([k, v]) => [k, v, false]);
@@ -181,18 +227,12 @@ function ProductPage() {
     appendIfMissing("Brand / Manufacturer", p.brand);
     appendIfMissing("Part / Model SKU", p.sku, true);
     appendIfMissing("Category", p.category);
-    if (voltageOptions.length > 1 || p.isEquipment) {
-      appendIfMissing(
-        "Power Supply",
-        selectedVoltage === "380v" ? "380V 3-Phase (Industrial)" : "220V Single-Phase",
-        true,
-      );
-    }
-    if (armOptions.length > 0) {
-      appendIfMissing(
-        "Arm Configuration",
-        selectedArmType === "asymmetric" ? "Asymmetric (EV Platform)" : "Symmetric Telescopic",
-      );
+    for (const group of effectiveVariantGroups) {
+      const chosen = selectedOptions[group.name];
+      const activeChoice = chosen && group.options.includes(chosen) ? chosen : group.options[0];
+      if (activeChoice) {
+        appendIfMissing(group.name, activeChoice);
+      }
     }
     if (p.mobility && p.mobility.length > 0) {
       appendIfMissing("Supported Vehicle Platforms", p.mobility.join(", "));
@@ -205,13 +245,10 @@ function ProductPage() {
     p.brand,
     p.sku,
     p.category,
-    p.isEquipment,
     p.mobility,
     p.stock,
-    voltageOptions.length,
-    selectedVoltage,
-    armOptions.length,
-    selectedArmType,
+    effectiveVariantGroups,
+    selectedOptions,
   ]);
 
   // Related products from same category or complementary equipment
@@ -363,12 +400,27 @@ function ProductPage() {
                 {p.name}
               </h1>
 
-              {/* Compact Price / Quotation & Stock Status (TechDiversity clean style) */}
+              {/* Compact Price / Quotation & Stock Status */}
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-zinc-600">
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-500">Price:</span>
-                  <span className="font-medium text-zinc-900">Quotation on Request</span>
-                  <span className="text-xs text-zinc-400 font-normal">(Pro-Forma B2B)</span>
+                  {showUnitPrice ? (
+                    <>
+                      <span className="font-semibold text-zinc-950 font-mono">{taka(p.price)}</span>
+                      {p.oldPrice && p.oldPrice > p.price && (
+                        <span className="text-xs text-zinc-400 line-through font-mono">
+                          {taka(p.oldPrice)}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="font-medium text-zinc-900">Quotation on Request</span>
+                  )}
+                  {effectivePriceLabel && (
+                    <span className="text-xs text-zinc-400 font-normal">
+                      ({effectivePriceLabel})
+                    </span>
+                  )}
                 </div>
                 <span className="text-zinc-300">|</span>
                 <span
@@ -383,100 +435,92 @@ function ProductPage() {
                   />
                   {p.stock}
                 </span>
-                <span className="text-zinc-300">|</span>
-                <span className="text-xs font-medium text-zinc-500">Dhaka Central Hub</span>
+                {effectiveHub && (
+                  <>
+                    <span className="text-zinc-300">|</span>
+                    <span className="text-xs font-medium text-zinc-500">{effectiveHub}</span>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Quick Highlight Description on Side */}
-            <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/70 p-4 sm:p-5">
-              <div className="flex items-center justify-between gap-2 mb-2.5">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800">
-                  Key Technical Highlights
-                </h3>
-                {isVehicleCompatible && vehicle && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    Fits {vehicle.make} {vehicle.model}
-                  </span>
-                )}
-              </div>
-              {quickHighlights.length > 0 ? (
+            {/* Key Technical Highlights (Configurable per product) */}
+            {effectiveHighlights.length > 0 ? (
+              <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/70 p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-2 mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800">
+                    Key Technical Highlights
+                  </h3>
+                  {isVehicleCompatible && vehicle && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                      Fits {vehicle.make} {vehicle.model}
+                    </span>
+                  )}
+                </div>
                 <ul className="space-y-2 text-sm text-zinc-700">
-                  {quickHighlights.map(([k, v]) => (
-                    <li key={k} className="flex items-start gap-2">
+                  {effectiveHighlights.map(([k, v], idx) => (
+                    <li key={`${k}-${idx}`} className="flex items-start gap-2">
                       <span className="text-primary font-bold mt-0.5">•</span>
                       <span>
-                        <strong className="font-semibold text-zinc-950">{k}:</strong> {v}
+                        {k && v ? (
+                          <>
+                            <strong className="font-semibold text-zinc-950">{k}:</strong> {v}
+                          </>
+                        ) : (
+                          <span className="font-medium text-zinc-900">{k || v}</span>
+                        )}
                       </span>
                     </li>
                   ))}
                 </ul>
-              ) : (
-                <p className="text-sm text-zinc-700 leading-relaxed line-clamp-3">
-                  {p.description}
-                </p>
-              )}
-            </div>
+              </div>
+            ) : isVehicleCompatible && vehicle ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-2.5 flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-emerald-800">
+                  Verified Workshop Match
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-white border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                  Fits {vehicle.make} {vehicle.model}
+                </span>
+              </div>
+            ) : null}
 
-            {/* Variant / Option Selectors (Customer can toggle, default pre-set) */}
-            <div className="space-y-4 pt-1">
-              {/* Option 1: Power & Voltage */}
-              {voltageOptions.length > 1 ? (
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-zinc-900 mb-2">
-                    Power &amp; Voltage Supply:
-                  </div>
-                  <div className="flex flex-wrap gap-2.5">
-                    {voltageOptions.map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setSelectedVoltage(opt.id)}
-                        className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-                          selectedVoltage === opt.id
-                            ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
-                            : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-xs text-zinc-500 flex items-center gap-2">
-                  <span className="font-semibold text-zinc-700">Specification:</span>
-                  <span className="font-mono bg-zinc-100 px-2.5 py-1 rounded-md text-zinc-800">
-                    {voltageOptions[0]?.label || "Standard"} (Default)
-                  </span>
-                </div>
-              )}
-
-              {/* Option 2: Arm / Carriage configuration (if applicable) */}
-              {armOptions.length > 0 && (
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-zinc-900 mb-2">
-                    Lifting Arm Configuration:
-                  </div>
-                  <div className="flex flex-wrap gap-2.5">
-                    {armOptions.map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setSelectedArmType(opt.id)}
-                        className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-                          selectedArmType === opt.id
-                            ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
-                            : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Configurable Variant / Option Selectors (Shown only when configured for this product) */}
+            {effectiveVariantGroups.length > 0 && (
+              <div className="space-y-4 pt-1">
+                {effectiveVariantGroups.map((group) => {
+                  const activeChoice = getActiveOption(group);
+                  return (
+                    <div key={group.name}>
+                      <div className="text-xs font-bold uppercase tracking-wider text-zinc-900 mb-2">
+                        {group.name}:
+                      </div>
+                      <div className="flex flex-wrap gap-2.5">
+                        {group.options.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() =>
+                              setSelectedOptions((prev) => ({
+                                ...prev,
+                                [group.name]: opt,
+                              }))
+                            }
+                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
+                              activeChoice === opt
+                                ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
+                                : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400"
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Quantity Stepper + Add to Cart + Request Quote */}
             <div className="pt-2 space-y-3">
@@ -542,21 +586,28 @@ function ProductPage() {
               </button>
             </div>
 
-            {/* Minimal Guarantees */}
-            <div className="pt-3 border-t border-zinc-200/80 grid grid-cols-3 gap-2 text-[11px] sm:text-xs text-zinc-600 font-medium text-center">
-              <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-zinc-50">
-                <span className="font-bold text-zinc-950">2–4 Days</span>
-                <span>Fast Hub Dispatch</span>
+            {/* Configurable Warranty, Dispatch & Certification Badges */}
+            {effectiveGuarantees.length > 0 && (
+              <div
+                className={`pt-3 border-t border-zinc-200/80 grid gap-2 text-[11px] sm:text-xs text-zinc-600 font-medium text-center ${
+                  effectiveGuarantees.length === 1
+                    ? "grid-cols-1"
+                    : effectiveGuarantees.length === 2
+                      ? "grid-cols-2"
+                      : "grid-cols-3"
+                }`}
+              >
+                {effectiveGuarantees.map((badge, idx) => (
+                  <div
+                    key={`${badge.title}-${badge.subtitle}-${idx}`}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-lg bg-zinc-50"
+                  >
+                    {badge.title && <span className="font-bold text-zinc-950">{badge.title}</span>}
+                    {badge.subtitle && <span>{badge.subtitle}</span>}
+                  </div>
+                ))}
               </div>
-              <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-zinc-50">
-                <span className="font-bold text-zinc-950">2-Year</span>
-                <span>Parts Warranty</span>
-              </div>
-              <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-zinc-50">
-                <span className="font-bold text-zinc-950">Certified</span>
-                <span>CE European Standard</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -628,8 +679,15 @@ function ProductPage() {
 
               <p className="text-zinc-600">
                 Supplied directly by PAGE International to automotive service centers, dealership
-                workshops, and commercial fleet depots with factory-backed warranty coverage and
-                technical commissioning support from our Dhaka Central Hub.
+                workshops, and commercial fleet depots{" "}
+                {productHasWarranty && p.isEquipment
+                  ? "with factory-backed warranty coverage and technical commissioning support"
+                  : productHasWarranty
+                    ? "with factory-backed warranty coverage"
+                    : p.isEquipment
+                      ? "with technical commissioning support"
+                      : "with verified OEM specification assurance"}{" "}
+                {effectiveHub ? `from our ${effectiveHub}` : "across Bangladesh"}.
               </p>
 
               {distinctFeatures.length > 0 ? (
@@ -643,7 +701,7 @@ function ProductPage() {
                     ))}
                   </ul>
                 </div>
-              ) : p.slug.includes("lift") ? (
+              ) : p.slug === "heavy-duty-2-post-lift-4t" ? (
                 <div className="pt-5 border-t border-zinc-100">
                   <h3 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
                     Key Engineering Advantages
@@ -668,15 +726,16 @@ function ProductPage() {
                     <li>
                       {p.isEquipment
                         ? "Industrial-grade workshop machinery engineered for continuous daily bay throughput."
-                        : "Certified OEM-spec commercial replacement part built for extended fleet durability."}
+                        : "Genuine commercial automotive component supplied for reliable fleet and workshop service."}
                     </li>
                     <li>
                       Verified quality compliance supported by PAGE International technical
                       specialists.
                     </li>
                     <li>
-                      Available for B2B wholesale pricing, VAT commercial invoicing, and nationwide
-                      delivery from Dhaka.
+                      Available for B2B wholesale pricing, VAT commercial invoicing, and{" "}
+                      {effectiveHub ? `dispatch from ${effectiveHub}` : "nationwide fleet delivery"}
+                      .
                     </li>
                   </ul>
                 </div>

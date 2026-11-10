@@ -2,6 +2,16 @@ export type SpecTuple = [string, string];
 export type SpecsInput = Record<string, string> | SpecTuple[] | null | undefined;
 export type ProductStockLabel = "In stock" | "Low stock" | "Out of stock";
 
+export interface ProductVariantGroup {
+  name: string;
+  options: string[];
+}
+
+export interface ProductGuaranteeBadge {
+  title: string;
+  subtitle: string;
+}
+
 export interface ProductLikeRow {
   slug: string;
   sku?: string | null | undefined;
@@ -20,6 +30,11 @@ export interface ProductLikeRow {
   badge?: string | null | undefined;
   description: string;
   specs?: SpecsInput;
+  highlights?: SpecTuple[] | null | undefined;
+  variantOptions?: ProductVariantGroup[] | null | undefined;
+  guarantees?: ProductGuaranteeBadge[] | null | undefined;
+  dispatchHub?: string | null | undefined;
+  priceLabel?: string | null | undefined;
   features?: string[] | null | undefined;
   images?: string[] | null | undefined;
   image?: string | null | undefined;
@@ -204,4 +219,152 @@ export function resolveOrderedSpecs(
   }
 
   return normalized;
+}
+
+/**
+ * Sanitizes highlight tuples `[label, detail]` allowing either both parts
+ * (e.g. `Lifting Capacity: 4,000 kg`) or single-string highlights (`["", "..."]`).
+ */
+export function sanitizeHighlightRows(rows: { key: string; value: string }[]): SpecTuple[] {
+  const result: SpecTuple[] = [];
+  for (const row of rows) {
+    const key = (row.key || "").trim();
+    const value = (row.value || "").trim();
+    if (!key && !value) continue;
+    result.push([key, value]);
+  }
+  return result;
+}
+
+export function sanitizeHighlightTuples(highlights: SpecTuple[] | null | undefined): SpecTuple[] {
+  if (!Array.isArray(highlights)) return [];
+  const result: SpecTuple[] = [];
+  for (const entry of highlights) {
+    if (!Array.isArray(entry) || entry.length < 2) continue;
+    const key = String(entry[0] ?? "").trim();
+    const value = String(entry[1] ?? "").trim();
+    if (!key && !value) continue;
+    result.push([key, value]);
+  }
+  return result;
+}
+
+export function sanitizeVariantGroups(
+  groups: ProductVariantGroup[] | null | undefined,
+): ProductVariantGroup[] {
+  if (!Array.isArray(groups)) return [];
+  const result: ProductVariantGroup[] = [];
+  for (const group of groups) {
+    const name = String(group?.name ?? "").trim();
+    const rawOpts = Array.isArray(group?.options) ? group.options : [];
+    const options = Array.from(
+      new Set(rawOpts.map((opt) => String(opt ?? "").trim()).filter((opt) => opt.length > 0)),
+    );
+    if (!name || options.length === 0) continue;
+    result.push({ name, options });
+  }
+  return result;
+}
+
+export function sanitizeGuaranteeBadges(
+  badges: ProductGuaranteeBadge[] | null | undefined,
+): ProductGuaranteeBadge[] {
+  if (!Array.isArray(badges)) return [];
+  const result: ProductGuaranteeBadge[] = [];
+  for (const item of badges) {
+    const title = String(item?.title ?? "").trim();
+    const subtitle = String(item?.subtitle ?? "").trim();
+    if (!title && !subtitle) continue;
+    result.push({ title, subtitle });
+  }
+  return result;
+}
+
+export function parseGuaranteeFromWarrantySpec(warrantyText: string): ProductGuaranteeBadge | null {
+  const clean = (warrantyText || "").trim();
+  if (!clean) return null;
+  if (/lifetime/i.test(clean)) {
+    return { title: "Lifetime", subtitle: "Forging Warranty" };
+  }
+  const monthMatch = clean.match(/(\d+)\s*month/i);
+  if (monthMatch?.[1]) {
+    const months = Number(monthMatch[1]);
+    if (months === 24) return { title: "2-Year", subtitle: "Parts Warranty" };
+    if (months === 36) return { title: "3-Year", subtitle: "Manufacturer Warranty" };
+    if (months > 0) return { title: `${months}-Month`, subtitle: "Commercial Warranty" };
+  }
+  const yearMatch = clean.match(/(\d+)\s*year/i);
+  if (yearMatch?.[1]) {
+    return { title: `${yearMatch[1]}-Year`, subtitle: "Commercial Warranty" };
+  }
+  return { title: "Included", subtitle: "Manufacturer Warranty" };
+}
+
+export function getDefaultProductPresentation(opts: {
+  slug: string;
+  category: string;
+  isEquipment: boolean;
+  requiresQuote: boolean;
+  specs: SpecTuple[];
+}): {
+  highlights: SpecTuple[];
+  variantOptions: ProductVariantGroup[];
+  guarantees: ProductGuaranteeBadge[];
+  dispatchHub: string;
+  priceLabel: string;
+} {
+  const highlights = opts.specs.slice(0, 4);
+
+  const variantOptions: ProductVariantGroup[] = [];
+  const specJoined = opts.specs.map(([k, v]) => `${k} ${v}`).join(" ");
+  const hasDualVoltage =
+    opts.isEquipment &&
+    (/220v\s*(or|\/)\s*380v/i.test(specJoined) || opts.slug === "heavy-duty-2-post-lift-4t");
+  if (hasDualVoltage) {
+    variantOptions.push({
+      name: "Power & Voltage Supply",
+      options: ["380V 3-Phase", "220V Single-Phase"],
+    });
+  }
+  if (opts.isEquipment && opts.slug === "heavy-duty-2-post-lift-4t") {
+    variantOptions.push({
+      name: "Lifting Arm Configuration",
+      options: ["Symmetric Telescopic Arms", "Asymmetric + EV Bay Arms"],
+    });
+  }
+
+  const guarantees: ProductGuaranteeBadge[] = [
+    { title: "2–4 Days", subtitle: "Fast Hub Dispatch" },
+  ];
+  const warrantySpec = opts.specs.find(([k]) => /warranty/i.test(k));
+  const parsedWarranty = warrantySpec ? parseGuaranteeFromWarrantySpec(warrantySpec[1]) : null;
+  if (parsedWarranty) {
+    guarantees.push(parsedWarranty);
+  }
+  if (opts.slug.includes("ev-1000v")) {
+    guarantees.push({ title: "IEC 60900", subtitle: "1000V VDE Certified" });
+  } else if (opts.isEquipment) {
+    guarantees.push({ title: "Certified", subtitle: "CE European Standard" });
+  } else if (opts.category === "Lubricants & Fluids" || opts.category === "Brakes") {
+    guarantees.push({ title: "Genuine Spec", subtitle: "Factory Sealed" });
+  }
+
+  return {
+    highlights,
+    variantOptions,
+    guarantees,
+    dispatchHub: "Dhaka Central Hub",
+    priceLabel: opts.requiresQuote ? "Pro-Forma B2B" : "B2B Unit Price",
+  };
+}
+
+export function hasProductWarranty(opts: {
+  guarantees?: ProductGuaranteeBadge[] | undefined;
+  specs?: SpecTuple[] | undefined;
+}): boolean {
+  const inBadges = (opts.guarantees || []).some((g) =>
+    /warranty/i.test(`${g.title} ${g.subtitle}`),
+  );
+  if (inBadges) return true;
+  return (opts.specs || []).some(([k]) => /warranty/i.test(k));
 }
