@@ -34,6 +34,13 @@ import {
   isResendSandboxFrom,
 } from "./email.server";
 import { ensureServerEnvLoaded } from "./env.server";
+import { mapDbProductToProduct, products as staticProducts, type Product } from "./data";
+import {
+  inferIsEquipment,
+  normalizeSpecsToTuples,
+  sanitizeFeatureLines,
+  type SpecsInput,
+} from "./product-utils";
 
 // -----------------------------------------------------------------------------
 // HELPER: Require Admin Privileges
@@ -738,30 +745,88 @@ export async function listInventoryCore() {
   return await db.select().from(productsTable).orderBy(asc(productsTable.name));
 }
 
-export async function updateInventoryItemCore(data: {
+export async function listCatalogProductsCore(): Promise<Product[]> {
+  const rows = await db.select().from(productsTable).orderBy(desc(productsTable.createdAt));
+  if (rows.length === 0) {
+    return staticProducts;
+  }
+
+  const staticIndexMap = new Map(staticProducts.map((p, idx) => [p.slug, idx]));
+  const mapped = rows.map((row) => mapDbProductToProduct(row));
+  return mapped.sort((a, b) => {
+    const idxA = staticIndexMap.get(a.slug);
+    const idxB = staticIndexMap.get(b.slug);
+    if (idxA === undefined && idxB === undefined) return 0; // keep newest custom products first
+    if (idxA === undefined) return -1;
+    if (idxB === undefined) return 1;
+    return idxA - idxB;
+  });
+}
+
+export async function getProductBySlugCore(slug: string): Promise<Product | null> {
+  const rows = await db.select().from(productsTable).where(eq(productsTable.slug, slug)).limit(1);
+  if (rows[0]) {
+    return mapDbProductToProduct(rows[0]);
+  }
+  const fallback = staticProducts.find((p) => p.slug === slug);
+  return fallback || null;
+}
+
+export interface UpdateInventoryItemInput {
   slug: string;
+  sku?: string | undefined;
   name?: string | undefined;
+  brand?: string | undefined;
+  category?: string | undefined;
+  subcategory?: string | undefined;
+  mobility?: string[] | undefined;
+  isEquipment?: boolean | undefined;
+  requiresQuote?: boolean | undefined;
   priceBdt?: number | undefined;
   inStock?: boolean | undefined;
   warehouseQty?: number | undefined;
   reorderLevel?: number | undefined;
   badge?: string | undefined;
-  category?: string | undefined;
   description?: string | undefined;
-}) {
+  specs?: SpecsInput;
+  features?: string[] | undefined;
+  images?: string[] | undefined;
+  fits?: string[] | undefined;
+}
+
+export async function updateInventoryItemCore(data: UpdateInventoryItemInput) {
   const admin = await requireAdmin();
+
+  const normalizedSpecs = data.specs !== undefined ? normalizeSpecsToTuples(data.specs) : undefined;
+  const normalizedFeatures =
+    data.features !== undefined ? sanitizeFeatureLines(data.features) : undefined;
+  const normalizedFits = data.fits !== undefined ? sanitizeFeatureLines(data.fits) : undefined;
 
   const [updated] = await db
     .update(productsTable)
     .set({
-      ...(data.name !== undefined ? { name: data.name } : {}),
-      ...(data.priceBdt !== undefined ? { priceBdt: data.priceBdt } : {}),
+      ...(data.sku !== undefined ? { sku: data.sku.trim() || null } : {}),
+      ...(data.name !== undefined ? { name: data.name.trim() } : {}),
+      ...(data.brand !== undefined ? { brand: data.brand.trim() || "PAGE Genuine" } : {}),
+      ...(data.category !== undefined ? { category: data.category.trim() } : {}),
+      ...(data.subcategory !== undefined ? { subcategory: data.subcategory || null } : {}),
+      ...(data.mobility !== undefined ? { mobility: data.mobility } : {}),
+      ...(data.isEquipment !== undefined ? { isEquipment: data.isEquipment } : {}),
+      ...(data.requiresQuote !== undefined ? { requiresQuote: data.requiresQuote } : {}),
+      ...(data.priceBdt !== undefined ? { priceBdt: Math.max(0, Number(data.priceBdt) || 0) } : {}),
       ...(data.inStock !== undefined ? { inStock: data.inStock } : {}),
-      ...(data.warehouseQty !== undefined ? { warehouseQty: data.warehouseQty } : {}),
-      ...(data.reorderLevel !== undefined ? { reorderLevel: data.reorderLevel } : {}),
-      ...(data.badge !== undefined ? { badge: data.badge } : {}),
-      ...(data.category !== undefined ? { category: data.category } : {}),
-      ...(data.description !== undefined ? { description: data.description } : {}),
+      ...(data.warehouseQty !== undefined
+        ? { warehouseQty: Math.max(0, Math.floor(Number(data.warehouseQty) || 0)) }
+        : {}),
+      ...(data.reorderLevel !== undefined
+        ? { reorderLevel: Math.max(0, Math.floor(Number(data.reorderLevel) || 0)) }
+        : {}),
+      ...(data.badge !== undefined ? { badge: data.badge || null } : {}),
+      ...(data.description !== undefined ? { description: data.description.trim() } : {}),
+      ...(normalizedSpecs !== undefined ? { specs: normalizedSpecs } : {}),
+      ...(normalizedFeatures !== undefined ? { features: normalizedFeatures } : {}),
+      ...(data.images !== undefined ? { images: data.images } : {}),
+      ...(normalizedFits !== undefined ? { fits: normalizedFits } : {}),
       updatedAt: new Date(),
     })
     .where(eq(productsTable.slug, data.slug))
@@ -776,7 +841,13 @@ export async function updateInventoryItemCore(data: {
         action: "inventory.update",
         entityType: "product",
         entityId: updated.id,
-        metadata: { slug: data.slug, priceBdt: data.priceBdt, warehouseQty: data.warehouseQty },
+        metadata: {
+          slug: data.slug,
+          sku: data.sku,
+          priceBdt: data.priceBdt,
+          warehouseQty: data.warehouseQty,
+          specsCount: normalizedSpecs?.length,
+        },
         ipAddress: getClientIp(),
       });
     } catch {
@@ -787,47 +858,87 @@ export async function updateInventoryItemCore(data: {
   return { success: true, product: updated };
 }
 
-export async function createInventoryItemCore(data: {
+export interface CreateInventoryItemInput {
   slug: string;
+  sku?: string | undefined;
   name: string;
   brand: string;
   category: string;
   subcategory?: string | undefined;
+  mobility?: string[] | undefined;
+  isEquipment?: boolean | undefined;
+  requiresQuote?: boolean | undefined;
   priceBdt: number;
   inStock?: boolean | undefined;
   warehouseQty?: number | undefined;
   reorderLevel?: number | undefined;
   badge?: string | undefined;
   description: string;
-  specs?: Record<string, string> | undefined;
+  specs?: SpecsInput;
   features?: string[] | undefined;
   images?: string[] | undefined;
   fits?: string[] | undefined;
-}) {
+}
+
+export async function createInventoryItemCore(data: CreateInventoryItemInput) {
   const admin = await requireAdmin();
-  const id = `prod-${data.slug}`;
+  const slug = data.slug.trim();
+  const id = `prod-${slug}`;
+  const normalizedSpecs = normalizeSpecsToTuples(data.specs);
+  const normalizedFeatures = sanitizeFeatureLines(data.features || []);
+  const normalizedFits = sanitizeFeatureLines(data.fits || []);
+  const isEquipment =
+    data.isEquipment !== undefined ? data.isEquipment : inferIsEquipment(data.category);
+  const priceBdt = Math.max(0, Number(data.priceBdt) || 0);
+  const warehouseQty =
+    data.warehouseQty !== undefined ? Math.max(0, Math.floor(Number(data.warehouseQty) || 0)) : 10;
+  const reorderLevel =
+    data.reorderLevel !== undefined ? Math.max(0, Math.floor(Number(data.reorderLevel) || 0)) : 2;
+  const sku = (data.sku || "").trim() || `PG-${slug.slice(0, 6).toUpperCase()}`;
 
   const [created] = await db
     .insert(productsTable)
     .values({
       id,
-      slug: data.slug,
-      name: data.name,
-      brand: data.brand,
-      category: data.category,
+      slug,
+      sku,
+      name: data.name.trim(),
+      brand: (data.brand || "").trim() || "PAGE Genuine",
+      category: data.category.trim(),
       subcategory: data.subcategory || null,
-      priceBdt: data.priceBdt,
-      inStock: data.inStock !== undefined ? data.inStock : true,
-      warehouseQty: data.warehouseQty !== undefined ? data.warehouseQty : 10,
-      reorderLevel: data.reorderLevel !== undefined ? data.reorderLevel : 2,
+      mobility: data.mobility && data.mobility.length > 0 ? data.mobility : ["4-Wheeler"],
+      isEquipment,
+      requiresQuote:
+        data.requiresQuote !== undefined ? data.requiresQuote : isEquipment || priceBdt >= 50000,
+      priceBdt,
+      inStock: data.inStock !== undefined ? data.inStock : warehouseQty > 0,
+      warehouseQty,
+      reorderLevel,
       badge: data.badge || null,
-      description: data.description,
-      specs: data.specs || {},
-      features: data.features || [],
+      description: data.description.trim(),
+      specs: normalizedSpecs,
+      features: normalizedFeatures,
       images: data.images || [],
-      fits: data.fits || [],
+      fits: normalizedFits,
     })
     .returning();
+
+  if (created) {
+    try {
+      await db.insert(auditLog).values({
+        id: `audit-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+        actorId: admin.id,
+        actorEmail: admin.email,
+        action: "inventory.create",
+        entityType: "product",
+        entityId: created.id,
+        metadata: { slug: created.slug, sku, name: created.name },
+        ipAddress: getClientIp(),
+      });
+    } catch {
+      // Non-blocking
+    }
+  }
 
   return { success: true, product: created };
 }

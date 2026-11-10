@@ -15,6 +15,13 @@
       "when": 1794202954552,
       "tag": "0001_flashy_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794308168648,
+      "tag": "0002_white_steve_rogers",
+      "breakpoints": true
     }
   ]
 }

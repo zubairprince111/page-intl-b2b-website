@@ -1,14 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Car,
   Check,
   CheckCircle2,
+  ClipboardList,
   FileSpreadsheet,
+  FileText,
   Maximize2,
   Minus,
   Plus,
-  Send,
   Wrench,
   X,
   Zap,
@@ -16,14 +16,30 @@ import {
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { QuoteModal } from "@/components/site/QuoteModal";
-import { products, getShopProducts, getProductBySlug, type Product } from "@/lib/data";
+import { products, getProductBySlug, type Product } from "@/lib/data";
+import { getDistinctProductFeatures } from "@/lib/product-utils";
+import { getProductBySlugServerFn, listCatalogProductsServerFn } from "@/lib/server-functions";
+import { useCatalogProducts, useProductBySlug } from "@/lib/data-client";
 import { useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/shop/$slug")({
-  loader: ({ params }) => {
-    const p = getProductBySlug(params.slug);
+  loader: async ({ params }) => {
+    let p: Product | null = null;
+    let initialCatalog: Product[] = products;
+    try {
+      const [loadedProduct, loadedCatalog] = await Promise.all([
+        getProductBySlugServerFn({ data: { slug: params.slug } }),
+        listCatalogProductsServerFn(),
+      ]);
+      p = loadedProduct;
+      if (loadedCatalog && loadedCatalog.length > 0) {
+        initialCatalog = loadedCatalog;
+      }
+    } catch {
+      p = getProductBySlug(params.slug) || null;
+    }
     if (!p) throw notFound();
-    return { p };
+    return { p, initialCatalog };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -91,13 +107,14 @@ export const Route = createFileRoute("/shop/$slug")({
   component: ProductPage,
 });
 
-type TabType = "description" | "specs";
-
 function ProductPage() {
-  const { p } = Route.useLoaderData();
+  const { p: initialProduct, initialCatalog } = Route.useLoaderData();
+  const { data: liveProduct } = useProductBySlug(initialProduct.slug, initialProduct);
+  const { data: liveCatalog } = useCatalogProducts(initialCatalog);
+  const p = liveProduct || initialProduct;
+
   const { add, vehicle, lines } = useCart();
   const [qty, setQty] = useState(1);
-  const [tab, setTab] = useState<TabType>("description");
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
@@ -129,21 +146,76 @@ function ProductPage() {
 
   // Gallery view configurations
   const galleryViews = useMemo(() => {
-    return [
-      { id: "main", label: "Front View", img: p.image },
-      { id: "mechanism", label: "Hydraulic Core", img: p.image },
-      { id: "safety", label: "Safety Lock", img: p.image },
-      { id: "bay", label: "Workshop Scale", img: p.image },
-    ];
-  }, [p.image]);
+    const rawList = p.images && p.images.length > 0 ? p.images : [p.image];
+    const unique = Array.from(new Set(rawList.filter(Boolean)));
+    const sourceImages = unique.length > 0 ? unique : [p.image];
+    return sourceImages.map((img, idx) => ({
+      id: `view-${idx}`,
+      label: idx === 0 ? "Primary View" : `Detail View ${idx + 1}`,
+      img,
+    }));
+  }, [p.images, p.image]);
 
   const activeImage = galleryViews[activeImageIndex]?.img || p.image;
 
-  // Key Technical Highlights (First 4-5 specs for the right-hand highlight box)
+  // Key Technical Highlights (First 4 specs for the right-hand highlight box)
   const quickHighlights = p.specs.slice(0, 4);
 
+  // Distinct key engineering advantages/features for the Overview section
+  const distinctFeatures = useMemo(
+    () => getDistinctProductFeatures(p.features, p.fits),
+    [p.features, p.fits],
+  );
+
+  // Technical spec rows (merge product specs + canonical catalog metadata without duplicate keys)
+  const fullTechnicalSpecRows = useMemo(() => {
+    const existingKeys = new Set(p.specs.map(([k]) => k.trim().toLowerCase()));
+    const rows: [string, string, boolean?][] = p.specs.map(([k, v]) => [k, v, false]);
+
+    const appendIfMissing = (label: string, val: string | undefined, mono = false) => {
+      if (!val || !val.trim()) return;
+      if (existingKeys.has(label.toLowerCase())) return;
+      rows.push([label, val, mono]);
+    };
+
+    appendIfMissing("Brand / Manufacturer", p.brand);
+    appendIfMissing("Part / Model SKU", p.sku, true);
+    appendIfMissing("Category", p.category);
+    if (voltageOptions.length > 1 || p.isEquipment) {
+      appendIfMissing(
+        "Power Supply",
+        selectedVoltage === "380v" ? "380V 3-Phase (Industrial)" : "220V Single-Phase",
+        true,
+      );
+    }
+    if (armOptions.length > 0) {
+      appendIfMissing(
+        "Arm Configuration",
+        selectedArmType === "asymmetric" ? "Asymmetric (EV Platform)" : "Symmetric Telescopic",
+      );
+    }
+    if (p.mobility && p.mobility.length > 0) {
+      appendIfMissing("Supported Vehicle Platforms", p.mobility.join(", "));
+    }
+    appendIfMissing("Availability", p.stock);
+
+    return rows;
+  }, [
+    p.specs,
+    p.brand,
+    p.sku,
+    p.category,
+    p.isEquipment,
+    p.mobility,
+    p.stock,
+    voltageOptions.length,
+    selectedVoltage,
+    armOptions.length,
+    selectedArmType,
+  ]);
+
   // Related products from same category or complementary equipment
-  const allCatalog = getShopProducts();
+  const allCatalog = liveCatalog && liveCatalog.length > 0 ? liveCatalog : initialCatalog;
   const sameCategory = allCatalog.filter((x) => x.slug !== p.slug && x.category === p.category);
   const otherItems = allCatalog.filter((x) => x.slug !== p.slug && x.category !== p.category);
   const related = [...sameCategory, ...otherItems].slice(0, 4);
@@ -251,49 +323,43 @@ function ProductPage() {
               />
             </div>
 
-            {/* Thumbnail Switcher (Clean, simple row) */}
-            <div className="grid grid-cols-4 gap-3">
-              {galleryViews.map((item, idx) => {
-                const isActive = activeImageIndex === idx;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer ${
-                      isActive
-                        ? "border-primary ring-2 ring-primary/20 shadow-xs"
-                        : "border-zinc-200 hover:border-zinc-400"
-                    }`}
-                  >
-                    <img
-                      src={item.img}
-                      alt={item.label}
-                      className="h-full w-full object-cover object-center"
-                    />
-                    <span className="sr-only">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* Thumbnail Switcher (Shown when product has multiple gallery images) */}
+            {galleryViews.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {galleryViews.map((item, idx) => {
+                  const isActive = activeImageIndex === idx;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer ${
+                        isActive
+                          ? "border-primary ring-2 ring-primary/20 shadow-xs"
+                          : "border-zinc-200 hover:border-zinc-400"
+                      }`}
+                    >
+                      <img
+                        src={item.img}
+                        alt={item.label}
+                        className="h-full w-full object-cover object-center"
+                      />
+                      <span className="sr-only">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* ==================================================== */}
           {/* RIGHT COLUMN: Minimalist Product Details & Buy Block  */}
           {/* ==================================================== */}
           <div className="lg:col-span-6 flex flex-col space-y-5">
-            {/* Brand, Category, SKU */}
+            {/* Title & Status */}
             <div>
-              <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-zinc-500">
-                <span className="text-primary font-bold">{p.brand}</span>
-                <span>•</span>
-                <span>{p.category}</span>
-                <span>•</span>
-                <span>SKU: {p.sku}</span>
-              </div>
-
               {/* Title */}
-              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-zinc-950 mt-1.5 leading-tight">
+              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-zinc-950 leading-tight">
                 {p.name}
               </h1>
 
@@ -324,19 +390,32 @@ function ProductPage() {
 
             {/* Quick Highlight Description on Side */}
             <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/70 p-4 sm:p-5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800 mb-2.5">
-                Key Technical Highlights:
-              </h3>
-              <ul className="space-y-2 text-sm text-zinc-700">
-                {quickHighlights.map(([k, v]) => (
-                  <li key={k} className="flex items-start gap-2">
-                    <span className="text-primary font-bold mt-0.5">•</span>
-                    <span>
-                      <strong className="font-semibold text-zinc-950">{k}:</strong> {v}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div className="flex items-center justify-between gap-2 mb-2.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800">
+                  Key Technical Highlights
+                </h3>
+                {isVehicleCompatible && vehicle && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    Fits {vehicle.make} {vehicle.model}
+                  </span>
+                )}
+              </div>
+              {quickHighlights.length > 0 ? (
+                <ul className="space-y-2 text-sm text-zinc-700">
+                  {quickHighlights.map(([k, v]) => (
+                    <li key={k} className="flex items-start gap-2">
+                      <span className="text-primary font-bold mt-0.5">•</span>
+                      <span>
+                        <strong className="font-semibold text-zinc-950">{k}:</strong> {v}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-zinc-700 leading-relaxed line-clamp-3">
+                  {p.description}
+                </p>
+              )}
             </div>
 
             {/* Variant / Option Selectors (Customer can toggle, default pre-set) */}
@@ -489,108 +568,146 @@ function ProductPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* LOWER SECTION: FULL PRODUCT DETAILS & SPECS               */}
+      {/* LOWER SECTION: TECHNICAL SPECIFICATIONS -> PRODUCT OVERVIEW */}
       {/* ======================================================== */}
       <section className="border-t border-zinc-200 bg-zinc-50/50 py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Clean Tab Switcher */}
-          <div className="border-b border-zinc-200 mb-8 flex items-center gap-2 sm:gap-6 overflow-x-auto">
-            {[
-              { id: "description", label: "Product Overview" },
-              { id: "specs", label: "Technical Specifications" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id as TabType)}
-                className={`py-3 px-1 text-sm sm:text-base font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
-                  tab === t.id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-zinc-500 hover:text-zinc-900"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab 1: Description */}
-          {tab === "description" && (
-            <div className="max-w-4xl bg-white p-6 sm:p-8 rounded-2xl border border-zinc-200 shadow-xs space-y-5 text-sm sm:text-base text-zinc-700 leading-relaxed">
-              <h3 className="text-lg font-bold text-zinc-950">Detailed Product Overview</h3>
-              <p>{p.description}</p>
-              <p>
-                Supplied directly to professional automotive service centers, dealership workshops,
-                and commercial fleet depots. Engineered for continuous operation with reinforced
-                dual hydraulic lifting cylinders and precision synchronization cables.
-              </p>
-              <div className="pt-4 border-t border-zinc-100">
-                <h4 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
-                  Key Engineering Advantages:
-                </h4>
-                <ul className="list-disc pl-5 space-y-2 text-zinc-700">
-                  <li>
-                    Reinforced dual-column laser cut structural steel with heavy-duty baseplates.
-                  </li>
-                  <li>
-                    Electro-hydraulic synchronization ensuring smooth, level carriage movement.
-                  </li>
-                  <li>Integrated mechanical safety ladders with automatic solenoid release.</li>
-                  <li>Tested to 115% dynamic load and 150% static structural benchmark.</li>
-                </ul>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* 1. TECHNICAL SPECIFICATIONS (FIRST) */}
+          <div id="technical-specifications" className="scroll-mt-24">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
+              <div>
+                <p className="text-xs font-mono font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                  <ClipboardList className="h-3.5 w-3.5" />
+                  <span>Engineering Datasheet</span>
+                </p>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 mt-1">
+                  Technical Specifications
+                </h2>
               </div>
+              <a
+                href="#product-overview"
+                className="text-xs font-bold uppercase tracking-wider text-zinc-600 hover:text-primary transition-colors self-start sm:self-auto"
+              >
+                Skip to Product Overview ↓
+              </a>
             </div>
-          )}
 
-          {/* Tab 2: Specs */}
-          {tab === "specs" && (
-            <div className="max-w-4xl bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-xs">
+            <div className="max-w-5xl bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-xs">
               <table className="w-full text-sm sm:text-base">
                 <tbody className="divide-y divide-zinc-200">
-                  {p.specs.map(([k, v], idx) => (
-                    <tr key={k} className={idx % 2 === 0 ? "bg-white" : "bg-zinc-50/60"}>
-                      <td className="w-1/3 py-3.5 px-6 font-bold text-zinc-800">{k}</td>
-                      <td className="py-3.5 px-6 font-medium text-zinc-950">{v}</td>
-                    </tr>
-                  ))}
-                  <tr className="bg-white">
-                    <td className="py-3.5 px-6 font-bold text-zinc-800">Brand / Manufacturer</td>
-                    <td className="py-3.5 px-6 font-medium text-zinc-950">{p.brand}</td>
-                  </tr>
-                  <tr className="bg-zinc-50/60">
-                    <td className="py-3.5 px-6 font-bold text-zinc-800">Part / Model SKU</td>
-                    <td className="py-3.5 px-6 font-mono font-medium text-zinc-950">{p.sku}</td>
-                  </tr>
-                  <tr className="bg-white">
-                    <td className="py-3.5 px-6 font-bold text-zinc-800">Selected Power Supply</td>
-                    <td className="py-3.5 px-6 font-mono font-semibold text-primary">
-                      {selectedVoltage === "380v"
-                        ? "380V 3-Phase (Industrial)"
-                        : "220V Single-Phase"}
-                    </td>
-                  </tr>
-                  {armOptions.length > 0 && (
-                    <tr className="bg-zinc-50/60">
-                      <td className="py-3.5 px-6 font-bold text-zinc-800">Arm Configuration</td>
-                      <td className="py-3.5 px-6 font-medium text-zinc-950">
-                        {selectedArmType === "asymmetric"
-                          ? "Asymmetric (EV Platform)"
-                          : "Symmetric Telescopic"}
+                  {fullTechnicalSpecRows.map(([k, v, isMono], idx) => (
+                    <tr
+                      key={`${k}-${idx}`}
+                      className={idx % 2 === 0 ? "bg-white" : "bg-zinc-50/60"}
+                    >
+                      <td className="w-2/5 sm:w-1/3 py-3.5 px-5 sm:px-6 font-bold text-zinc-800 align-top">
+                        {k}
+                      </td>
+                      <td
+                        className={`py-3.5 px-5 sm:px-6 font-medium ${
+                          isMono ? "font-mono text-zinc-950" : "text-zinc-950"
+                        }`}
+                      >
+                        {v}
                       </td>
                     </tr>
-                  )}
-                  <tr className="bg-white">
-                    <td className="py-3.5 px-6 font-bold text-zinc-800">
-                      Supported Vehicle Platforms
-                    </td>
-                    <td className="py-3.5 px-6 font-medium text-zinc-950">
-                      {p.mobility.join(", ")}
-                    </td>
-                  </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
-          )}
+          </div>
+
+          {/* 2. PRODUCT OVERVIEW (SECOND — ON THE SAME PAGE) */}
+          <div id="product-overview" className="scroll-mt-24">
+            <div className="mb-5">
+              <p className="text-xs font-mono font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5" />
+                <span>System Architecture &amp; Applications</span>
+              </p>
+              <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 mt-1">
+                Product Overview
+              </h2>
+            </div>
+
+            <div className="max-w-5xl bg-white p-6 sm:p-8 rounded-2xl border border-zinc-200 shadow-xs space-y-6 text-sm sm:text-base text-zinc-700 leading-relaxed">
+              <p className="whitespace-pre-line text-zinc-800">{p.description}</p>
+
+              <p className="text-zinc-600">
+                Supplied directly by PAGE International to automotive service centers, dealership
+                workshops, and commercial fleet depots with factory-backed warranty coverage and
+                technical commissioning support from our Dhaka Central Hub.
+              </p>
+
+              {distinctFeatures.length > 0 ? (
+                <div className="pt-5 border-t border-zinc-100">
+                  <h3 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
+                    Key Engineering Highlights
+                  </h3>
+                  <ul className="list-disc pl-5 space-y-2 text-zinc-700">
+                    {distinctFeatures.map((feat, idx) => (
+                      <li key={idx}>{feat}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : p.slug.includes("lift") ? (
+                <div className="pt-5 border-t border-zinc-100">
+                  <h3 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
+                    Key Engineering Advantages
+                  </h3>
+                  <ul className="list-disc pl-5 space-y-2 text-zinc-700">
+                    <li>
+                      Reinforced dual-column laser cut structural steel with heavy-duty baseplates.
+                    </li>
+                    <li>
+                      Electro-hydraulic synchronization ensuring smooth, level carriage movement.
+                    </li>
+                    <li>Integrated mechanical safety ladders with automatic solenoid release.</li>
+                    <li>Tested to 115% dynamic load and 150% static structural benchmark.</li>
+                  </ul>
+                </div>
+              ) : (
+                <div className="pt-5 border-t border-zinc-100">
+                  <h3 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
+                    Commercial B2B Highlights
+                  </h3>
+                  <ul className="list-disc pl-5 space-y-2 text-zinc-700">
+                    <li>
+                      {p.isEquipment
+                        ? "Industrial-grade workshop machinery engineered for continuous daily bay throughput."
+                        : "Certified OEM-spec commercial replacement part built for extended fleet durability."}
+                    </li>
+                    <li>
+                      Verified quality compliance supported by PAGE International technical
+                      specialists.
+                    </li>
+                    <li>
+                      Available for B2B wholesale pricing, VAT commercial invoicing, and nationwide
+                      delivery from Dhaka.
+                    </li>
+                  </ul>
+                </div>
+              )}
+
+              {p.fits && p.fits.length > 0 && (
+                <div className="pt-5 border-t border-zinc-100">
+                  <h3 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
+                    Workshop Compatibility &amp; Applications
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {p.fits.map((fit, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs sm:text-sm font-medium text-zinc-800"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                        <span>{fit}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -654,22 +771,24 @@ function ProductPage() {
                 className="max-h-full max-w-full object-contain rounded-xl"
               />
             </div>
-            <div className="mt-4 flex justify-center gap-3">
-              {galleryViews.map((item, idx) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
-                    activeImageIndex === idx
-                      ? "bg-primary text-white"
-                      : "bg-white/10 text-white/70 hover:bg-white/20"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
+            {galleryViews.length > 1 && (
+              <div className="mt-4 flex justify-center gap-3">
+                {galleryViews.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
+                      activeImageIndex === idx
+                        ? "bg-primary text-white"
+                        : "bg-white/10 text-white/70 hover:bg-white/20"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

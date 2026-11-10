@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react";
 import { products, getShopProducts, type Product } from "./data";
+import { useCatalogProducts } from "./data-client";
 
 export type CartLine = { slug: string; qty: number };
 export type GarageVehicle = {
@@ -32,6 +33,7 @@ const STORAGE_KEYS = {
 } as const;
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { data: liveCatalog } = useCatalogProducts();
   const [lines, setLines] = useState<CartLine[]>([]);
   const [vehicle, setVehicleState] = useState<GarageVehicle>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -117,7 +119,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [...prev, { slug, qty }];
     });
 
-    const catalog = getShopProducts();
+    const catalog = liveCatalog && liveCatalog.length > 0 ? liveCatalog : getShopProducts();
     const product = catalog.find((p) => p.slug === slug) || products.find((p) => p.slug === slug);
     flash(product ? `Added ${product.name} to quotation cart` : "Added item to cart");
   };
@@ -154,8 +156,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Map slugs to product entities
-  const catalog = getShopProducts();
+  // Map slugs to product entities (live DB catalog first, fallback to static catalog)
+  const catalog = liveCatalog && liveCatalog.length > 0 ? liveCatalog : getShopProducts();
   const fullLines: (CartLine & { product: Product })[] = lines
     .map((l) => {
       const product =

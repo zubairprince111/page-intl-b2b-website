@@ -15,6 +15,8 @@ import {
   listOrdersServerFn,
   updateOrderStatusServerFn,
   listInventoryServerFn,
+  listCatalogProductsServerFn,
+  getProductBySlugServerFn,
   updateInventoryItemServerFn,
   createInventoryItemServerFn,
   deleteInventoryItemServerFn,
@@ -33,7 +35,14 @@ import {
   updateSettingsServerFn,
   getAdminStatsServerFn,
 } from "./server-functions";
-import type { CreateQuoteInput, CreateBookingInput, CreateOrderInput } from "./data.server";
+import type {
+  CreateQuoteInput,
+  CreateBookingInput,
+  CreateOrderInput,
+  CreateInventoryItemInput,
+  UpdateInventoryItemInput,
+} from "./data.server";
+import type { Product } from "./data";
 
 // =============================================================================
 // 1. DASHBOARD STATS HOOK
@@ -244,8 +253,29 @@ export function useUpdateOrderStatus() {
 }
 
 // =============================================================================
-// 5. INVENTORY HOOKS
+// 5. INVENTORY & STOREFRONT CATALOG HOOKS
 // =============================================================================
+
+export function useCatalogProducts(initialData?: Product[]) {
+  return useQuery({
+    queryKey: ["catalog", "products"],
+    queryFn: async () => {
+      return await listCatalogProductsServerFn();
+    },
+    ...(initialData ? { initialData } : {}),
+  });
+}
+
+export function useProductBySlug(slug: string, initialData?: Product) {
+  return useQuery({
+    queryKey: ["catalog", "product", slug],
+    queryFn: async () => {
+      return await getProductBySlugServerFn({ data: { slug } });
+    },
+    enabled: Boolean(slug),
+    ...(initialData ? { initialData } : {}),
+  });
+}
 
 export function useInventory() {
   return useQuery({
@@ -259,21 +289,13 @@ export function useInventory() {
 export function useUpdateInventoryItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: {
-      slug: string;
-      name?: string | undefined;
-      priceBdt?: number | undefined;
-      inStock?: boolean | undefined;
-      warehouseQty?: number | undefined;
-      reorderLevel?: number | undefined;
-      badge?: string | undefined;
-      category?: string | undefined;
-      description?: string | undefined;
-    }) => {
+    mutationFn: async (data: UpdateInventoryItemInput) => {
       return await updateInventoryItemServerFn({ data });
     },
-    onSuccess: () => {
+    onSuccess: (_res, variables) => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["catalog"] });
+      queryClient.invalidateQueries({ queryKey: ["catalog", "product", variables.slug] });
       queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
   });
@@ -282,27 +304,12 @@ export function useUpdateInventoryItem() {
 export function useCreateInventoryItem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: {
-      slug: string;
-      name: string;
-      brand: string;
-      category: string;
-      subcategory?: string | undefined;
-      priceBdt: number;
-      inStock?: boolean | undefined;
-      warehouseQty?: number | undefined;
-      reorderLevel?: number | undefined;
-      badge?: string | undefined;
-      description: string;
-      specs?: Record<string, string> | undefined;
-      features?: string[] | undefined;
-      images?: string[] | undefined;
-      fits?: string[] | undefined;
-    }) => {
+    mutationFn: async (data: CreateInventoryItemInput) => {
       return await createInventoryItemServerFn({ data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["catalog"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
   });
@@ -314,8 +321,10 @@ export function useDeleteInventoryItem() {
     mutationFn: async (slug: string) => {
       return await deleteInventoryItemServerFn({ data: { slug } });
     },
-    onSuccess: () => {
+    onSuccess: (_res, slug) => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["catalog"] });
+      queryClient.invalidateQueries({ queryKey: ["catalog", "product", slug] });
       queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
   });

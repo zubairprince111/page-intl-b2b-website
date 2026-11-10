@@ -9,31 +9,47 @@ import {
   useUpdateQuote,
 } from "@/lib/data-client";
 import { openGmailQuotationDraft } from "@/lib/quotation-email";
-import { taka, categories, images } from "@/lib/data";
+import {
+  taka,
+  categories,
+  brands,
+  images,
+  mapDbProductToProduct,
+  type MobilityType,
+} from "@/lib/data";
+import {
+  getDistinctProductFeatures,
+  inferIsEquipment,
+  parseFitsText,
+  parseSpecsText,
+  sanitizeFeatureLines,
+  sanitizeSpecRows,
+} from "@/lib/product-utils";
 import {
   Package,
   Search,
-  Filter,
-  ChevronDown,
   Edit3,
   X,
-  Save,
   AlertTriangle,
   XCircle,
   Check,
+  ArrowUp,
+  ArrowDown,
   ArrowUpDown,
   Plus,
   Trash2,
   Upload,
   Image as ImageIcon,
   Link as LinkIcon,
-  Sparkles,
   Send,
-  MessageSquare,
-  Calculator,
   Mail,
   Eye,
   RefreshCw,
+  ClipboardList,
+  FileText,
+  ExternalLink,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import { uploadMediaFile, deleteMediaFile } from "@/lib/client-media";
@@ -65,8 +81,62 @@ const PRESET_GALLERY = [
   { label: "Workshop Bay", src: images.workshop },
 ];
 
+const SPEC_TEMPLATES = [
+  "Lifting Capacity",
+  "Power Supply",
+  "Motor Power",
+  "Operating Pressure",
+  "Dimensions",
+  "Weight",
+  "Safety Rating",
+  "Warranty",
+];
+
+const MOBILITY_OPTIONS: MobilityType[] = ["4-Wheeler", "2-Wheeler", "3-Wheeler", "EV"];
+
+interface ProductFormState {
+  slug: string;
+  name: string;
+  sku: string;
+  brand: string;
+  category: string;
+  isEquipment: boolean;
+  mobility: MobilityType[];
+  price: number;
+  warehouseQty: number;
+  reorderLevel: number;
+  inStock: boolean;
+  image: string;
+  specRows: { key: string; value: string }[];
+  description: string;
+  featureRows: string[];
+  fitsText: string;
+}
+
+function createEmptyProductForm(): ProductFormState {
+  const defaultCategory = categories[0] || "Garage Equipment";
+  return {
+    slug: "",
+    name: "",
+    sku: "",
+    brand: "",
+    category: defaultCategory,
+    isEquipment: inferIsEquipment(defaultCategory),
+    mobility: ["4-Wheeler"],
+    price: 0,
+    warehouseQty: 10,
+    reorderLevel: 5,
+    inStock: true,
+    image: images.lift,
+    specRows: [{ key: "", value: "" }],
+    description: "",
+    featureRows: [],
+    fitsText: "",
+  };
+}
+
 function AdminInventory() {
-  const { data: rawInventory = [], isLoading: inventoryLoading } = useInventory();
+  const { data: rawInventory = [] } = useInventory();
   const { data: quotes = [] } = useQuotes();
   const updateItemMutation = useUpdateInventoryItem();
   const createItemMutation = useCreateInventoryItem();
@@ -76,31 +146,27 @@ function AdminInventory() {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
   const [stockFilter, setStockFilter] = useState("All");
-  const [editingSlug, setEditingSlug] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [productModalMode, setProductModalMode] = useState<"create" | "edit" | null>(null);
+  const [productForm, setProductForm] = useState<ProductFormState>(() => createEmptyProductForm());
+  const [isEquipmentManual, setIsEquipmentManual] = useState(false);
+  const [showBulkSpecs, setShowBulkSpecs] = useState(false);
+  const [bulkSpecsText, setBulkSpecsText] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<"presets" | "upload" | "url">("presets");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Normalize database product rows
+  // Normalize database product rows merged with canonical storefront metadata
   const inventory = useMemo(() => {
-    return rawInventory.map((p: any) => ({
-      ...p,
-      price: p.priceBdt ?? p.price ?? 0,
-      warehouseQty: p.warehouseQty ?? 10,
-      reorderLevel: p.reorderLevel ?? 5,
-      stock:
-        (p.warehouseQty ?? 10) === 0
-          ? "Out of stock"
-          : (p.warehouseQty ?? 10) <= (p.reorderLevel ?? 5)
-            ? "Low stock"
-            : "In stock",
-      image: (p.images && p.images[0]) || p.image || images.lift,
-      sku: p.sku || `PG-${p.slug.slice(0, 6).toUpperCase()}`,
-      brand: p.brand || "PAGE Genuine",
-      rating: p.rating || 5.0,
-      reviews: p.reviews || 1,
-    }));
+    return rawInventory.map((p: any) => {
+      const mapped = mapDbProductToProduct(p);
+      return {
+        ...p,
+        ...mapped,
+        warehouseQty: mapped.warehouseQty ?? p.warehouseQty ?? 10,
+        reorderLevel: mapped.reorderLevel ?? p.reorderLevel ?? 5,
+      };
+    });
   }, [rawInventory]);
 
   // Quote reply modal state
@@ -119,28 +185,6 @@ function AdminInventory() {
     message: string;
   } | null>(null);
 
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    brand: "",
-    category: categories[0] || "Garage Equipment",
-    price: 0,
-    warehouseQty: 10,
-    reorderLevel: 5,
-    sku: "",
-    description: "",
-    image: images.lift,
-  });
-  const [editData, setEditData] = useState<{
-    price: number;
-    warehouseQty: number;
-    reorderLevel: number;
-    stock: string;
-  }>({
-    price: 0,
-    warehouseQty: 0,
-    reorderLevel: 5,
-    stock: "In stock",
-  });
   const [sortField, setSortField] = useState<"name" | "price" | "warehouseQty">("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
@@ -162,9 +206,9 @@ function AdminInventory() {
     if (stockFilter === "Low") {
       items = items.filter((i) => i.warehouseQty > 0 && i.warehouseQty <= i.reorderLevel);
     } else if (stockFilter === "Out") {
-      items = items.filter((i) => i.warehouseQty === 0);
+      items = items.filter((i) => i.warehouseQty === 0 || i.stock === "Out of stock");
     } else if (stockFilter === "In") {
-      items = items.filter((i) => i.warehouseQty > i.reorderLevel);
+      items = items.filter((i) => i.stock !== "Out of stock" && i.warehouseQty > i.reorderLevel);
     }
 
     items.sort((a, b) => {
@@ -178,26 +222,214 @@ function AdminInventory() {
     return items;
   }, [inventory, search, catFilter, stockFilter, sortField, sortDir]);
 
+  function openAddModal() {
+    setProductForm(createEmptyProductForm());
+    setIsEquipmentManual(false);
+    setShowBulkSpecs(false);
+    setBulkSpecsText("");
+    setFormError(null);
+    setImageTab("presets");
+    setProductModalMode("create");
+  }
+
   function startEdit(item: any) {
-    setEditingSlug(item.slug);
-    setEditData({
-      price: item.price,
-      warehouseQty: item.warehouseQty,
-      reorderLevel: item.reorderLevel,
-      stock: item.stock,
+    const mappedSpecs: [string, string][] = Array.isArray(item.specs) ? item.specs : [];
+    const specRows =
+      mappedSpecs.length > 0
+        ? mappedSpecs.map(([key, value]) => ({ key, value }))
+        : [{ key: "", value: "" }];
+    const featureRows = getDistinctProductFeatures(item.features, item.fits);
+
+    setProductForm({
+      slug: item.slug,
+      name: item.name || "",
+      sku: item.sku || "",
+      brand: item.brand || "",
+      category: item.category || categories[0] || "Garage Equipment",
+      isEquipment: Boolean(item.isEquipment),
+      mobility:
+        Array.isArray(item.mobility) && item.mobility.length > 0 ? item.mobility : ["4-Wheeler"],
+      price: Number(item.price) || 0,
+      warehouseQty: Number(item.warehouseQty ?? 10),
+      reorderLevel: Number(item.reorderLevel ?? 5),
+      inStock: item.stock !== "Out of stock",
+      image: item.image || images.lift,
+      specRows,
+      description: item.description || "",
+      featureRows,
+      fitsText: Array.isArray(item.fits) ? item.fits.join(", ") : "",
+    });
+    setIsEquipmentManual(true);
+    setShowBulkSpecs(false);
+    setBulkSpecsText("");
+    setFormError(null);
+    setImageTab("presets");
+    setProductModalMode("edit");
+  }
+
+  function closeProductModal() {
+    setProductModalMode(null);
+    setFormError(null);
+    setShowBulkSpecs(false);
+    setBulkSpecsText("");
+  }
+
+  function toggleMobility(platform: MobilityType) {
+    setProductForm((prev) => {
+      const exists = prev.mobility.includes(platform);
+      const next = exists
+        ? prev.mobility.filter((m) => m !== platform)
+        : [...prev.mobility, platform];
+      return { ...prev, mobility: next.length > 0 ? next : [platform] };
     });
   }
 
-  async function saveEdit() {
-    if (!editingSlug) return;
-    await updateItemMutation.mutateAsync({
-      slug: editingSlug,
-      priceBdt: editData.price,
-      warehouseQty: editData.warehouseQty,
-      reorderLevel: editData.reorderLevel,
-      inStock: editData.stock !== "Out of stock",
+  function addSpecRow(presetKey = "") {
+    setProductForm((prev) => {
+      // If there's only one completely blank placeholder row and a preset was clicked, fill it directly
+      if (
+        presetKey &&
+        prev.specRows.length === 1 &&
+        !prev.specRows[0]?.key.trim() &&
+        !prev.specRows[0]?.value.trim()
+      ) {
+        return { ...prev, specRows: [{ key: presetKey, value: "" }] };
+      }
+      return { ...prev, specRows: [...prev.specRows, { key: presetKey, value: "" }] };
     });
-    setEditingSlug(null);
+  }
+
+  function updateSpecRow(idx: number, field: "key" | "value", val: string) {
+    setProductForm((prev) => ({
+      ...prev,
+      specRows: prev.specRows.map((row, i) => (i === idx ? { ...row, [field]: val } : row)),
+    }));
+  }
+
+  function moveSpecRow(idx: number, dir: -1 | 1) {
+    const target = idx + dir;
+    if (target < 0 || target >= productForm.specRows.length) return;
+    setProductForm((prev) => {
+      const next = [...prev.specRows];
+      const current = next[idx]!;
+      next[idx] = next[target]!;
+      next[target] = current;
+      return { ...prev, specRows: next };
+    });
+  }
+
+  function removeSpecRow(idx: number) {
+    setProductForm((prev) => ({
+      ...prev,
+      specRows: prev.specRows.filter((_, i) => i !== idx),
+    }));
+  }
+
+  function applyBulkSpecs() {
+    const parsed = parseSpecsText(bulkSpecsText);
+    if (parsed.length === 0) {
+      setFormError("Could not find any `Key: Value` lines in the pasted specification block.");
+      return;
+    }
+    setFormError(null);
+    setProductForm((prev) => {
+      const existingNonEmpty = prev.specRows.filter(
+        (r) => r.key.trim().length > 0 || r.value.trim().length > 0,
+      );
+      return {
+        ...prev,
+        specRows: [...existingNonEmpty, ...parsed.map(([key, value]) => ({ key, value }))],
+      };
+    });
+    setBulkSpecsText("");
+    setShowBulkSpecs(false);
+  }
+
+  function addFeatureRow() {
+    setProductForm((prev) => ({ ...prev, featureRows: [...prev.featureRows, ""] }));
+  }
+
+  function updateFeatureRow(idx: number, val: string) {
+    setProductForm((prev) => ({
+      ...prev,
+      featureRows: prev.featureRows.map((item, i) => (i === idx ? val : item)),
+    }));
+  }
+
+  function removeFeatureRow(idx: number) {
+    setProductForm((prev) => ({
+      ...prev,
+      featureRows: prev.featureRows.filter((_, i) => i !== idx),
+    }));
+  }
+
+  async function handleSaveProductModal() {
+    setFormError(null);
+    const trimmedName = productForm.name.trim();
+    const trimmedSku = productForm.sku.trim();
+
+    if (!trimmedName || !trimmedSku) {
+      setFormError("Product Title and SKU Code are required.");
+      return;
+    }
+
+    const specsTuples = sanitizeSpecRows(productForm.specRows);
+    const cleanFeatures = sanitizeFeatureLines(productForm.featureRows);
+    const cleanFits = parseFitsText(productForm.fitsText);
+    const cleanDescription =
+      productForm.description.trim() ||
+      `${trimmedName} distributed by PAGE International with commercial technical support.`;
+
+    try {
+      if (productModalMode === "edit" && productForm.slug) {
+        await updateItemMutation.mutateAsync({
+          slug: productForm.slug,
+          sku: trimmedSku,
+          name: trimmedName,
+          brand: productForm.brand.trim() || "PAGE Genuine",
+          category: productForm.category,
+          isEquipment: productForm.isEquipment,
+          mobility: productForm.mobility,
+          priceBdt: Math.max(0, Number(productForm.price) || 0),
+          warehouseQty: Math.max(0, Math.floor(Number(productForm.warehouseQty) || 0)),
+          reorderLevel: Math.max(0, Math.floor(Number(productForm.reorderLevel) || 0)),
+          inStock: productForm.inStock && Number(productForm.warehouseQty) > 0,
+          description: cleanDescription,
+          specs: specsTuples,
+          features: cleanFeatures,
+          fits: cleanFits,
+          images: productForm.image ? [productForm.image] : [images.lift],
+        });
+      } else {
+        const baseSlug = trimmedName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+        const slug = `${baseSlug || "product"}-${Date.now().toString(36).slice(-4)}`;
+
+        await createItemMutation.mutateAsync({
+          slug,
+          sku: trimmedSku,
+          name: trimmedName,
+          brand: productForm.brand.trim() || "PAGE Genuine",
+          category: productForm.category,
+          isEquipment: productForm.isEquipment,
+          mobility: productForm.mobility,
+          priceBdt: Math.max(0, Number(productForm.price) || 0),
+          warehouseQty: Math.max(0, Math.floor(Number(productForm.warehouseQty) || 0)),
+          reorderLevel: Math.max(0, Math.floor(Number(productForm.reorderLevel) || 0)),
+          inStock: productForm.inStock && Number(productForm.warehouseQty) > 0,
+          description: cleanDescription,
+          specs: specsTuples,
+          features: cleanFeatures,
+          fits: cleanFits,
+          images: [productForm.image || images.lift],
+        });
+      }
+      closeProductModal();
+    } catch (err: any) {
+      setFormError(err?.message || "Failed to save product changes.");
+    }
   }
 
   async function handleDelete(slug: string, name: string) {
@@ -213,63 +445,22 @@ function AdminInventory() {
     await deleteItemMutation.mutateAsync(slug);
   }
 
-  async function handleCreateProduct() {
-    if (!newProduct.name || !newProduct.sku) {
-      alert("Product name and SKU are required.");
-      return;
-    }
-    const slug =
-      newProduct.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "") +
-      "-" +
-      Date.now().toString(36).slice(-4);
-
-    await createItemMutation.mutateAsync({
-      slug,
-      name: newProduct.name,
-      brand: newProduct.brand || "PAGE Genuine",
-      category: newProduct.category,
-      priceBdt: Number(newProduct.price) || 0,
-      warehouseQty: Number(newProduct.warehouseQty) || 0,
-      reorderLevel: Number(newProduct.reorderLevel) || 5,
-      inStock: Number(newProduct.warehouseQty) > 0,
-      description:
-        newProduct.description || "Commercial grade equipment distributed by PAGE International.",
-      images: [newProduct.image],
-    });
-
-    setShowAddModal(false);
-    setNewProduct({
-      name: "",
-      brand: "",
-      category: categories[0] || "Garage Equipment",
-      price: 0,
-      warehouseQty: 10,
-      reorderLevel: 5,
-      sku: "",
-      description: "",
-      image: images.lift,
-    });
-  }
-
   async function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 20 * 1024 * 1024) {
-        alert("Please select an image smaller than 20MB");
+        setFormError("Please select an image smaller than 20MB.");
         return;
       }
       try {
         setIsUploadingImage(true);
         const res = await uploadMediaFile(file, "products");
         if (res.success) {
-          setNewProduct((prev) => ({ ...prev, image: res.url }));
+          setProductForm((prev) => ({ ...prev, image: res.url }));
         }
       } catch (err: any) {
         console.error("Product media upload error:", err);
-        alert(err.message || "Failed to upload product image to server storage");
+        setFormError(err?.message || "Failed to upload product image to server storage.");
       } finally {
         setIsUploadingImage(false);
       }
@@ -415,8 +606,8 @@ function AdminInventory() {
               )}
             </button>
             <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+              onClick={openAddModal}
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
             >
               <Plus className="h-4 w-4" />
               Add Product
@@ -511,13 +702,13 @@ function AdminInventory() {
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
                 {filtered.map((item) => {
-                  const isEditing = editingSlug === item.slug;
-                  const isLow = item.warehouseQty > 0 && item.warehouseQty <= item.reorderLevel;
-                  const isOut = item.warehouseQty === 0;
+                  const isOut = item.warehouseQty === 0 || item.stock === "Out of stock";
+                  const isLow = !isOut && item.warehouseQty <= item.reorderLevel;
+                  const specsCount = Array.isArray(item.specs) ? item.specs.length : 0;
 
                   return (
                     <tr key={item.slug} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-5 py-3 max-w-[280px]">
+                      <td className="px-5 py-3 max-w-[300px]">
                         <div className="flex items-center gap-3">
                           <img
                             src={item.image}
@@ -528,7 +719,17 @@ function AdminInventory() {
                             <p className="text-[12px] font-medium text-zinc-200 truncate">
                               {item.name}
                             </p>
-                            <p className="text-[10px] text-zinc-500">{item.brand}</p>
+                            <p className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
+                              <span>{item.brand}</span>
+                              <span>•</span>
+                              <span
+                                className={
+                                  specsCount > 0 ? "text-emerald-400/90" : "text-amber-400/90"
+                                }
+                              >
+                                {specsCount} {specsCount === 1 ? "spec" : "specs"}
+                              </span>
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -539,38 +740,16 @@ function AdminInventory() {
                       </td>
                       <td className="px-4 py-3 text-[12px] text-zinc-400">{item.category}</td>
                       <td className="px-4 py-3 text-right">
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editData.price}
-                            onChange={(e) =>
-                              setEditData({ ...editData, price: Number(e.target.value) })
-                            }
-                            className="w-24 bg-white/[0.06] border border-emerald-500/50 rounded px-2 py-1 text-[12px] text-white text-right focus:outline-none"
-                          />
-                        ) : (
-                          <span className="text-[12px] text-zinc-200 font-medium">
-                            {taka(item.price)}
-                          </span>
-                        )}
+                        <span className="text-[12px] text-zinc-200 font-medium">
+                          {taka(item.price)}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editData.warehouseQty}
-                            onChange={(e) =>
-                              setEditData({ ...editData, warehouseQty: Number(e.target.value) })
-                            }
-                            className="w-16 bg-white/[0.06] border border-emerald-500/50 rounded px-2 py-1 text-[12px] text-white text-right focus:outline-none"
-                          />
-                        ) : (
-                          <span
-                            className={`text-[12px] font-medium ${isOut ? "text-red-400" : isLow ? "text-amber-400" : "text-zinc-200"}`}
-                          >
-                            {item.warehouseQty}
-                          </span>
-                        )}
+                        <span
+                          className={`text-[12px] font-medium ${isOut ? "text-red-400" : isLow ? "text-amber-400" : "text-zinc-200"}`}
+                        >
+                          {item.warehouseQty}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {isOut ? (
@@ -588,46 +767,38 @@ function AdminInventory() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {isEditing ? (
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              onClick={saveEdit}
-                              className="h-7 w-7 rounded-md bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors flex items-center justify-center"
-                            >
-                              <Save className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => setEditingSlug(null)}
-                              className="h-7 w-7 rounded-md bg-white/[0.06] text-zinc-400 hover:bg-white/[0.1] transition-colors flex items-center justify-center"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => openQuoteReplyForProduct(item)}
-                              title="Reply to customer quotation with this product"
-                              className="h-7 w-7 rounded-md bg-white/[0.04] text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors flex items-center justify-center"
-                            >
-                              <Send className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => startEdit(item)}
-                              title="Edit item"
-                              className="h-7 w-7 rounded-md bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200 transition-colors flex items-center justify-center"
-                            >
-                              <Edit3 className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.slug, item.name)}
-                              title="Delete product"
-                              className="h-7 w-7 rounded-md bg-white/[0.04] text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-colors flex items-center justify-center"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex items-center justify-center gap-1">
+                          <a
+                            href={`/shop/${item.slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="View public product page"
+                            className="h-7 w-7 rounded-md bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center justify-center"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                          <button
+                            onClick={() => openQuoteReplyForProduct(item)}
+                            title="Reply to customer quotation with this product"
+                            className="h-7 w-7 rounded-md bg-white/[0.04] text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors flex items-center justify-center cursor-pointer"
+                          >
+                            <Send className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => startEdit(item)}
+                            title="Edit product, specs & overview"
+                            className="h-7 w-7 rounded-md bg-white/[0.04] text-zinc-300 hover:bg-white/[0.1] hover:text-white transition-colors flex items-center justify-center cursor-pointer"
+                          >
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.slug, item.name)}
+                            title="Delete product"
+                            className="h-7 w-7 rounded-md bg-white/[0.04] text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-colors flex items-center justify-center cursor-pointer"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -651,144 +822,510 @@ function AdminInventory() {
           </div>
         </div>
 
-        {/* Add Product Modal */}
-        {showAddModal && (
+        {/* Add / Edit Product Modal (Technical Specifications & Product Overview Builder) */}
+        {productModalMode && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-            <div className="bg-[#232323] border border-white/[0.08] rounded-2xl w-full max-w-2xl p-6 shadow-2xl space-y-4">
+            <div className="bg-[#232323] border border-white/[0.08] rounded-2xl w-full max-w-3xl p-6 shadow-2xl space-y-4">
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                    <Plus className="h-4 w-4" />
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    {productModalMode === "edit" ? (
+                      <Edit3 className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">Add New Product</h3>
-                    <p className="text-[11px] text-zinc-500">
-                      Create a new item in your catalog and warehouse stock
+                    <h3 className="text-base font-bold text-white">
+                      {productModalMode === "edit" ? "Edit Product Details" : "Add New Product"}
+                    </h3>
+                    <p className="text-[11px] text-zinc-400">
+                      Configure catalog metadata, Technical Specifications, and Product Overview
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="text-zinc-500 hover:text-zinc-300 transition-colors h-7 w-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {productModalMode === "edit" && productForm.slug && (
+                    <a
+                      href={`/shop/${productForm.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-lg transition-colors"
+                    >
+                      <span>View Store Page</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={closeProductModal}
+                    className="text-zinc-500 hover:text-zinc-300 transition-colors h-7 w-7 rounded-lg hover:bg-white/[0.06] flex items-center justify-center cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-4 max-h-[72vh] overflow-y-auto pr-1">
-                {/* Product Title */}
-                <div>
-                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                    Product Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    placeholder="e.g. Hunter TCX575 Heavy-Duty Tyre Changer"
-                    className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
+              {formError && (
+                <div className="rounded-xl bg-red-500/10 border border-red-500/25 px-3.5 py-2.5 text-xs text-red-300 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+                  <span>{formError}</span>
                 </div>
+              )}
 
-                {/* SKU & Brand */}
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-5 max-h-[72vh] overflow-y-auto pr-1.5">
+                {/* ── Section 1: Basic Info, Pricing & Platforms ── */}
+                <div className="bg-[#1c1c1c] border border-white/[0.08] rounded-xl p-4 space-y-3.5">
+                  <h4 className="text-[12px] font-bold uppercase tracking-wider text-zinc-300">
+                    1. Basic Details &amp; Stock
+                  </h4>
+
                   <div>
                     <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                      SKU Code *
+                      Product Title *
                     </label>
                     <input
                       type="text"
-                      value={newProduct.sku}
-                      onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                      placeholder="e.g. TCX-575"
-                      className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500 uppercase"
+                      value={productForm.name}
+                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                      placeholder="e.g. Hunter TCX575 Heavy-Duty Tyre Changer"
+                      className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
-                  <div>
-                    <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                      Brand
-                    </label>
-                    <input
-                      type="text"
-                      value={newProduct.brand}
-                      onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
-                      placeholder="e.g. Hunter Engineering / Bosch"
-                      className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1">
+                        SKU Code *
+                      </label>
+                      <input
+                        type="text"
+                        value={productForm.sku}
+                        onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
+                        placeholder="e.g. TCX-575"
+                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500 uppercase"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1">
+                        Brand / Manufacturer
+                      </label>
+                      <input
+                        type="text"
+                        list="inventory-brand-options"
+                        value={productForm.brand}
+                        onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                        placeholder="e.g. Torq, Diagtek, Hunter Engineering"
+                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                      <datalist id="inventory-brand-options">
+                        {brands.map((b) => (
+                          <option key={b} value={b} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1">
+                        Category
+                      </label>
+                      <select
+                        value={productForm.category}
+                        onChange={(e) => {
+                          const cat = e.target.value;
+                          setProductForm((prev) => ({
+                            ...prev,
+                            category: cat,
+                            isEquipment: isEquipmentManual
+                              ? prev.isEquipment
+                              : inferIsEquipment(cat),
+                          }));
+                        }}
+                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      >
+                        {categories.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1">
+                        Price (BDT) *
+                      </label>
+                      <input
+                        type="number"
+                        value={productForm.price}
+                        onChange={(e) =>
+                          setProductForm({ ...productForm, price: Number(e.target.value) })
+                        }
+                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1">
+                        Warehouse Qty
+                      </label>
+                      <input
+                        type="number"
+                        value={productForm.warehouseQty}
+                        onChange={(e) => {
+                          const qty = Number(e.target.value);
+                          setProductForm({
+                            ...productForm,
+                            warehouseQty: qty,
+                            inStock: qty > 0,
+                          });
+                        }}
+                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1">
+                        Reorder Threshold
+                      </label>
+                      <input
+                        type="number"
+                        value={productForm.reorderLevel}
+                        onChange={(e) =>
+                          setProductForm({
+                            ...productForm,
+                            reorderLevel: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Product Type & Supported Platforms */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1.5">
+                        Product Classification
+                      </label>
+                      <div className="grid grid-cols-2 gap-1.5 bg-[#232323] p-1 rounded-lg border border-white/[0.06]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEquipmentManual(true);
+                            setProductForm((prev) => ({ ...prev, isEquipment: true }));
+                          }}
+                          className={`py-1.5 px-2 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                            productForm.isEquipment
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                              : "text-zinc-400 hover:text-zinc-200"
+                          }`}
+                        >
+                          Workshop Machinery
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEquipmentManual(true);
+                            setProductForm((prev) => ({ ...prev, isEquipment: false }));
+                          }}
+                          className={`py-1.5 px-2 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                            !productForm.isEquipment
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                              : "text-zinc-400 hover:text-zinc-200"
+                          }`}
+                        >
+                          Parts / Tooling
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-medium text-zinc-400 block mb-1.5">
+                        Target Mobility Platforms
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {MOBILITY_OPTIONS.map((platform) => {
+                          const active = productForm.mobility.includes(platform);
+                          return (
+                            <button
+                              key={platform}
+                              type="button"
+                              onClick={() => toggleMobility(platform)}
+                              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
+                                active
+                                  ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
+                                  : "bg-[#232323] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                              }`}
+                            >
+                              {platform}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Category & Pricing & Stock */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                  <div className="sm:col-span-1">
-                    <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                      Category
-                    </label>
-                    <select
-                      value={newProduct.category}
-                      onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                      className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    >
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
+                {/* ── Section 2: Technical Specifications Builder (Shown FIRST on Product Page) ── */}
+                <div className="bg-[#1c1c1c] border border-white/[0.08] rounded-xl p-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-[12px] font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                        <ClipboardList className="h-3.5 w-3.5 text-emerald-400" />
+                        <span>2. Technical Specifications</span>
+                      </h4>
+                      <p className="text-[10.5px] text-zinc-400 mt-0.5">
+                        Displayed first on the storefront product page as a structured datasheet
+                        table
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={() => setShowBulkSpecs((v) => !v)}
+                        className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-[#232323] border border-white/[0.08] text-zinc-300 hover:text-white hover:border-white/[0.2] transition-colors cursor-pointer"
+                      >
+                        {showBulkSpecs ? "Hide Bulk Paste" : "Bulk Paste Specs"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => addSpecRow("")}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-600/30 transition-colors cursor-pointer"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add Spec Row
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Spec Preset Chips */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-medium text-zinc-500 mr-1">Quick add:</span>
+                    {SPEC_TEMPLATES.map((key) => {
+                      const alreadyAdded = productForm.specRows.some(
+                        (r) => r.key.trim().toLowerCase() === key.toLowerCase(),
+                      );
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          disabled={alreadyAdded}
+                          onClick={() => addSpecRow(key)}
+                          className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors ${
+                            alreadyAdded
+                              ? "border-white/[0.04] bg-white/[0.02] text-zinc-600 cursor-default"
+                              : "border-white/[0.08] bg-[#232323] text-zinc-300 hover:border-emerald-500/40 hover:text-emerald-300 cursor-pointer"
+                          }`}
+                        >
+                          + {key}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Optional Bulk Paste Area */}
+                  {showBulkSpecs && (
+                    <div className="rounded-xl bg-[#232323] border border-emerald-500/25 p-3 space-y-2">
+                      <label className="text-[11px] font-medium text-emerald-300 block">
+                        Paste specifications (one per line, formatted as Key: Value)
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={bulkSpecsText}
+                        onChange={(e) => setBulkSpecsText(e.target.value)}
+                        placeholder={
+                          "Lifting Capacity: 4,000 kg (4.0 Ton)\nMotor Power: 2.2 kW / 3.0 HP\nPower Supply: 380V 3-Phase / 50Hz\nWarranty: 24 months commercial warranty"
+                        }
+                        className="w-full bg-[#1a1a1a] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowBulkSpecs(false)}
+                          className="text-[11px] text-zinc-400 hover:text-white px-2.5 py-1 cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={applyBulkSpecs}
+                          className="text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Parse &amp; Add Rows
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interactive Specification Rows */}
+                  {productForm.specRows.length > 0 ? (
+                    <div className="space-y-2">
+                      {productForm.specRows.map((row, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            aria-label={`Specification name ${idx + 1}`}
+                            value={row.key}
+                            onChange={(e) => updateSpecRow(idx, "key", e.target.value)}
+                            placeholder="Spec Name (e.g. Lifting Capacity)"
+                            className="w-2/5 bg-[#232323] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                          <input
+                            type="text"
+                            aria-label={`Specification value ${idx + 1}`}
+                            value={row.value}
+                            onChange={(e) => updateSpecRow(idx, "value", e.target.value)}
+                            placeholder="Spec Value (e.g. 4,000 kg / 380V)"
+                            className="flex-1 bg-[#232323] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => moveSpecRow(idx, -1)}
+                              disabled={idx === 0}
+                              title="Move up"
+                              className="h-7 w-7 rounded-md bg-[#232323] border border-white/[0.06] text-zinc-400 hover:text-white disabled:opacity-30 flex items-center justify-center cursor-pointer"
+                            >
+                              <ArrowUp className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveSpecRow(idx, 1)}
+                              disabled={idx === productForm.specRows.length - 1}
+                              title="Move down"
+                              className="h-7 w-7 rounded-md bg-[#232323] border border-white/[0.06] text-zinc-400 hover:text-white disabled:opacity-30 flex items-center justify-center cursor-pointer"
+                            >
+                              <ArrowDown className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeSpecRow(idx)}
+                              title="Remove row"
+                              className="h-7 w-7 rounded-md bg-[#232323] border border-white/[0.06] text-zinc-400 hover:text-red-400 hover:border-red-500/30 flex items-center justify-center cursor-pointer"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
                       ))}
-                    </select>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-zinc-500 italic py-1">
+                      No custom technical specification rows yet. Click &ldquo;Add Spec Row&rdquo;
+                      or pick a quick template above.
+                    </p>
+                  )}
+                </div>
+
+                {/* ── Section 3: Product Overview & Highlights (Shown SECOND on Product Page) ── */}
+                <div className="bg-[#1c1c1c] border border-white/[0.08] rounded-xl p-4 space-y-3.5">
+                  <div>
+                    <h4 className="text-[12px] font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>3. Product Overview &amp; Highlights</span>
+                    </h4>
+                    <p className="text-[10.5px] text-zinc-400 mt-0.5">
+                      Displayed right below Technical Specifications on the storefront product page
+                    </p>
                   </div>
+
                   <div>
                     <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                      Price (BDT) *
+                      Detailed Product Overview *
                     </label>
-                    <input
-                      type="number"
-                      value={newProduct.price}
+                    <textarea
+                      rows={4}
+                      value={productForm.description}
                       onChange={(e) =>
-                        setNewProduct({ ...newProduct, price: Number(e.target.value) })
+                        setProductForm({ ...productForm, description: e.target.value })
                       }
-                      className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      placeholder="Describe the machine engineering, operational capabilities, safety systems, and commercial workshop use-cases..."
+                      className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
-                  <div>
-                    <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                      Warehouse Qty
-                    </label>
-                    <input
-                      type="number"
-                      value={newProduct.warehouseQty}
-                      onChange={(e) =>
-                        setNewProduct({ ...newProduct, warehouseQty: Number(e.target.value) })
-                      }
-                      className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
+
+                  {/* Key Engineering Highlights / Advantages */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3 text-emerald-400" />
+                        <span>Key Engineering Highlights (Bullet List)</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={addFeatureRow}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#232323] border border-white/[0.08] text-emerald-300 hover:border-emerald-500/40 transition-colors cursor-pointer"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add Highlight
+                      </button>
+                    </div>
+
+                    {productForm.featureRows.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {productForm.featureRows.map((feat, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              aria-label={`Highlight ${idx + 1}`}
+                              value={feat}
+                              onChange={(e) => updateFeatureRow(idx, e.target.value)}
+                              placeholder="e.g. Dual hydraulic synchronization cylinders with solenoid safety lock release"
+                              className="flex-1 bg-[#232323] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeFeatureRow(idx)}
+                              title="Remove highlight"
+                              className="h-7 w-7 rounded-md bg-[#232323] border border-white/[0.06] text-zinc-400 hover:text-red-400 flex items-center justify-center cursor-pointer"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[10.5px] text-zinc-500">
+                        Optional bullet points shown under &ldquo;Key Engineering Highlights&rdquo;
+                        inside Product Overview.
+                      </p>
+                    )}
                   </div>
+
+                  {/* Workshop Compatibility / Fits */}
                   <div>
                     <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                      Reorder Threshold
+                      Workshop Compatibility / Applications (comma-separated)
                     </label>
                     <input
-                      type="number"
-                      value={newProduct.reorderLevel}
-                      onChange={(e) =>
-                        setNewProduct({ ...newProduct, reorderLevel: Number(e.target.value) })
-                      }
-                      className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      type="text"
+                      value={productForm.fitsText}
+                      onChange={(e) => setProductForm({ ...productForm, fitsText: e.target.value })}
+                      placeholder="e.g. Commercial Workshop Bay, Passenger Cars, SUVs & Light Vans"
+                      className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
-                {/* ── Product Image Selector ── */}
-                <div className="bg-[#1c1c1c] border border-white/[0.08] rounded-xl p-3.5 space-y-3">
+                {/* ── Section 4: Product Image Selector ── */}
+                <div className="bg-[#1c1c1c] border border-white/[0.08] rounded-xl p-4 space-y-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={handleImageFileChange}
+                    className="hidden"
+                  />
                   <div className="flex items-center justify-between">
                     <label className="text-[12px] font-semibold text-zinc-200 flex items-center gap-1.5">
                       <ImageIcon className="h-3.5 w-3.5 text-emerald-400" />
-                      Product Image
+                      <span>4. Product Image</span>
                     </label>
                     <div className="flex items-center gap-1 bg-[#232323] p-0.5 rounded-lg border border-white/[0.06]">
                       <button
                         type="button"
                         onClick={() => setImageTab("presets")}
-                        className={`text-[11px] font-medium px-2 py-1 rounded-md transition-all ${
+                        className={`text-[11px] font-medium px-2 py-1 rounded-md transition-all cursor-pointer ${
                           imageTab === "presets"
                             ? "bg-emerald-500/20 text-emerald-300"
                             : "text-zinc-400 hover:text-zinc-200"
@@ -799,7 +1336,7 @@ function AdminInventory() {
                       <button
                         type="button"
                         onClick={() => setImageTab("upload")}
-                        className={`text-[11px] font-medium px-2 py-1 rounded-md transition-all ${
+                        className={`text-[11px] font-medium px-2 py-1 rounded-md transition-all cursor-pointer ${
                           imageTab === "upload"
                             ? "bg-emerald-500/20 text-emerald-300"
                             : "text-zinc-400 hover:text-zinc-200"
@@ -810,7 +1347,7 @@ function AdminInventory() {
                       <button
                         type="button"
                         onClick={() => setImageTab("url")}
-                        className={`text-[11px] font-medium px-2 py-1 rounded-md transition-all ${
+                        className={`text-[11px] font-medium px-2 py-1 rounded-md transition-all cursor-pointer ${
                           imageTab === "url"
                             ? "bg-emerald-500/20 text-emerald-300"
                             : "text-zinc-400 hover:text-zinc-200"
@@ -825,7 +1362,7 @@ function AdminInventory() {
                   <div className="flex items-center gap-3 bg-[#232323] p-2.5 rounded-lg border border-white/[0.04]">
                     <div className="relative h-14 w-14 rounded-lg bg-zinc-900 overflow-hidden border border-white/[0.08] shrink-0">
                       <img
-                        src={newProduct.image || images.lift}
+                        src={productForm.image || images.lift}
                         alt="Preview"
                         className="h-full w-full object-cover"
                       />
@@ -833,15 +1370,18 @@ function AdminInventory() {
                     <div className="min-w-0 flex-1">
                       <p className="text-[12px] font-medium text-white truncate">Selected Image</p>
                       <p className="text-[10px] text-zinc-500 truncate mt-0.5">
-                        {newProduct.image?.startsWith("data:")
+                        {productForm.image?.startsWith("data:")
                           ? "Custom Uploaded File (Base64)"
-                          : newProduct.image?.slice(0, 48) + "..."}
+                          : productForm.image?.slice(0, 60)}
                       </p>
                     </div>
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-md transition-colors shrink-0"
+                      onClick={() => {
+                        setImageTab("upload");
+                        fileInputRef.current?.click();
+                      }}
+                      className="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-md transition-colors shrink-0 cursor-pointer"
                     >
                       Change
                     </button>
@@ -855,13 +1395,13 @@ function AdminInventory() {
                       </p>
                       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-36 overflow-y-auto pr-1">
                         {PRESET_GALLERY.map((item, idx) => {
-                          const isSelected = newProduct.image === item.src;
+                          const isSelected = productForm.image === item.src;
                           return (
                             <button
                               key={idx}
                               type="button"
-                              onClick={() => setNewProduct({ ...newProduct, image: item.src })}
-                              className={`group relative rounded-lg overflow-hidden border transition-all aspect-square bg-zinc-900 ${
+                              onClick={() => setProductForm({ ...productForm, image: item.src })}
+                              className={`group relative rounded-lg overflow-hidden border transition-all aspect-square bg-zinc-900 cursor-pointer ${
                                 isSelected
                                   ? "border-emerald-500 ring-2 ring-emerald-500/30"
                                   : "border-white/[0.08] hover:border-white/[0.2]"
@@ -892,13 +1432,6 @@ function AdminInventory() {
                   {/* Tab 2: File Upload */}
                   {imageTab === "upload" && (
                     <div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                        onChange={handleImageFileChange}
-                        className="hidden"
-                      />
                       <div
                         onClick={() => !isUploadingImage && fileInputRef.current?.click()}
                         className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors bg-white/[0.01] ${
@@ -911,7 +1444,7 @@ function AdminInventory() {
                           <div className="space-y-1.5">
                             <RefreshCw className="h-6 w-6 text-emerald-400 mx-auto animate-spin" />
                             <p className="text-[12px] font-semibold text-emerald-300">
-                              Uploading to server disk & indexing in PostgreSQL...
+                              Uploading to server disk &amp; indexing in PostgreSQL...
                             </p>
                             <p className="text-[10px] text-zinc-500">
                               Writing persistent media file
@@ -940,8 +1473,10 @@ function AdminInventory() {
                         <input
                           type="url"
                           placeholder="https://example.com/images/workshop-equipment.jpg"
-                          value={newProduct.image?.startsWith("data:") ? "" : newProduct.image}
-                          onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                          value={productForm.image?.startsWith("data:") ? "" : productForm.image}
+                          onChange={(e) =>
+                            setProductForm({ ...productForm, image: e.target.value })
+                          }
                           className="w-full bg-[#232323] border border-white/[0.08] rounded-lg pl-9 pr-3 py-2 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </div>
@@ -951,36 +1486,28 @@ function AdminInventory() {
                     </div>
                   )}
                 </div>
-
-                {/* Technical Specifications */}
-                <div>
-                  <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                    Technical Specifications & Description
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={newProduct.description}
-                    onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                    placeholder="Key specifications, power rating, warranty details..."
-                    className="w-full bg-[#1c1c1c] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none"
-                  />
-                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.06]">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-[13px] text-zinc-400 hover:text-white rounded-lg hover:bg-white/[0.04] transition-colors"
+                  onClick={closeProductModal}
+                  className="px-4 py-2 text-[13px] text-zinc-400 hover:text-white rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleCreateProduct}
-                  className="px-5 py-2 text-[13px] font-medium bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors shadow-sm"
+                  disabled={createItemMutation.isPending || updateItemMutation.isPending}
+                  onClick={handleSaveProductModal}
+                  className="px-5 py-2 text-[13px] font-medium bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg transition-colors shadow-sm inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  Create Product
+                  {(createItemMutation.isPending || updateItemMutation.isPending) && (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  )}
+                  <span>
+                    {productModalMode === "edit" ? "Save Product Changes" : "Create Product"}
+                  </span>
                 </button>
               </div>
             </div>

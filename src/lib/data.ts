@@ -18,6 +18,13 @@ import evWorkshopBay from "@/assets/ev-workshop-bay.jpg";
 import commercial3wHub from "@/assets/commercial-3w-hub.jpg";
 import supportHero from "@/assets/support-hero.jpg";
 import solutionsHero from "@/assets/solutions-hero.jpg";
+import {
+  deriveProductStockStatus,
+  getDistinctProductFeatures,
+  inferIsEquipment,
+  resolveOrderedSpecs,
+  type ProductLikeRow,
+} from "./product-utils";
 
 export const images = {
   brakes,
@@ -49,19 +56,25 @@ export type Product = {
   name: string;
   brand: string;
   category: string;
+  subcategory?: string | undefined;
   mobility: MobilityType[];
   price: number;
-  oldPrice?: number;
+  oldPrice?: number | undefined;
   rating: number;
   reviews: number;
   stock: "In stock" | "Low stock" | "Out of stock";
+  warehouseQty?: number | undefined;
+  reorderLevel?: number | undefined;
+  badge?: string | undefined;
   image: string;
+  images?: string[] | undefined;
   fits: string[];
+  features?: string[] | undefined;
   sku: string;
   description: string;
   specs: [string, string][];
-  isEquipment?: boolean;
-  requiresQuote?: boolean;
+  isEquipment?: boolean | undefined;
+  requiresQuote?: boolean | undefined;
 };
 
 export const categories = [
@@ -1362,6 +1375,77 @@ export const taka = (n: number) => "৳" + n.toLocaleString("en-IN");
  * (localStorage `admin_inventory`) if present, or falling back to the base `products` catalogue.
  * This guarantees any product added, edited, or deleted in the Admin panel instantly reflects in the frontend shop!
  */
+const validMobilitySet = new Set<MobilityType>(["4-Wheeler", "2-Wheeler", "3-Wheeler", "EV"]);
+
+export function mapDbProductToProduct(row: ProductLikeRow): Product {
+  const fallback = products.find((p) => p.slug === row.slug);
+  const resolvedImages =
+    Array.isArray(row.images) && row.images.length > 0
+      ? row.images.filter((src): src is string => typeof src === "string" && src.trim().length > 0)
+      : fallback
+        ? [fallback.image]
+        : [lift];
+  const primaryImage = resolvedImages[0] || row.image || fallback?.image || lift;
+
+  const resolvedMobility: MobilityType[] =
+    Array.isArray(row.mobility) && row.mobility.length > 0
+      ? row.mobility.filter((m): m is MobilityType => validMobilitySet.has(m as MobilityType))
+      : fallback?.mobility || ["4-Wheeler"];
+
+  const resolvedFits =
+    Array.isArray(row.fits) && row.fits.length > 0
+      ? row.fits
+      : row.fits === undefined && fallback
+        ? fallback.fits
+        : [];
+
+  const distinctFeatures = getDistinctProductFeatures(row.features, row.fits);
+  const resolvedFeatures =
+    distinctFeatures.length > 0 ? distinctFeatures : fallback?.features || [];
+
+  const price = row.priceBdt ?? row.price ?? fallback?.price ?? 0;
+  const warehouseQty = row.warehouseQty ?? 10;
+  const reorderLevel = row.reorderLevel ?? 2;
+  const isEquipment =
+    row.isEquipment !== undefined && row.isEquipment !== null
+      ? row.isEquipment
+      : (fallback?.isEquipment ?? inferIsEquipment(row.category));
+  const requiresQuote =
+    row.requiresQuote !== undefined && row.requiresQuote !== null
+      ? row.requiresQuote
+      : (fallback?.requiresQuote ?? (isEquipment || price >= 50000));
+
+  return {
+    slug: row.slug,
+    name: row.name,
+    brand: row.brand || fallback?.brand || "PAGE Genuine",
+    category: row.category || fallback?.category || categories[0] || "Garage Equipment",
+    subcategory: row.subcategory || fallback?.subcategory || undefined,
+    mobility: resolvedMobility.length > 0 ? resolvedMobility : ["4-Wheeler"],
+    price,
+    oldPrice: fallback?.oldPrice,
+    rating: fallback?.rating ?? 4.8,
+    reviews: fallback?.reviews ?? 1,
+    stock: deriveProductStockStatus({
+      inStock: row.inStock,
+      warehouseQty,
+      reorderLevel,
+    }),
+    warehouseQty,
+    reorderLevel,
+    badge: row.badge || fallback?.badge || undefined,
+    image: primaryImage,
+    images: resolvedImages.length > 0 ? resolvedImages : [primaryImage],
+    fits: resolvedFits,
+    features: resolvedFeatures,
+    sku: (row.sku && row.sku.trim()) || fallback?.sku || `PG-${row.slug.slice(0, 6).toUpperCase()}`,
+    description: row.description || fallback?.description || row.name,
+    specs: resolveOrderedSpecs(row.specs, fallback?.specs),
+    isEquipment,
+    requiresQuote,
+  };
+}
+
 export function getShopProducts(): Product[] {
   if (typeof window === "undefined") return products;
   try {

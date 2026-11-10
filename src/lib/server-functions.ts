@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { CreateQuoteInput, CreateBookingInput, CreateOrderInput } from "./data.server";
+import type {
+  CreateQuoteInput,
+  CreateBookingInput,
+  CreateOrderInput,
+  CreateInventoryItemInput,
+  UpdateInventoryItemInput,
+} from "./data.server";
 
 // =============================================================================
 // 1. QUOTES RPC FUNCTIONS
@@ -136,8 +142,20 @@ export const updateOrderStatusServerFn = createServerFn({ method: "POST" })
   });
 
 // =============================================================================
-// 4. INVENTORY RPC FUNCTIONS
+// 4. INVENTORY & PUBLIC CATALOG RPC FUNCTIONS
 // =============================================================================
+
+export const listCatalogProductsServerFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { listCatalogProductsCore } = await import("./data.server");
+  return await listCatalogProductsCore();
+});
+
+export const getProductBySlugServerFn = createServerFn({ method: "GET" })
+  .validator((data: { slug: string }) => data)
+  .handler(async ({ data }) => {
+    const { getProductBySlugCore } = await import("./data.server");
+    return await getProductBySlugCore(data.slug);
+  });
 
 export const listInventoryServerFn = createServerFn({ method: "GET" }).handler(async () => {
   const { listInventoryCore } = await import("./data.server");
@@ -145,44 +163,14 @@ export const listInventoryServerFn = createServerFn({ method: "GET" }).handler(a
 });
 
 export const updateInventoryItemServerFn = createServerFn({ method: "POST" })
-  .validator(
-    (data: {
-      slug: string;
-      name?: string | undefined;
-      priceBdt?: number | undefined;
-      inStock?: boolean | undefined;
-      warehouseQty?: number | undefined;
-      reorderLevel?: number | undefined;
-      badge?: string | undefined;
-      category?: string | undefined;
-      description?: string | undefined;
-    }) => data,
-  )
+  .validator((data: UpdateInventoryItemInput) => data)
   .handler(async ({ data }) => {
     const { updateInventoryItemCore } = await import("./data.server");
     return await updateInventoryItemCore(data);
   });
 
 export const createInventoryItemServerFn = createServerFn({ method: "POST" })
-  .validator(
-    (data: {
-      slug: string;
-      name: string;
-      brand: string;
-      category: string;
-      subcategory?: string | undefined;
-      priceBdt: number;
-      inStock?: boolean | undefined;
-      warehouseQty?: number | undefined;
-      reorderLevel?: number | undefined;
-      badge?: string | undefined;
-      description: string;
-      specs?: Record<string, string> | undefined;
-      features?: string[] | undefined;
-      images?: string[] | undefined;
-      fits?: string[] | undefined;
-    }) => data,
-  )
+  .validator((data: CreateInventoryItemInput) => data)
   .handler(async ({ data }) => {
     const { createInventoryItemCore } = await import("./data.server");
     return await createInventoryItemCore(data);

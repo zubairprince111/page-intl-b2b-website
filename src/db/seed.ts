@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "./index";
 import {
   users,
@@ -14,6 +14,7 @@ import {
 } from "./schema";
 import { runMigrations } from "./migrate";
 import { products } from "../lib/data";
+import { normalizeSpecsToTuples } from "../lib/product-utils";
 import { reviewsData } from "../lib/reviews";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
@@ -122,26 +123,41 @@ export async function initAndSeedDatabase() {
 
   // 3. Seed Machinery & Tools Catalog
   for (const p of products) {
-    const specsMap = Array.isArray(p.specs) ? Object.fromEntries(p.specs) : p.specs || {};
+    const specsTuples = normalizeSpecsToTuples(p.specs);
     await db
       .insert(productsTable)
       .values({
         id: `prod-${p.slug}`,
         slug: p.slug,
+        sku: p.sku,
         name: p.name,
         brand: p.brand,
         category: p.category,
-        subcategory: (p as any).subcategory || null,
+        subcategory: p.subcategory || null,
+        mobility: p.mobility || ["4-Wheeler"],
+        isEquipment: Boolean(p.isEquipment),
+        requiresQuote: Boolean(p.requiresQuote),
         priceBdt: p.price || 0,
         inStock: p.stock !== "Out of stock",
-        badge: (p as any).badge || null,
+        badge: p.badge || null,
         description: p.description || p.name,
-        specs: specsMap,
-        features: p.fits || [],
+        specs: specsTuples,
+        features: p.features || [],
         images: [p.image],
         fits: p.fits || [],
       })
       .onConflictDoNothing();
+
+    // Backfill newly added catalog metadata columns on legacy pre-seeded rows without overwriting custom admin edits
+    await db
+      .update(productsTable)
+      .set({
+        sku: p.sku,
+        mobility: p.mobility || ["4-Wheeler"],
+        isEquipment: Boolean(p.isEquipment),
+        requiresQuote: Boolean(p.requiresQuote),
+      })
+      .where(and(eq(productsTable.slug, p.slug), isNull(productsTable.sku)));
   }
 
   // 4. Seed Homepage Machinery Banners (2100x654 High-Resolution Showcases)

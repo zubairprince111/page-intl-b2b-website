@@ -13,7 +13,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { cn } from "@/lib/utils";
 import { QuoteModal } from "@/components/site/QuoteModal";
@@ -24,16 +24,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  brands,
-  categories,
-  mobilitySegments,
-  products,
-  getShopProducts,
-  type MobilityType,
-  type Product,
-} from "@/lib/data";
+import { brands, categories, products, type MobilityType, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
+import { listCatalogProductsServerFn } from "@/lib/server-functions";
+import { useCatalogProducts } from "@/lib/data-client";
 
 type S = {
   q?: string | undefined;
@@ -45,6 +39,14 @@ type S = {
 };
 
 export const Route = createFileRoute("/shop/")({
+  loader: async () => {
+    try {
+      const catalog = await listCatalogProductsServerFn();
+      return { initialCatalog: catalog };
+    } catch {
+      return { initialCatalog: products };
+    }
+  },
   validateSearch: (s: Record<string, unknown>): S => ({
     q: typeof s["q"] === "string" ? (s["q"] as string) : undefined,
     cat: typeof s["cat"] === "string" ? (s["cat"] as string) : undefined,
@@ -86,6 +88,8 @@ export function Shop() {
     mobility: searchMobility,
   } = Route.useSearch();
   const nav = Route.useNavigate();
+  const { initialCatalog } = Route.useLoaderData();
+  const { data: liveCatalog } = useCatalogProducts(initialCatalog);
   const { vehicle: savedVehicle } = useCart();
 
   const [query, setQuery] = useState(q);
@@ -94,23 +98,26 @@ export function Shop() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [activeQuoteProduct, setActiveQuoteProduct] = useState<Product | null>(null);
 
-  // Live products list: seamlessly pulls admin additions from localStorage
-  const [allProducts, setAllProducts] = useState<Product[]>(() => getShopProducts());
+  const allProducts = useMemo(
+    () => (liveCatalog && liveCatalog.length > 0 ? liveCatalog : initialCatalog || products),
+    [liveCatalog, initialCatalog],
+  );
 
-  useEffect(() => {
-    setAllProducts(getShopProducts());
-
-    function onInventoryChange() {
-      setAllProducts(getShopProducts());
+  const availableCategories = useMemo(() => {
+    const set = new Set<string>(categories);
+    for (const p of allProducts) {
+      if (p.category) set.add(p.category);
     }
+    return Array.from(set);
+  }, [allProducts]);
 
-    window.addEventListener("inventory_updated", onInventoryChange);
-    window.addEventListener("storage", onInventoryChange);
-    return () => {
-      window.removeEventListener("inventory_updated", onInventoryChange);
-      window.removeEventListener("storage", onInventoryChange);
-    };
-  }, []);
+  const availableBrands = useMemo(() => {
+    const set = new Set<string>(brands);
+    for (const p of allProducts) {
+      if (p.brand) set.add(p.brand);
+    }
+    return Array.from(set);
+  }, [allProducts]);
 
   // Filter application
   const filteredList = useMemo(() => {
@@ -413,7 +420,7 @@ export function Shop() {
                     className="w-full h-8.5 pl-3 pr-8 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer appearance-none"
                   >
                     <option value="">All Categories</option>
-                    {categories.map((c) => (
+                    {availableCategories.map((c) => (
                       <option key={c} value={c}>
                         {c}
                       </option>
@@ -449,7 +456,7 @@ export function Shop() {
                     className="w-full h-8.5 pl-3 pr-8 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer appearance-none"
                   >
                     <option value="">All Brands</option>
-                    {brands.map((b) => (
+                    {availableBrands.map((b) => (
                       <option key={b} value={b}>
                         {b}
                       </option>
@@ -727,7 +734,7 @@ export function Shop() {
                   className="w-full h-8.5 pl-3 pr-8 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer appearance-none"
                 >
                   <option value="">All Categories</option>
-                  {categories.map((c) => (
+                  {availableCategories.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -763,7 +770,7 @@ export function Shop() {
                   className="w-full h-8.5 pl-3 pr-8 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer appearance-none"
                 >
                   <option value="">All Brands</option>
-                  {brands.map((b) => (
+                  {availableBrands.map((b) => (
                     <option key={b} value={b}>
                       {b}
                     </option>
