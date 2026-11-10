@@ -104,7 +104,7 @@ const cols: Array<{
     links: [
       { l: "About PAGE International", to: "/about" },
       { l: "Updates & Dispatches Feed", to: "/updates" },
-      { l: "Industrial Demo Hubs", to: "/service-centers" },
+      { l: "Office & Demo Showroom", to: "/service-centers" },
       { l: "Partner Brands", to: "/#brands" },
       { l: "Supply Network", to: "/about" },
       { l: "Commercial Terms of Supply", to: "/terms" },

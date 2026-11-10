@@ -14,7 +14,6 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
 import { PageHeader } from "@/components/site/PageHeader";
 import { centers } from "@/lib/data";
 
@@ -45,8 +44,6 @@ export const Route = createFileRoute("/service-centers")({
 });
 
 export function ServiceCenterSolutions() {
-  const [activeHub, setActiveHub] = useState<string>("dhaka-tejgaon");
-
   return (
     <div className="bg-background text-foreground min-h-screen">
       <PageHeader
@@ -279,32 +276,32 @@ export function ServiceCenterSolutions() {
         </div>
       </section>
 
-      {/* Regional Equipment Demonstration Hubs */}
+      {/* Dhaka Office & Equipment Demonstration Center */}
       <section className="bg-secondary/40 py-16 border-t border-border">
         <div className="container-page">
           <div className="max-w-2xl mb-8">
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-primary block">
-              Machinery Demonstration & Stock Hubs
+              Machinery Demonstration & Advisory Desk
             </span>
-            <h2 className="display-md mt-1 text-foreground">PAGE EQUIPMENT DEMONSTRATION HUBS</h2>
+            <h2 className="display-md mt-1 text-foreground">PAGE OFFICE & DEMONSTRATION CENTER</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Service center directors and workshop operators can visit our regional demonstration
-              centers to see lifts, tyre changers, and diagnostic systems in action.
+              Service center directors and workshop operators can visit our Uttara, Dhaka office to
+              inspect lifts, tyre changers, and diagnostic systems in person.
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="max-w-4xl space-y-6">
             {centers.map((c) => (
               <div
                 key={c.id}
-                className="rounded border border-border bg-card p-6 flex flex-col justify-between"
+                className="rounded border border-border bg-card p-6 sm:p-8 grid gap-6 md:grid-cols-[1.2fr_1fr] items-center"
               >
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded">
-                    {c.area} Equipment Hub
+                    {c.area} Head Office & Showroom
                   </span>
                   <h3 className="font-heading text-2xl uppercase text-foreground mt-3">{c.name}</h3>
-                  <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+                  <div className="mt-3 space-y-2 text-xs text-muted-foreground">
                     <p className="flex items-center gap-2">
                       <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
                       <span>{c.address}</span>
@@ -318,31 +315,31 @@ export function ServiceCenterSolutions() {
                       <span>Contact Desk: +880 1755-502421</span>
                     </p>
                   </div>
+                </div>
 
-                  <div className="mt-4 pt-3 border-t border-border">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                <div className="flex flex-col justify-between gap-5 md:border-l md:border-border md:pl-6">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
                       Demo Equipment Available:
                     </p>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {c.services.map((s) => (
                         <span
                           key={s}
-                          className="text-[11px] bg-secondary text-foreground px-2 py-0.5 rounded"
+                          className="text-[11px] bg-secondary text-foreground px-2.5 py-1 rounded"
                         >
                           {s}
                         </span>
                       ))}
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-6 pt-3 border-t border-border">
                   <Link
                     to="/services/book"
                     search={{ center: c.id }}
-                    className="btn btn-outline h-9 w-full text-xs font-bold uppercase tracking-wider"
+                    className="btn btn-outline h-10 w-full text-xs font-bold uppercase tracking-wider"
                   >
-                    Book Machinery Demo at {c.area}
+                    Book Machinery Demo in {c.area}
                   </Link>
                 </div>
               </div>

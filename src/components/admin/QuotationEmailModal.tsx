@@ -245,7 +245,7 @@ export function generateQuotationEmailHtml({
           </tr>
           <tr>
             <td style="padding: 4px 0; vertical-align: top;">✓</td>
-            <td style="padding: 4px 0;"><strong>10-Year Spares Guarantee:</strong> Dedicated logistics replenishment directly from our Tejgaon Hub.</td>
+            <td style="padding: 4px 0;"><strong>10-Year Spares Guarantee:</strong> Dedicated logistics replenishment directly from our Uttara, Dhaka office.</td>
           </tr>
         </table>
       </div>
@@ -485,7 +485,7 @@ ${items
 ✓ Certified on-site delivery, leveling, chemical anchoring, and power wiring inspection
 ✓ 18 to 36 Months official manufacturer warranty with priority certified engineer dispatch
 ✓ Free operator safety and technician calibration training at your workshop bay
-✓ 10-Year guaranteed genuine spare parts availability from PAGE Tejgaon logistics hub
+✓ 10-Year guaranteed genuine spare parts availability from our Uttara, Dhaka office
 
 5. NOTES & TERMS FROM COMMERCIAL DESK:
 ${message || "We look forward to partnering with your workshop and ensuring world-class equipment uptime."}

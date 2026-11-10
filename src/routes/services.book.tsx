@@ -81,7 +81,7 @@ const b2bServiceOptions = [
 const steps = [
   "1. Engineering Need",
   "2. Business Profile",
-  "3. Hub / On-Site",
+  "3. Office / On-Site",
   "4. Date & Time",
   "5. Contact Info",
 ];
@@ -110,8 +110,13 @@ export function BookConsultation() {
     equipmentInterest: "",
   });
 
+  const defaultCenter = centers[0]!;
+  const initialCenterId = centers.some((x) => x.id === search.center)
+    ? search.center!
+    : defaultCenter.id;
+
   const [locationType, setLocationType] = useState<"hub" | "onsite">("hub");
-  const [center, setCenter] = useState(search.center ?? "dhaka-tejgaon");
+  const center = initialCenterId;
   const [onsiteAddress, setOnsiteAddress] = useState("");
 
   const [day, setDay] = useState<number | null>(0);
@@ -133,7 +138,7 @@ export function BookConsultation() {
   ][step];
 
   const chosenServices = b2bServiceOptions.filter((s) => sel.includes(s.id));
-  const c = centers.find((x) => x.id === center);
+  const c = centers.find((x) => x.id === center) ?? defaultCenter;
 
   if (done) {
     return (
@@ -211,7 +216,8 @@ export function BookConsultation() {
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl">
             Book a demonstration of workshop lifts, tyre changers, and diagnostic computers at our
-            regional equipment hubs, or schedule an on-site engineer visit to your garage facility.
+            Uttara, Dhaka office & demonstration center, or schedule an on-site engineer visit to
+            your garage facility.
           </p>
         </div>
 
@@ -394,10 +400,10 @@ export function BookConsultation() {
                     }`}
                   >
                     <span className="block text-sm text-foreground">
-                      Visit PAGE Regional Equipment Hub
+                      Visit PAGE Office & Demo Showroom
                     </span>
                     <span className="text-xs text-muted-foreground mt-1 block">
-                      Inspect running machinery at our demo showroom.
+                      Inspect running machinery at our Uttara, Dhaka office.
                     </span>
                   </button>
 
@@ -422,30 +428,39 @@ export function BookConsultation() {
                 {locationType === "hub" ? (
                   <div className="space-y-3 pt-2">
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Select Regional Demonstration Center:
+                      Office & Demonstration Center:
                     </label>
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="space-y-3">
                       {centers.map((cnt) => (
-                        <button
+                        <div
                           key={cnt.id}
-                          type="button"
-                          onClick={() => setCenter(cnt.id)}
-                          className={`rounded border p-3 text-left transition-all ${
-                            center === cnt.id
-                              ? "border-primary bg-primary/5 ring-1 ring-primary/40"
-                              : "border-border bg-card hover:border-foreground/30"
-                          }`}
+                          className="rounded border border-primary bg-primary/5 ring-1 ring-primary/40 p-4 text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                         >
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-primary block">
-                            {cnt.area}
-                          </span>
-                          <span className="text-xs font-bold text-foreground block mt-0.5">
-                            {cnt.name}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground block mt-1">
-                            {cnt.address}
-                          </span>
-                        </button>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                                {cnt.area}
+                              </span>
+                              <span className="text-[10px] font-mono uppercase tracking-wider bg-primary/15 text-primary px-2 py-0.5 rounded">
+                                Selected Office
+                              </span>
+                            </div>
+                            <span className="text-sm font-bold text-foreground block mt-1">
+                              {cnt.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                              <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                              {cnt.address}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground shrink-0 sm:text-right">
+                            <span className="flex items-center sm:justify-end gap-1.5 font-medium text-foreground">
+                              <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
+                              {cnt.hours}
+                            </span>
+                            <span className="block text-[11px] mt-0.5">+880 1755-502421</span>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>

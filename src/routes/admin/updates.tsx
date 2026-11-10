@@ -88,7 +88,7 @@ export function AdminUpdates() {
       published: Boolean(u.isPublished),
       author: "PAGE Operations Desk",
       pinned: false,
-      location: "Tejgaon Central Hub, Dhaka",
+      location: "Uttara Model Town, Dhaka",
       companyOrClient: "PAGE Commercial Bay",
       equipmentNames: ["Automotive Lift", "Diagnostic Station"],
       readTimeMinutes: 3,
@@ -129,7 +129,7 @@ export function AdminUpdates() {
     setCategory("shipment_inbound");
     setDate(new Date().toISOString().slice(0, 10));
     setCompanyOrClient("");
-    setLocation("Tejgaon Central Hub, Dhaka");
+    setLocation("Uttara Model Town, Dhaka");
     setSummary("");
     setContent("");
     setImageUrl("/durga-puja-launch-banner.png");

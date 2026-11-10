@@ -97,8 +97,8 @@ export function PrivacyPage() {
                 (380V 3-phase or 220V single-phase), and vehicle mix.
               </li>
               <li>
-                <strong>Consultation Details:</strong> Preferred date and demonstration center
-                (Uttara Dhaka, Chattogram, Bogura).
+                <strong>Consultation Details:</strong> Preferred date and location (our Uttara,
+                Dhaka office or on-site at your facility).
               </li>
             </ul>
           </section>

@@ -79,7 +79,7 @@ function AdminBookings() {
     return rawBookings.map((b: any) => ({
       ...b,
       serviceName: b.serviceType || b.serviceName || "Workshop Machinery Consultation",
-      center: b.centerName || b.city || "PAGE Tejgaon Technology Hub, Dhaka",
+      center: b.centerName || b.city || "PAGE Equipment Hub — Uttara, Dhaka",
     }));
   }, [rawBookings]);
 

@@ -368,7 +368,7 @@ export async function createBookingCore(data: CreateBookingInput) {
       contactName: data.contactName,
       companyName: data.companyName || undefined,
       serviceType: data.serviceType,
-      centerName: data.centerName || data.city || "PAGE Regional Center",
+      centerName: data.centerName || data.city || "PAGE Equipment Hub — Uttara, Dhaka",
       bookingDate: data.bookingDate,
       timeSlot: data.timeSlot,
     });

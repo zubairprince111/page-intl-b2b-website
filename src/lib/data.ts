@@ -354,7 +354,7 @@ export type Center = {
 
 export const centers: Center[] = [
   {
-    id: "dhaka-tejgaon",
+    id: "dhaka-uttara",
     name: "PAGE Equipment Hub — Uttara, Dhaka",
     area: "Dhaka",
     address: "Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka",
@@ -368,33 +368,6 @@ export const centers: Center[] = [
     ],
     x: 48,
     y: 42,
-  },
-  {
-    id: "chattogram-port",
-    name: "PAGE Regional Hub — Chattogram",
-    area: "Chattogram",
-    address: "Agrabad Commercial Area, Chattogram",
-    rating: 4.8,
-    hours: "Sat–Thu 9:00–19:00",
-    services: [
-      "Heavy Machinery Stock",
-      "Diagnostic Scanner Demo",
-      "Wholesale Spares",
-      "Field Engineer Dispatch",
-    ],
-    x: 76,
-    y: 74,
-  },
-  {
-    id: "bogura-north",
-    name: "PAGE North Hub — Bogura",
-    area: "Bogura",
-    address: "Sherpur Road Industrial Belt, Bogura",
-    rating: 4.7,
-    hours: "Sat–Thu 9:00–18:00",
-    services: ["Tyre Changers & Balancers", "Commercial Fleet Spares", "Lift Anchoring Support"],
-    x: 38,
-    y: 32,
   },
 ];
 
