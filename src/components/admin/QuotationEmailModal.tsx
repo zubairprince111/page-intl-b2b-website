@@ -272,10 +272,10 @@ export function generateQuotationEmailHtml({
           Simply reply directly to this email or contact our B2B commercial desk:
         </p>
         <div>
-          <a href="tel:+8809612724346" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 12px; padding: 10px 20px; border-radius: 8px; margin: 0 4px 8px 4px; text-transform: uppercase;">
-            Call Hotline: +880 9612-PAGE-INTL
+          <a href="tel:+8801755502421" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 12px; padding: 10px 20px; border-radius: 8px; margin: 0 4px 8px 4px; text-transform: uppercase;">
+            Call Hotline: +880 1755-502421
           </a>
-          <a href="https://wa.me/8801700000000" style="display: inline-block; background-color: #059669; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 12px; padding: 10px 20px; border-radius: 8px; margin: 0 4px 8px 4px; text-transform: uppercase;">
+          <a href="https://wa.me/8801755502421" style="display: inline-block; background-color: #059669; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 12px; padding: 10px 20px; border-radius: 8px; margin: 0 4px 8px 4px; text-transform: uppercase;">
             WhatsApp Desk
           </a>
         </div>
@@ -285,8 +285,8 @@ export function generateQuotationEmailHtml({
       <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 12px; color: #475569; line-height: 1.6;">
         <strong style="color: #0f172a; font-size: 13px;">B2B Commercial & Technical Desk</strong><br>
         <strong>PAGE International Ltd.</strong><br>
-        Tejgaon Industrial Area, Dhaka-1208, Bangladesh<br>
-        Hotline: +880 9612-PAGE-INTL (+880 9612-724346) · Email: <a href="mailto:b2b@page-intl.com" style="color: #dc2626; text-decoration: none;">b2b@page-intl.com</a><br>
+        Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka<br>
+        Phone: +880 1755-502421 · Email: <a href="mailto:pageon18@gmail.com" style="color: #dc2626; text-decoration: none;">pageon18@gmail.com</a><br>
         Website: <a href="https://www.pageinternational.com" style="color: #dc2626; text-decoration: none;">www.pageinternational.com</a>
       </div>
     </div>
@@ -320,7 +320,7 @@ export function downloadQuotationEml({
     : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} for ${productName}`;
 
   const emlContent = [
-    `From: "PAGE International Desk" <b2b@page-intl.com>`,
+    `From: "PAGE International Desk" <pageon18@gmail.com>`,
     `To: "${quote.contactName || quote.companyName}" <${quote.email}>`,
     `Subject: ${subject}`,
     `Date: ${new Date().toUTCString()}`,
@@ -488,17 +488,17 @@ ${message || "We look forward to partnering with your workshop and ensuring worl
 
 =======================================================
 HOW TO PROCEED / CONFIRM ORDER:
-To accept this quotation, request pro-forma tax invoice, or schedule an in-person demonstration at our Tejgaon Hub, simply reply to this email or contact our commercial desk:
+To accept this quotation, request pro-forma tax invoice, or schedule an in-person demonstration at our Uttara, Dhaka office, simply reply to this email or contact our commercial desk:
 
-• Direct B2B Hotline: +880 9612-PAGE-INTL (+880 9612-724346)
-• Official WhatsApp: +880 1700-000000
-• Commercial Email: b2b@page-intl.com | sales@page-intl.com
+• Direct B2B Hotline: +880 1755-502421
+• Official WhatsApp: +880 1755-502421
+• Commercial Email: pageon18@gmail.com
 
 Warm regards,
 
 B2B Commercial & Technical Support Desk
 PAGE International Ltd.
-Tejgaon Industrial Area, Dhaka-1208, Bangladesh
+Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka
 Website: www.pageinternational.com
 "The Company Behind The Workshop"
 `;

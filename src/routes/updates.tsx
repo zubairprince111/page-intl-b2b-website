@@ -160,7 +160,7 @@ export function UpdatesFeedPage() {
       id: u.id,
       slug: u.slug || `upd-${u.id}`,
       title: u.title,
-      location: "Tejgaon Central Hub, Dhaka",
+      location: "Uttara Model Town, Dhaka",
       date: u.publishedAt
         ? new Date(u.publishedAt).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10),
@@ -226,10 +226,15 @@ export function UpdatesFeedPage() {
                   </p>
 
                   <div className="pt-0.5 flex items-center justify-center sm:justify-start text-[11px] font-mono text-primary font-semibold">
-                    <span className="inline-flex items-center gap-1">
+                    <a
+                      href="https://www.google.com/maps?cid=15320172382916100456&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 hover:underline"
+                    >
                       <MapPin className="h-3 w-3 shrink-0" />
-                      Tejgaon Central Logistics Bay, Dhaka
-                    </span>
+                      Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka
+                    </a>
                   </div>
                 </div>
               </div>
@@ -237,7 +242,7 @@ export function UpdatesFeedPage() {
               {/* Right: Direct CTAs */}
               <div className="flex items-center justify-center lg:justify-end gap-2.5 flex-wrap shrink-0">
                 <a
-                  href="https://wa.me/8809612724346?text=Hi%20PAGE%20International%2C%20I%20am%20following%20your%20field%20feed%20and%20would%20like%20to%20inquire%20about%20workshop%20machinery."
+                  href="https://wa.me/8801755502421?text=Hi%20PAGE%20International%2C%20I%20am%20following%20your%20field%20feed%20and%20would%20like%20to%20inquire%20about%20workshop%20machinery."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-primary h-9 px-4 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"

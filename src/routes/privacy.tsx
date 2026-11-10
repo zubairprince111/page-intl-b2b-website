@@ -44,7 +44,7 @@ export function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            PAGE International Ltd. • Effective: January 1, 2026 • Tejgaon Industrial Area, Dhaka,
+            PAGE International Ltd. • Effective: January 1, 2026 • Uttara Model Town, Dhaka,
             Bangladesh
           </p>
         </div>
@@ -67,9 +67,10 @@ export function PrivacyPage() {
             <h2 className="text-sm sm:text-base font-bold text-foreground">1. Overview & Scope</h2>
             <p className="text-muted-foreground">
               This Privacy Policy explains how PAGE International Ltd. (“PAGE”, “we”, “our”, or
-              “us”), incorporated in Dhaka, Bangladesh with corporate facilities in Tejgaon
-              Industrial Area, Dhaka-1208, handles business information collected through our
-              digital catalog, commercial quotation desks, and consultation scheduling portals.
+              “us”), incorporated in Dhaka, Bangladesh with corporate offices at Road #18, House #
+              100, Sector # 14, Uttara Model Town, Dhaka, handles business information collected
+              through our digital catalog, commercial quotation desks, and consultation scheduling
+              portals.
             </p>
           </section>
 
@@ -97,7 +98,7 @@ export function PrivacyPage() {
               </li>
               <li>
                 <strong>Consultation Details:</strong> Preferred date and demonstration center
-                (Tejgaon Dhaka, Chittagong, Sylhet).
+                (Uttara Dhaka, Chattogram, Bogura).
               </li>
             </ul>
           </section>
@@ -182,26 +183,22 @@ export function PrivacyPage() {
                 PAGE International Ltd. — Compliance Desk
               </p>
               <p className="text-muted-foreground">
-                Tejgaon Industrial Area, Dhaka-1208, Bangladesh
+                Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka
               </p>
               <p className="text-muted-foreground">
                 Email:{" "}
                 <a
-                  href="mailto:privacy@page-intl.com"
+                  href="mailto:pageon18@gmail.com"
                   className="text-primary font-semibold hover:underline"
                 >
-                  privacy@page-intl.com
-                </a>{" "}
-                / Commercial:{" "}
-                <a
-                  href="mailto:b2b@page-intl.com"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  b2b@page-intl.com
+                  pageon18@gmail.com
                 </a>
               </p>
               <p className="text-muted-foreground">
-                Direct Line: +880 9612-PAGE-INTL (+880 9612-724346)
+                Phone:{" "}
+                <a href="tel:+8801755502421" className="text-primary font-semibold hover:underline">
+                  +880 1755-502421
+                </a>
               </p>
             </div>
           </section>

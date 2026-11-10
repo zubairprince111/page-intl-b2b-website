@@ -188,25 +188,23 @@ export function Support() {
                     Call Commercial Hotline
                   </span>
                   <a
-                    href="tel:+8809612724346"
+                    href="tel:+8801755502421"
                     className="text-base sm:text-lg font-bold text-foreground hover:text-primary transition-colors font-mono"
                   >
-                    +880 9612-PAGE-INTL
+                    +880 1755-502421
                   </a>
-                  <p className="text-[11px] text-muted-foreground">
-                    Direct line: +880 9612-724346 / +880 1700-000000
-                  </p>
+                  <p className="text-[11px] text-muted-foreground">Direct phone & WhatsApp line</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 pt-2 border-t border-border/60">
                 <a
-                  href="tel:+8809612724346"
+                  href="tel:+8801755502421"
                   className="btn btn-primary h-9 px-4 text-xs font-bold uppercase flex-1 text-center justify-center"
                 >
                   Call Hotline Now
                 </a>
                 <a
-                  href="https://wa.me/8801700000000?text=Hello%20PAGE%20International,%20I%20would%20like%20to%20request%20a%20commercial%20price%20quotation."
+                  href="https://wa.me/8801755502421?text=Hello%20PAGE%20International,%20I%20would%20like%20to%20request%20a%20commercial%20price%20quotation."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-outline h-9 px-4 text-xs font-bold uppercase flex items-center justify-center gap-1.5 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
@@ -227,19 +225,19 @@ export function Support() {
                     Official Quotation Email
                   </span>
                   <a
-                    href="mailto:b2b@page-intl.com?subject=Custom%20Quotation%20Request%20-%20PAGE%20International"
+                    href="mailto:pageon18@gmail.com?subject=Custom%20Quotation%20Request%20-%20PAGE%20International"
                     className="text-base sm:text-lg font-bold text-foreground hover:text-primary transition-colors font-mono"
                   >
-                    b2b@page-intl.com
+                    pageon18@gmail.com
                   </a>
                   <p className="text-[11px] text-muted-foreground">
-                    Monitored desk: sales@page-intl.com
+                    Direct commercial & engineering desk
                   </p>
                 </div>
               </div>
               <div className="pt-2 border-t border-border/60">
                 <a
-                  href="mailto:b2b@page-intl.com?subject=Custom%20Quotation%20Request%20-%20PAGE%20International"
+                  href="mailto:pageon18@gmail.com?subject=Custom%20Quotation%20Request%20-%20PAGE%20International"
                   className="btn btn-outline h-9 px-4 text-xs font-bold uppercase w-full flex items-center justify-center gap-2"
                 >
                   <Mail className="h-3.5 w-3.5" />
@@ -275,8 +273,8 @@ export function Support() {
               Need an In-Person Equipment Consultation & Trial?
             </h3>
             <p className="text-xs sm:text-sm text-white/90 max-w-xl">
-              Schedule a 1-on-1 session with our certified machinery engineers at our Tejgaon Hub or
-              have our team audit your workshop premises.
+              Schedule a 1-on-1 session with our certified machinery engineers at our Uttara, Dhaka
+              office or have our team audit your workshop premises.
             </p>
           </div>
           <Link
@@ -295,14 +293,13 @@ export function Support() {
             {/* Office Details */}
             <div className="space-y-6">
               <div>
-                <span className="eyebrow text-primary">Headquarters & Hub</span>
+                <span className="eyebrow text-primary">Headquarters & Office</span>
                 <h2 className="display-sm text-foreground uppercase mt-1">
-                  DHAKA DEMONSTRATION HUB & OFFICE
+                  DHAKA CORPORATE OFFICE & SHOWROOM
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
-                  Visit our regional headquarters and equipment testing showroom in Tejgaon
-                  Industrial Area, Dhaka to inspect operational vehicle lifts, tyre changers, and
-                  diagnostic machinery in person.
+                  Visit our headquarters in Uttara Model Town, Dhaka to discuss turnkey workshop
+                  planning, spare parts procurement, and diagnostic machinery supply in person.
                 </p>
               </div>
 
@@ -311,13 +308,13 @@ export function Support() {
                   <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px]">
-                      Dhaka Corporate Office & Testing Facility
+                      Dhaka Corporate Office
                     </h4>
                     <p className="text-muted-foreground mt-0.5 leading-snug">
-                      Tejgaon Industrial Area, Dhaka-1208, Bangladesh
+                      Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka
                     </p>
                     <p className="text-[10px] text-primary font-medium mt-1">
-                      Landmark: Central Tejgaon Commercial & Automotive Belt
+                      Sector # 14, Uttara Model Town • Dhaka, Bangladesh
                     </p>
                   </div>
                 </div>
@@ -340,7 +337,7 @@ export function Support() {
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <a
-                  href="https://maps.google.com/?q=Tejgaon+Industrial+Area,+Dhaka,+Bangladesh"
+                  href="https://www.google.com/maps?cid=15320172382916100456&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-primary h-10 px-5 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2"
@@ -349,7 +346,7 @@ export function Support() {
                   <span>Open in Google Maps</span>
                 </a>
                 <a
-                  href="tel:+8809612724346"
+                  href="tel:+8801755502421"
                   className="btn btn-outline h-10 px-5 text-xs font-bold uppercase tracking-wider"
                 >
                   Call Office Reception
@@ -400,7 +397,7 @@ export function Support() {
             <div className="rounded-2xl border border-border overflow-hidden shadow-lg aspect-[16/10] sm:aspect-[16/9] w-full relative bg-muted">
               <iframe
                 title="PAGE International Dhaka Office Location"
-                src="https://maps.google.com/maps?q=Tejgaon%20Industrial%20Area,%20Dhaka,%20Bangladesh&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?cid=15320172382916100456&t=&z=16&ie=UTF8&iwloc=&output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

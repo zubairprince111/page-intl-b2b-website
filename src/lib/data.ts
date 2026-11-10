@@ -351,9 +351,9 @@ export type Center = {
 export const centers: Center[] = [
   {
     id: "dhaka-tejgaon",
-    name: "PAGE Equipment Hub — Tejgaon",
+    name: "PAGE Equipment Hub — Uttara, Dhaka",
     area: "Dhaka",
-    address: "Tejgaon Industrial Area, Dhaka",
+    address: "Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka",
     rating: 4.9,
     hours: "Sat–Thu 9:00–19:00",
     services: [

@@ -189,17 +189,34 @@ export function Footer() {
             </p>
 
             <div className="mt-6 space-y-2.5 text-xs text-ink-muted">
-              <div className="flex items-center gap-2.5">
-                <MapPin className="h-4 w-4 text-primary shrink-0" />
-                <span>Tejgaon Industrial Area, Dhaka, Bangladesh</span>
+              <div className="flex items-start gap-2.5">
+                <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <a
+                  href="https://www.google.com/maps?cid=15320172382916100456&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-ink-foreground hover:underline transition-colors"
+                >
+                  Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 text-primary shrink-0" />
-                <span>b2b@page-intl.com / sales@page-intl.com</span>
+                <a
+                  href="mailto:pageon18@gmail.com"
+                  className="hover:text-ink-foreground hover:underline transition-colors"
+                >
+                  pageon18@gmail.com
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-primary shrink-0" />
-                <span>+880 9612-PAGE-INTL (+880 9612-724346)</span>
+                <a
+                  href="tel:+8801755502421"
+                  className="hover:text-ink-foreground hover:underline transition-colors"
+                >
+                  +880 1755-502421
+                </a>
               </div>
             </div>
 

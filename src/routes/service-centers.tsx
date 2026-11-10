@@ -315,7 +315,7 @@ export function ServiceCenterSolutions() {
                     </p>
                     <p className="flex items-center gap-2">
                       <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span>B2B Desk: +880 9612-PAGE-INTL</span>
+                      <span>Contact Desk: +880 1755-502421</span>
                     </p>
                   </div>
 

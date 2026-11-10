@@ -112,24 +112,24 @@ ${offerSection}
 ✓ Certified on-site delivery, leveling, chemical anchoring, and power wiring inspection
 ✓ 18 to 36 Months official manufacturer warranty with priority certified engineer dispatch
 ✓ Free operator safety and technician calibration training at your workshop bay
-✓ 10-Year guaranteed genuine spare parts availability from PAGE Tejgaon logistics hub
+✓ 10-Year guaranteed genuine spare parts availability from PAGE Dhaka logistics hub
 
 5. NOTES & TERMS FROM COMMERCIAL DESK:
 ${message || "We look forward to partnering with your workshop and ensuring world-class equipment uptime."}
 
 =======================================================
 HOW TO PROCEED / CONFIRM ORDER:
-To accept this quotation, request pro-forma tax invoice, or schedule an in-person demonstration at our Tejgaon Hub, simply reply to this email or contact our commercial desk:
+To accept this quotation, request pro-forma tax invoice, or schedule an in-person demonstration at our Uttara, Dhaka office, simply reply to this email or contact our commercial desk:
 
-• Direct B2B Hotline: +880 9612-PAGE-INTL (+880 9612-724346)
-• Official WhatsApp: +880 1700-000000
-• Commercial Email: b2b@page-intl.com | sales@page-intl.com
+• Direct B2B Hotline: +880 1755-502421
+• Official WhatsApp: +880 1755-502421
+• Commercial Email: pageon18@gmail.com
 
 Warm regards,
 
 B2B Commercial & Technical Support Desk
 PAGE International Ltd.
-Tejgaon Industrial Area, Dhaka-1208, Bangladesh
+Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka
 Website: www.pageinternational.com
 "The Company Behind The Workshop"
 `;

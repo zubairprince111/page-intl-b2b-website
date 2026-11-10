@@ -225,9 +225,9 @@ export async function initAndSeedDatabase() {
       value: {
         name: "PAGE International B2B",
         tagline: "Automotive Garage Machinery, Spare Parts & Workshop Engineering",
-        phone: "+880 1711-234567",
-        email: "info@pageintl.com",
-        address: "Tejgaon Industrial Area, Dhaka-1208, Bangladesh",
+        phone: "+880 1755-502421",
+        email: "pageon18@gmail.com",
+        address: "Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka",
         districtsCovered: 64,
         establishedYear: 2018,
       },

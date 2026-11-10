@@ -8,7 +8,7 @@ export const Route = createFileRoute("/warranty")({
       {
         name: "description",
         content:
-          "Official Equipment Warranty Policy by PAGE International Ltd. Coverage schedules (18–36 months), on-site engineer SLA, and Tejgaon spares buffer.",
+          "Official Equipment Warranty Policy by PAGE International Ltd. Coverage schedules (18–36 months), on-site engineer SLA, and Dhaka spares buffer.",
       },
       { property: "og:title", content: "Equipment Warranty Policy — PAGE International" },
       {
@@ -54,7 +54,7 @@ export function WarrantyPage() {
           <p className="text-xs text-muted-foreground leading-relaxed">
             All commercial garage machinery distributed by PAGE carries 18 to 36 months of official
             manufacturer-backed warranty. Supported by an active BDT 50M+ spare parts buffer at our
-            Tejgaon Central Warehouse and guaranteed 4–8 hour on-site engineer response in Dhaka.
+            Dhaka Central Logistics Hub and guaranteed 4–8 hour on-site engineer response in Dhaka.
           </p>
         </div>
 
@@ -235,32 +235,33 @@ export function WarrantyPage() {
                 PAGE International Ltd. — Service Engineering Desk
               </p>
               <p className="text-muted-foreground">
-                Tejgaon Industrial Area, Dhaka-1208 • Saturday–Thursday: 8:00 AM – 8:00 PM
+                Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka • Saturday–Thursday:
+                8:00 AM – 8:00 PM
               </p>
               <p className="text-muted-foreground">
                 Hotline:{" "}
-                <a href="tel:+8809612724346" className="text-primary font-semibold hover:underline">
-                  +880 9612-PAGE-INTL (+880 9612-724346)
+                <a href="tel:+8801755502421" className="text-primary font-semibold hover:underline">
+                  +880 1755-502421
                 </a>
               </p>
               <p className="text-muted-foreground">
                 WhatsApp Emergency Service:{" "}
                 <a
-                  href="https://wa.me/8801700000000"
+                  href="https://wa.me/8801755502421"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary font-semibold hover:underline"
                 >
-                  +880 1700-000000
+                  +880 1755-502421
                 </a>
               </p>
               <p className="text-muted-foreground">
                 Email:{" "}
                 <a
-                  href="mailto:service@page-intl.com"
+                  href="mailto:pageon18@gmail.com"
                   className="text-primary font-semibold hover:underline"
                 >
-                  service@page-intl.com
+                  pageon18@gmail.com
                 </a>
               </p>
             </div>

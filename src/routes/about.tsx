@@ -183,12 +183,12 @@ export function AboutPage() {
               <div className="rounded-xl overflow-hidden border border-border bg-muted">
                 <img
                   src={images.heroWorkshop}
-                  alt="Tejgaon Central Hub & Demonstration Showroom"
+                  alt="Uttara Office & Demonstration Showroom"
                   className="w-full aspect-[4/3] object-cover"
                 />
               </div>
               <p className="text-[11px] text-muted-foreground font-mono">
-                Tejgaon Central Hub — Equipment demonstration showroom & parts dispatch warehouse.
+                Dhaka Office (Uttara Sector 14) — Equipment showroom & workshop advisory desk.
               </p>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
@@ -424,8 +424,7 @@ export function AboutPage() {
               Equip your workshop with PAGE International.
             </h3>
             <p className="text-xs text-muted-foreground">
-              Visit our Tejgaon demonstration hub or discuss equipment supply with our engineering
-              desk.
+              Visit our Uttara, Dhaka office or discuss equipment supply with our engineering desk.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">

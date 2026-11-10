@@ -68,12 +68,13 @@ export const Route = createFileRoute("/")({
               logo: "https://page-bd.com/page logo.png",
               description:
                 "Specialized B2B supplier and distributor of automotive garage machinery, spare parts, diagnostics, tools, and workshop solutions in Bangladesh.",
-              telephone: "+880-1713-000000",
+              telephone: "+880-1755-502421",
+              email: "pageon18@gmail.com",
               address: {
                 "@type": "PostalAddress",
-                streetAddress: "Tejgaon Industrial Area",
+                streetAddress: "Road #18, House # 100, Sector # 14, Uttara Model Town",
                 addressLocality: "Dhaka",
-                postalCode: "1208",
+                postalCode: "1230",
                 addressCountry: "BD",
               },
             },

@@ -265,8 +265,8 @@ function baseEmailWrapper(title: string, contentHtml: string): string {
       ${contentHtml}
     </div>
     <div class="footer">
-      <p style="margin: 0 0 8px 0;"><strong>PAGE International Ltd.</strong> — Corporate Hub & Central Service Bay</p>
-      <p style="margin: 0 0 8px 0;">Tejgaon I/A, Dhaka 1208, Bangladesh | Tel: +880 1713-000000 | Email: support@page-bd.com</p>
+      <p style="margin: 0 0 8px 0;"><strong>PAGE International Ltd.</strong> — Corporate Office & Commercial Desk</p>
+      <p style="margin: 0 0 8px 0;">Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka | Tel: +880 1755-502421 | Email: pageon18@gmail.com</p>
       <p style="margin: 0;">This is an automated operational notification. Please do not reply directly to this email unless directed.</p>
     </div>
   </div>
