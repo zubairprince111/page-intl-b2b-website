@@ -396,6 +396,8 @@ export function UpdatesFeedPage() {
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [savedPosts, setSavedPosts] = useState<Record<string, boolean>>({});
   const [likesCount, setLikesCount] = useState<Record<string, number>>({});
+  const [slideIndices, setSlideIndices] = useState<Record<string, number>>({});
+  const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({});
   const [activeDetailPost, setActiveDetailPost] = useState<InstagramPost | null>(null);
   const [activeQuoteProduct, setActiveQuoteProduct] = useState<any>(null);
   const [newComments, setNewComments] = useState<Record<string, string>>({});
@@ -404,6 +406,14 @@ export function UpdatesFeedPage() {
   >({});
   const [heartBurstPostId, setHeartBurstPostId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleSlideChange = (postId: string, total: number, delta: number) => {
+    setSlideIndices((prev) => {
+      const current = prev[postId] ?? 0;
+      const next = (current + delta + total) % total;
+      return { ...prev, [postId]: next };
+    });
+  };
 
   // Toast helper
   const showToast = (msg: string) => {
@@ -552,45 +562,112 @@ export function UpdatesFeedPage() {
         </div>
       )}
 
-      {/* TOP INSTAGRAM PROFILE HEADER */}
-      <section className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10">
-            {/* Profile Avatar with Story Gradient Ring */}
-            <div className="relative shrink-0 group">
-              <div className="p-[3.5px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 shadow-md">
-                <div className="p-1 rounded-full bg-background">
-                  <img
-                    src="/page-logo-square.png"
-                    alt="PAGE International"
-                    className="h-20 w-20 sm:h-28 sm:w-28 rounded-full object-cover bg-white"
-                  />
-                </div>
-              </div>
-              <div className="absolute bottom-1 right-1 bg-red-600 text-white rounded-full p-1 border-2 border-background shadow-xs">
-                <Radio className="h-3.5 w-3.5 animate-pulse" />
-              </div>
-            </div>
-
-            {/* Profile Info & Actions */}
-            <div className="flex-1 text-center sm:text-left space-y-3 sm:space-y-4">
-              {/* Username + Verified Badge + CTAs */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                  <h1 className="text-xl sm:text-2xl font-bold font-display tracking-tight text-foreground">
-                    page.international
-                  </h1>
-                  <span title="Verified Commercial Automotive Partner">
-                    <CheckCircle2 className="h-5 w-5 text-sky-500 fill-sky-500/20" />
-                  </span>
+      {/* TOP PROFILE HEADER */}
+      <section className="pt-20 sm:pt-24 pb-6 sm:pb-8 border-b border-border bg-secondary/25">
+        <div className="container-page max-w-6xl mx-auto">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-7 shadow-xs">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              {/* Left: Avatar + Brand Bio */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+                {/* Profile Avatar with Story Gradient Ring */}
+                <div className="relative shrink-0">
+                  <div className="p-[3px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 shadow-sm">
+                    <div className="p-0.5 rounded-full bg-card">
+                      <img
+                        src="/page-logo-square.png"
+                        alt="PAGE International"
+                        className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover bg-white"
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className="absolute -bottom-0.5 -right-0.5 bg-red-600 text-white rounded-full p-1 border-2 border-card shadow-xs"
+                    title="Live Field Feed"
+                  >
+                    <Radio className="h-3 w-3 animate-pulse" />
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                {/* Name, Bio & Location */}
+                <div className="space-y-2 max-w-xl">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <h1 className="text-xl sm:text-2xl font-bold font-display tracking-tight text-foreground">
+                      page.international
+                    </h1>
+                    <span title="Verified Commercial Automotive Partner">
+                      <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-sky-500 fill-sky-500/20" />
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 border border-red-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-600">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-600 animate-pulse" />
+                      Field Dispatches
+                    </span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm font-semibold text-foreground">
+                    PAGE International Ltd. — Industrial & Automotive Infrastructure
+                  </p>
+
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    Official field feed: Turnkey electro-hydraulic lifts, high-voltage EV diagnostic
+                    labs, pneumatic 2W systems, and live inbound container logistics across
+                    Bangladesh.
+                  </p>
+
+                  <div className="pt-0.5 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-[11px] font-mono text-primary font-semibold">
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      Tejgaon Central Logistics Bay, Dhaka
+                    </span>
+                    <span className="text-border hidden sm:inline">•</span>
+                    <a
+                      href="https://page.com.bd"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:underline inline-flex items-center gap-1"
+                    >
+                      page.com.bd
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Key Stats + Direct CTAs */}
+              <div className="flex flex-col items-center lg:items-end justify-between gap-4 shrink-0 border-t lg:border-t-0 lg:border-l border-border/60 pt-5 lg:pt-0 lg:pl-7">
+                {/* Compact Stat Strip */}
+                <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-secondary/40 px-2 py-2.5 w-full sm:w-auto min-w-[270px]">
+                  <div className="px-3 text-center">
+                    <span className="block text-sm sm:text-base font-bold font-mono text-foreground">
+                      {allPosts.length}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                      Dispatches
+                    </span>
+                  </div>
+                  <div className="px-3 text-center">
+                    <span className="block text-sm sm:text-base font-bold font-mono text-foreground">
+                      1,850+
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                      Active Bays
+                    </span>
+                  </div>
+                  <div className="px-3 text-center">
+                    <span className="block text-sm sm:text-base font-bold font-mono text-foreground">
+                      64
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                      Districts
+                    </span>
+                  </div>
+                </div>
+
+                {/* CTAs */}
+                <div className="flex items-center justify-center lg:justify-end gap-2 flex-wrap w-full sm:w-auto">
                   <a
                     href="https://wa.me/8809612724346?text=Hi%20PAGE%20International%2C%20I%20am%20following%20your%20field%20feed%20and%20would%20like%20to%20inquire%20about%20workshop%20machinery."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn btn-primary h-8 px-4 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
+                    className="btn btn-primary h-9 px-4 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
                   >
                     <span>Message WhatsApp</span>
                     <ExternalLink className="h-3 w-3" />
@@ -598,9 +675,9 @@ export function UpdatesFeedPage() {
 
                   <Link
                     to="/services/book"
-                    className="btn btn-outline h-8 px-3.5 text-xs font-semibold inline-flex items-center gap-1.5"
+                    className="btn btn-outline h-9 px-3.5 text-xs font-semibold inline-flex items-center gap-1.5"
                   >
-                    <span>Book Bay Consultation</span>
+                    <span>Book Consultation</span>
                   </Link>
 
                   <button
@@ -611,53 +688,12 @@ export function UpdatesFeedPage() {
                         showToast("Profile link copied!");
                       }
                     }}
-                    className="h-8 w-8 rounded-lg border border-border bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    className="h-9 w-9 rounded-lg border border-border bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                     title="Share profile"
+                    aria-label="Share profile link"
                   >
                     <Share2 className="h-3.5 w-3.5" />
                   </button>
-                </div>
-              </div>
-
-              {/* Stats Row */}
-              <div className="flex items-center justify-center sm:justify-start gap-6 sm:gap-8 text-xs sm:text-sm">
-                <div>
-                  <span className="font-bold text-foreground">{allPosts.length}</span>{" "}
-                  <span className="text-muted-foreground">dispatches</span>
-                </div>
-                <div>
-                  <span className="font-bold text-foreground">1,850+</span>{" "}
-                  <span className="text-muted-foreground">active bays</span>
-                </div>
-                <div>
-                  <span className="font-bold text-foreground">64</span>{" "}
-                  <span className="text-muted-foreground">districts</span>
-                </div>
-              </div>
-
-              {/* Bio Description */}
-              <div className="text-xs sm:text-sm text-foreground/90 max-w-xl space-y-1">
-                <p className="font-semibold text-foreground">
-                  PAGE International Ltd. — Industrial & Automotive Infrastructure
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  🇧🇩 Official field feed: Turnkey electro-hydraulic lifts, high-voltage EV
-                  diagnostic labs, pneumatic 2W systems, and live inbound container logistics across
-                  Bangladesh.
-                </p>
-                <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2 text-[11px] font-mono text-primary font-semibold">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Tejgaon Central Logistics Bay, Dhaka
-                  </span>
-                  <span>•</span>
-                  <a
-                    href="https://page.com.bd"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:underline flex items-center gap-1"
-                  >
-                    page.com.bd
-                  </a>
                 </div>
               </div>
             </div>
@@ -665,282 +701,332 @@ export function UpdatesFeedPage() {
         </div>
       </section>
 
-      {/* MAIN VERTICAL FEED CONTAINER */}
-      <main className="max-w-[580px] mx-auto px-3 sm:px-4 py-8 space-y-8 sm:space-y-10">
-        {allPosts.map((post) => {
-          const cfg = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.shipment_inbound;
-          const isLiked = !!likedPosts[post.id];
-          const isSaved = !!savedPosts[post.id];
-          const likes = likesCount[post.id] ?? post.likes;
-          const commentsList = [...post.comments, ...(localComments[post.id] || [])];
+      {/* MAIN TWO-COLUMN RESPONSIVE FEED CONTAINER (1 col on mobile, 2 cols on desktop) */}
+      <main className="container-page max-w-6xl mx-auto py-8 sm:py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          {allPosts.map((post) => {
+            const cfg = CATEGORY_CONFIG[post.category] || CATEGORY_CONFIG.shipment_inbound;
+            const isLiked = !!likedPosts[post.id];
+            const isSaved = !!savedPosts[post.id];
+            const likes = likesCount[post.id] ?? post.likes;
+            const commentsList = [...post.comments, ...(localComments[post.id] || [])];
+            const activeIdx = slideIndices[post.id] ?? 0;
+            const currentImg = post.images[activeIdx] || post.images[0];
+            const isExpanded = !!expandedCaptions[post.id];
 
-          return (
-            <article
-              key={post.id}
-              className="rounded-2xl sm:rounded-3xl border border-border/80 bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all"
-            >
-              {/* CARD HEADER */}
-              <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-border/40">
-                <div className="flex items-center gap-3">
-                  {/* Avatar with gradient ring */}
-                  <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600">
-                    <img
-                      src="/page-logo-square.png"
-                      alt="PAGE International"
-                      className="h-9 w-9 rounded-full object-cover bg-white"
-                    />
-                  </div>
-
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs sm:text-sm font-bold font-display text-foreground">
-                        page.international
-                      </span>
-                      <CheckCircle2 className="h-3.5 w-3.5 text-sky-500 fill-sky-500/20" />
-                      <span className="text-muted-foreground text-xs">•</span>
-                      <span className="text-[11px] text-muted-foreground font-mono">
-                        {new Date(post.date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-
-                    {/* Location Geotag */}
-                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                      <MapPin className="h-3 w-3 text-red-500 shrink-0" />
-                      <span className="truncate max-w-[240px] sm:max-w-[320px] font-medium">
-                        {post.location}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right category badge & options */}
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
-                      cfg.badgeClass,
-                    )}
-                  >
-                    {cfg.label}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSharePost(post)}
-                    className="text-muted-foreground hover:text-foreground p-1 transition-colors"
-                    title="Share dispatch"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* CARD MEDIA (CAROUSEL / PHOTO WITH DOUBLE-TAP HEART) */}
-              <div
-                onDoubleClick={() => handleDoubleTap(post.id, post.likes)}
-                className="relative aspect-square sm:aspect-[4/3] bg-muted overflow-hidden select-none cursor-pointer group"
+            return (
+              <article
+                key={post.id}
+                className="flex flex-col rounded-2xl border border-border/80 bg-card shadow-[0_4px_24px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] overflow-hidden transition-shadow"
               >
-                <img
-                  src={post.images[0]}
-                  alt={post.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-
-                {/* Double-tap animated heart pop */}
-                {heartBurstPostId === post.id && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in zoom-in-50 duration-300">
-                    <Heart className="h-24 w-24 text-white fill-white drop-shadow-2xl animate-pulse" />
-                  </div>
-                )}
-
-                {/* Category badge overlay on mobile */}
-                <div className="sm:hidden absolute top-3 left-3 z-10">
-                  <span
-                    className={cn(
-                      "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border shadow-md",
-                      cfg.badgeClass,
-                      "bg-black/60 text-white border-white/20",
-                    )}
-                  >
-                    {cfg.label}
-                  </span>
-                </div>
-
-                {/* Multi-image indicator badge */}
-                {post.images.length > 1 && (
-                  <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    1 / {post.images.length}
-                  </div>
-                )}
-              </div>
-
-              {/* CARD ACTION BAR */}
-              <div className="p-4 sm:p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    {/* Heart Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleLike(post.id, post.likes)}
-                      className="group/btn flex items-center gap-1 focus:outline-none cursor-pointer"
-                      aria-label="Like post"
-                    >
-                      <Heart
-                        className={cn(
-                          "h-6 w-6 transition-all duration-200 group-hover/btn:scale-115",
-                          isLiked
-                            ? "text-red-500 fill-red-500 scale-105"
-                            : "text-foreground group-hover/btn:text-red-500",
-                        )}
+                {/* CARD HEADER */}
+                <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/40">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {/* Avatar with gradient ring */}
+                    <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 shrink-0">
+                      <img
+                        src="/page-logo-square.png"
+                        alt="PAGE International"
+                        className="h-8 w-8 rounded-full object-cover bg-white"
                       />
-                    </button>
+                    </div>
 
-                    {/* Comment Button */}
-                    <button
-                      type="button"
-                      onClick={() => setActiveDetailPost(post)}
-                      className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
-                      aria-label="View comments"
+                    <div className="min-w-0 space-y-0.5">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-bold font-display text-foreground truncate">
+                          page.international
+                        </span>
+                        <CheckCircle2 className="h-3.5 w-3.5 text-sky-500 fill-sky-500/20 shrink-0" />
+                        <span className="text-muted-foreground text-xs">•</span>
+                        <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                          {new Date(post.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+
+                      {/* Location Geotag */}
+                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <MapPin className="h-3 w-3 text-red-500 shrink-0" />
+                        <span className="truncate font-medium">{post.location}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right category badge & options */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                        cfg.badgeClass,
+                      )}
                     >
-                      <MessageCircle className="h-6 w-6 group-hover/btn:scale-110 transition-transform" />
-                    </button>
+                      {cfg.label}
+                    </span>
 
-                    {/* Share Button */}
                     <button
                       type="button"
                       onClick={() => handleSharePost(post)}
-                      className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
-                      aria-label="Share post"
+                      className="text-muted-foreground hover:text-foreground p-1 transition-colors cursor-pointer"
+                      title="Share dispatch"
+                      aria-label="Share dispatch"
                     >
-                      <Send className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+                      <MoreHorizontal className="h-4 w-4" />
                     </button>
                   </div>
-
-                  {/* Bookmark Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleToggleBookmark(post.id)}
-                    className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
-                    aria-label="Save post"
-                  >
-                    <Bookmark
-                      className={cn(
-                        "h-6 w-6 transition-transform group-hover/btn:scale-110",
-                        isSaved ? "text-foreground fill-current" : "",
-                      )}
-                    />
-                  </button>
                 </div>
 
-                {/* LIKES COUNTER */}
-                <div className="text-xs sm:text-sm font-bold text-foreground">
-                  Liked by{" "}
-                  <span className="font-semibold text-foreground/90">
-                    {isLiked ? "You and " : ""}
-                    {post.likedByText}
-                  </span>
-                </div>
+                {/* CARD MEDIA (CAROUSEL / PHOTO WITH DOUBLE-TAP HEART) */}
+                <div
+                  onDoubleClick={() => handleDoubleTap(post.id, post.likes)}
+                  className="relative aspect-[4/3] md:aspect-[16/10] bg-muted overflow-hidden select-none cursor-pointer group"
+                >
+                  <img
+                    src={currentImg}
+                    alt={post.title}
+                    className="w-full h-full object-cover transition-transform duration-300"
+                    loading="lazy"
+                  />
 
-                {/* CAPTION & TITLE */}
-                <div className="space-y-1 text-xs sm:text-sm leading-relaxed">
-                  <div className="font-bold text-foreground font-display">{post.title}</div>
-                  <p className="text-foreground/90 font-normal">
-                    <span className="font-bold text-foreground mr-1.5">page.international</span>
-                    {post.caption}
-                  </p>
-                </div>
-
-                {/* HASHTAGS */}
-                {post.hashtags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {post.hashtags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[11px] font-semibold text-sky-600 dark:text-sky-400"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* FEATURED MACHINERY (INSTAGRAM SHOPPING TAG) */}
-                {post.equipment.length > 0 && (
-                  <div className="pt-2 border-t border-border/50">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-                      <ShoppingBag className="h-3 w-3 text-primary" />
-                      <span>Featured Machinery & Specs:</span>
+                  {/* Double-tap animated heart pop */}
+                  {heartBurstPostId === post.id && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 animate-in zoom-in-50 duration-300">
+                      <Heart className="h-20 w-20 text-white fill-white drop-shadow-2xl animate-pulse" />
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {post.equipment.map((eq) => (
-                        <button
-                          key={eq.name}
-                          type="button"
-                          onClick={() => handleOpenQuote(eq)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-secondary/80 hover:bg-primary/10 hover:text-primary hover:border-primary/40 border border-border transition-all cursor-pointer shadow-2xs group/tag"
-                        >
-                          <Tag className="h-3 w-3 text-primary group-hover/tag:scale-110 transition-transform" />
-                          <span className="truncate max-w-[260px]">{eq.name}</span>
-                          <ArrowUpRight className="h-3 w-3 opacity-60 group-hover/tag:opacity-100" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* COMMENTS PREVIEW */}
-                <div className="pt-1 space-y-1 text-xs">
-                  {commentsList.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveDetailPost(post)}
-                      className="text-muted-foreground hover:text-foreground text-xs font-medium cursor-pointer"
-                    >
-                      View all {commentsList.length} field comments
-                    </button>
                   )}
 
-                  {commentsList.slice(-2).map((cmt) => (
-                    <div key={cmt.id} className="text-foreground/90 leading-tight">
-                      <span className="font-bold text-foreground mr-1.5">{cmt.user}</span>
-                      <span>{cmt.text}</span>
-                    </div>
-                  ))}
+                  {/* Multi-image Carousel Controls */}
+                  {post.images.length > 1 && (
+                    <>
+                      <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold font-mono px-2 py-0.5 rounded-full">
+                        {activeIdx + 1} / {post.images.length}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSlideChange(post.id, post.images.length, -1);
+                        }}
+                        aria-label="Previous image"
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSlideChange(post.id, post.images.length, 1);
+                        }}
+                        aria-label="Next image"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+
+                      <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center gap-1.5 z-10 pointer-events-none">
+                        {post.images.map((_, idx) => (
+                          <span
+                            key={idx}
+                            className={cn(
+                              "h-1.5 rounded-full transition-all",
+                              idx === activeIdx ? "w-4 bg-white" : "w-1.5 bg-white/50",
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                {/* ADD COMMENT INPUT BAR */}
-                <div className="pt-2 flex items-center gap-2 border-t border-border/40">
-                  <input
-                    type="text"
-                    value={newComments[post.id] || ""}
-                    onChange={(e) =>
-                      setNewComments((prev) => ({ ...prev, [post.id]: e.target.value }))
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleAddComment(post.id);
-                      }
-                    }}
-                    placeholder="Add a field inquiry or technical note..."
-                    className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none py-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleAddComment(post.id)}
-                    disabled={!newComments[post.id]?.trim()}
-                    className="text-primary font-bold text-xs uppercase disabled:opacity-30 disabled:pointer-events-none hover:text-primary/80 transition-colors"
-                  >
-                    Post
-                  </button>
+                {/* CARD CONTENT BODY */}
+                <div className="flex-1 flex flex-col p-4 sm:p-5 gap-3">
+                  {/* Action Strip */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3.5">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLike(post.id, post.likes)}
+                        className="group/btn flex items-center gap-1.5 focus:outline-none cursor-pointer"
+                        aria-label="Like post"
+                      >
+                        <Heart
+                          className={cn(
+                            "h-5 w-5 transition-all duration-200 group-hover/btn:scale-110",
+                            isLiked
+                              ? "text-red-500 fill-red-500 scale-105"
+                              : "text-foreground group-hover/btn:text-red-500",
+                          )}
+                        />
+                        <span className="text-xs font-mono font-semibold text-muted-foreground">
+                          {likes}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveDetailPost(post)}
+                        className="group/btn flex items-center gap-1.5 text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                        aria-label="View comments"
+                      >
+                        <MessageCircle className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+                        <span className="text-xs font-mono font-semibold text-muted-foreground">
+                          {commentsList.length}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSharePost(post)}
+                        className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                        aria-label="Share post"
+                      >
+                        <Send className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleBookmark(post.id)}
+                      className="group/btn text-foreground hover:text-primary transition-colors focus:outline-none cursor-pointer"
+                      aria-label="Save post"
+                    >
+                      <Bookmark
+                        className={cn(
+                          "h-5 w-5 transition-transform group-hover/btn:scale-110",
+                          isSaved ? "text-foreground fill-current" : "",
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Title & Caption */}
+                  <div className="space-y-1.5 text-xs sm:text-sm leading-relaxed">
+                    <h2
+                      onClick={() => setActiveDetailPost(post)}
+                      className="font-bold text-foreground font-display text-sm sm:text-base leading-snug cursor-pointer hover:text-primary transition-colors"
+                    >
+                      {post.title}
+                    </h2>
+                    <div>
+                      <p
+                        className={cn(
+                          "text-muted-foreground font-normal",
+                          !isExpanded && "line-clamp-3",
+                        )}
+                      >
+                        {post.caption}
+                      </p>
+                      {post.caption.length > 140 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedCaptions((prev) => ({
+                              ...prev,
+                              [post.id]: !isExpanded,
+                            }))
+                          }
+                          className="text-[11px] font-semibold text-primary hover:underline mt-0.5 cursor-pointer"
+                        >
+                          {isExpanded ? "Show less" : "Read more"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Hashtags */}
+                  {post.hashtags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {post.hashtags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[11px] font-semibold text-sky-600 dark:text-sky-400"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Bottom Pinned Machinery Tags & Comments */}
+                  <div className="mt-auto space-y-3 pt-1">
+                    {post.equipment.length > 0 && (
+                      <div className="pt-2.5 border-t border-border/50">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                          <ShoppingBag className="h-3 w-3 text-primary" />
+                          <span>Featured Machinery:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {post.equipment.map((eq) => (
+                            <button
+                              key={eq.name}
+                              type="button"
+                              onClick={() => handleOpenQuote(eq)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-secondary/80 hover:bg-primary/10 hover:text-primary hover:border-primary/40 border border-border transition-all cursor-pointer group/tag"
+                            >
+                              <Tag className="h-3 w-3 text-primary shrink-0" />
+                              <span className="truncate max-w-[200px]">{eq.name}</span>
+                              <ArrowUpRight className="h-3 w-3 opacity-60 group-hover/tag:opacity-100 shrink-0" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Compact Comments Preview */}
+                    <div className="space-y-1 text-xs">
+                      {commentsList.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveDetailPost(post)}
+                          className="text-muted-foreground hover:text-foreground text-[11px] font-medium cursor-pointer"
+                        >
+                          View all {commentsList.length} comments
+                        </button>
+                      )}
+
+                      {commentsList.slice(-1).map((cmt) => (
+                        <div key={cmt.id} className="text-foreground/90 leading-tight truncate">
+                          <span className="font-bold text-foreground mr-1.5">{cmt.user}</span>
+                          <span className="text-muted-foreground">{cmt.text}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add Comment Bar */}
+                    <div className="pt-2 flex items-center gap-2 border-t border-border/40">
+                      <input
+                        type="text"
+                        value={newComments[post.id] || ""}
+                        onChange={(e) =>
+                          setNewComments((prev) => ({ ...prev, [post.id]: e.target.value }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleAddComment(post.id);
+                          }
+                        }}
+                        placeholder="Add a field inquiry or technical note..."
+                        className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none py-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAddComment(post.id)}
+                        disabled={!newComments[post.id]?.trim()}
+                        className="text-primary font-bold text-xs uppercase disabled:opacity-30 disabled:pointer-events-none hover:text-primary/80 transition-colors cursor-pointer"
+                      >
+                        Post
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </article>
-          );
-        })}
+              </article>
+            );
+          })}
+        </div>
       </main>
 
       {/* INSTAGRAM POST DETAIL MODAL (DESKTOP SPLIT VIEW) */}
@@ -956,10 +1042,41 @@ export function UpdatesFeedPage() {
             {/* Modal Left: Photo */}
             <div className="md:col-span-7 bg-black flex items-center justify-center relative aspect-square md:aspect-auto">
               <img
-                src={activeDetailPost.images[0]}
+                src={
+                  activeDetailPost.images[slideIndices[activeDetailPost.id] ?? 0] ||
+                  activeDetailPost.images[0]
+                }
                 alt={activeDetailPost.title}
                 className="w-full h-full object-cover"
               />
+              {activeDetailPost.images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSlideChange(activeDetailPost.id, activeDetailPost.images.length, -1)
+                    }
+                    aria-label="Previous image"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-pointer"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSlideChange(activeDetailPost.id, activeDetailPost.images.length, 1)
+                    }
+                    aria-label="Next image"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-pointer"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold font-mono px-2.5 py-1 rounded-full">
+                    {(slideIndices[activeDetailPost.id] ?? 0) + 1} /{" "}
+                    {activeDetailPost.images.length}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Modal Right: Instagram Comments & Details Sidebar */}
