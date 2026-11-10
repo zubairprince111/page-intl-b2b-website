@@ -36,6 +36,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  Minus,
   Plus,
   Trash2,
   Upload,
@@ -154,6 +155,7 @@ function AdminInventory() {
   const [formError, setFormError] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<"presets" | "upload" | "url">("presets");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [updatingQtySlug, setUpdatingQtySlug] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Normalize database product rows merged with canonical storefront metadata
@@ -443,6 +445,24 @@ function AdminInventory() {
       }
     }
     await deleteItemMutation.mutateAsync(slug);
+  }
+
+  async function handleAdjustQty(slug: string, currentQty: number, delta: number) {
+    const nextQty = Math.max(0, Math.floor(currentQty) + delta);
+    if (nextQty === currentQty) return;
+
+    setUpdatingQtySlug(slug);
+    try {
+      await updateItemMutation.mutateAsync({
+        slug,
+        warehouseQty: nextQty,
+        inStock: nextQty > 0,
+      });
+    } catch (err) {
+      console.error("Failed to adjust inventory quantity:", err);
+    } finally {
+      setUpdatingQtySlug((prev) => (prev === slug ? null : prev));
+    }
   }
 
   async function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -745,11 +765,37 @@ function AdminInventory() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span
-                          className={`text-[12px] font-medium ${isOut ? "text-red-400" : isLow ? "text-amber-400" : "text-zinc-200"}`}
-                        >
-                          {item.warehouseQty}
-                        </span>
+                        <div className="inline-flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustQty(item.slug, item.warehouseQty, -1)}
+                            disabled={item.warehouseQty <= 0 || updatingQtySlug === item.slug}
+                            aria-label={`Decrease quantity for ${item.name}`}
+                            title="Decrease quantity"
+                            className="h-6 w-6 rounded-md bg-white/[0.04] border border-white/[0.08] text-zinc-300 hover:bg-white/[0.1] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span
+                            className={`min-w-[2.25rem] text-center text-[12px] font-medium font-mono tabular-nums ${isOut ? "text-red-400" : isLow ? "text-amber-400" : "text-zinc-200"}`}
+                          >
+                            {updatingQtySlug === item.slug ? (
+                              <Loader2 className="h-3 w-3 animate-spin mx-auto text-emerald-400" />
+                            ) : (
+                              item.warehouseQty
+                            )}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustQty(item.slug, item.warehouseQty, 1)}
+                            disabled={updatingQtySlug === item.slug}
+                            aria-label={`Increase quantity for ${item.name}`}
+                            title="Increase quantity"
+                            className="h-6 w-6 rounded-md bg-white/[0.04] border border-white/[0.08] text-zinc-300 hover:bg-emerald-500/20 hover:text-emerald-300 hover:border-emerald-500/30 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {isOut ? (
@@ -969,19 +1015,53 @@ function AdminInventory() {
                       <label className="text-[11px] font-medium text-zinc-400 block mb-1">
                         Warehouse Qty
                       </label>
-                      <input
-                        type="number"
-                        value={productForm.warehouseQty}
-                        onChange={(e) => {
-                          const qty = Number(e.target.value);
-                          setProductForm({
-                            ...productForm,
-                            warehouseQty: qty,
-                            inStock: qty > 0,
-                          });
-                        }}
-                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      />
+                      <div className="flex items-center bg-[#232323] border border-white/[0.08] rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-emerald-500">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextQty = Math.max(0, (productForm.warehouseQty || 0) - 1);
+                            setProductForm({
+                              ...productForm,
+                              warehouseQty: nextQty,
+                              inStock: nextQty > 0,
+                            });
+                          }}
+                          disabled={(productForm.warehouseQty || 0) <= 0}
+                          aria-label="Decrease modal warehouse quantity"
+                          className="h-[36px] w-8 shrink-0 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <input
+                          type="number"
+                          min={0}
+                          value={productForm.warehouseQty}
+                          onChange={(e) => {
+                            const qty = Math.max(0, Math.floor(Number(e.target.value) || 0));
+                            setProductForm({
+                              ...productForm,
+                              warehouseQty: qty,
+                              inStock: qty > 0,
+                            });
+                          }}
+                          className="w-full min-w-0 bg-transparent px-1 py-2 text-center text-[13px] font-mono tabular-nums text-white focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextQty = Math.max(0, (productForm.warehouseQty || 0) + 1);
+                            setProductForm({
+                              ...productForm,
+                              warehouseQty: nextQty,
+                              inStock: nextQty > 0,
+                            });
+                          }}
+                          aria-label="Increase modal warehouse quantity"
+                          className="h-[36px] w-8 shrink-0 flex items-center justify-center text-zinc-400 hover:text-emerald-300 hover:bg-emerald-500/15 transition-colors cursor-pointer"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                     <div>
                       <label className="text-[11px] font-medium text-zinc-400 block mb-1">
