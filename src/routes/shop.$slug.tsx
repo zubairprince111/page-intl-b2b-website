@@ -423,11 +423,8 @@ function ProductPage() {
               {/* Option 1: Power & Voltage */}
               {voltageOptions.length > 1 ? (
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-900 mb-2">
-                    <span>Power & Voltage Supply:</span>
-                    <span className="text-primary font-mono lowercase font-semibold">
-                      {voltageOptions.find((v) => v.id === selectedVoltage)?.label}
-                    </span>
+                  <div className="text-xs font-bold uppercase tracking-wider text-zinc-900 mb-2">
+                    Power &amp; Voltage Supply:
                   </div>
                   <div className="flex flex-wrap gap-2.5">
                     {voltageOptions.map((opt) => (
@@ -458,11 +455,8 @@ function ProductPage() {
               {/* Option 2: Arm / Carriage configuration (if applicable) */}
               {armOptions.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-900 mb-2">
-                    <span>Lifting Arm Configuration:</span>
-                    <span className="text-primary font-mono lowercase font-semibold">
-                      {armOptions.find((a) => a.id === selectedArmType)?.label}
-                    </span>
+                  <div className="text-xs font-bold uppercase tracking-wider text-zinc-900 mb-2">
+                    Lifting Arm Configuration:
                   </div>
                   <div className="flex flex-wrap gap-2.5">
                     {armOptions.map((opt) => (
