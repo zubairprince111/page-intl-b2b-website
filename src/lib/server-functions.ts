@@ -6,6 +6,13 @@ import type { CreateQuoteInput, CreateBookingInput, CreateOrderInput } from "./d
 // 1. QUOTES RPC FUNCTIONS
 // =============================================================================
 
+export const getQuoteSubmissionConfigServerFn = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { isQuoteEmailOtpRequired } = await import("./otp.server");
+    return { requireEmailOtp: isQuoteEmailOtpRequired() };
+  },
+);
+
 export const sendQuoteOtpServerFn = createServerFn({ method: "POST" })
   .validator(
     (data: { email: string; companyName?: string | undefined; productName?: string | undefined }) =>
@@ -20,14 +27,18 @@ export const verifyQuoteOtpAndSubmitServerFn = createServerFn({ method: "POST" }
   .validator((data: CreateQuoteInput & { otp: string }) => data)
   .handler(async ({ data }) => {
     const { verifyQuoteOtpAndCreateCore } = await import("./otp.server");
-    return await verifyQuoteOtpAndCreateCore(data);
+    return await verifyQuoteOtpAndCreateCore({ ...data, verifiedViaOtp: true });
   });
 
 export const createQuoteServerFn = createServerFn({ method: "POST" })
   .validator((data: CreateQuoteInput) => data)
   .handler(async ({ data }) => {
+    const { isQuoteEmailOtpRequired } = await import("./otp.server");
+    if (isQuoteEmailOtpRequired()) {
+      throw new Error("Email OTP verification is required to submit quotations.");
+    }
     const { createQuoteCore } = await import("./data.server");
-    return await createQuoteCore(data);
+    return await createQuoteCore({ ...data, verifiedViaOtp: false });
   });
 
 export const listQuotesServerFn = createServerFn({ method: "GET" })

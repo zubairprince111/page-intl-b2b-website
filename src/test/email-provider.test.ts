@@ -3,6 +3,8 @@ import {
   ConsoleEmailProvider,
   ResendEmailProvider,
   getEmailProvider,
+  isResendSandboxFrom,
+  renderAdminQuoteNotificationEmail,
   renderQuoteOtpEmail,
   resetEmailProviderCache,
   sendTransactionalEmail,
@@ -217,5 +219,51 @@ describe("Resend Email Provider & Transactional Dispatch", () => {
     expect(html).toContain("2-Post Lift &amp; &quot;Pro&quot; Kit");
     expect(html).not.toContain("<script>");
     expect(text).toContain("654321");
+  });
+
+  it("detects Resend @resend.dev sandbox sender vs verified custom domain", () => {
+    expect(isResendSandboxFrom()).toBe(false);
+
+    process.env["RESEND_API_KEY"] = "re_test_123";
+    process.env["EMAIL_FROM"] = "PAGE International <onboarding@resend.dev>";
+    resetEmailProviderCache();
+    expect(isResendSandboxFrom()).toBe(true);
+
+    process.env["EMAIL_FROM"] = "PAGE International <sales@pageinternational.com>";
+    resetEmailProviderCache();
+    expect(isResendSandboxFrom()).toBe(false);
+  });
+
+  it("renders admin quote notification email with XSS escaping", () => {
+    const directMail = renderAdminQuoteNotificationEmail({
+      quoteNumber: "RFQ-2026-8841",
+      companyName: '<img src=x onerror="alert(1)"> Workshop',
+      contactName: "Kamrul Hasan",
+      phone: "+8801711000000",
+      email: "kamrul@example.com",
+      productName: "2-Post Lift & Alignment Kit",
+      qty: 3,
+      city: "Dhaka",
+      notes: "Deliver <script>alert(1)</script> ASAP",
+      verifiedViaOtp: false,
+    });
+
+    expect(directMail.html).toContain("NEW B2B QUOTATION REQUEST");
+    expect(directMail.html).toContain("RFQ-2026-8841");
+    expect(directMail.html).toContain("&lt;img src=x onerror=&quot;alert(1)&quot;&gt; Workshop");
+    expect(directMail.html).not.toContain("<script>");
+    expect(directMail.text).toContain("RFQ-2026-8841");
+
+    const otpMail = renderAdminQuoteNotificationEmail({
+      quoteNumber: "RFQ-2026-8842",
+      companyName: "Apex Motors",
+      contactName: "Rafiq",
+      phone: "+8801811000000",
+      email: "rafiq@apex.bd",
+      productName: "Wheel Balancer",
+      qty: 1,
+      verifiedViaOtp: true,
+    });
+    expect(otpMail.html).toContain("EMAIL OTP VERIFIED RFQ");
   });
 });

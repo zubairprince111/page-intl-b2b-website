@@ -304,9 +304,16 @@ function AdminDashboard() {
                   className="px-5 py-3 flex items-center gap-3 hover:bg-white/[0.02] transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-medium text-zinc-200 truncate">
-                      {q.companyName}
-                    </p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className="text-[12px] font-medium text-zinc-200 truncate">
+                        {q.companyName}
+                      </p>
+                      {q.quoteNumber && (
+                        <span className="text-[10px] font-mono text-zinc-500 shrink-0">
+                          {q.quoteNumber}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[11px] text-zinc-500 truncate">{q.productName}</p>
                   </div>
                   <span

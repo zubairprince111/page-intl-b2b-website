@@ -3,6 +3,7 @@ import {
   ArrowRight,
   CheckCircle2,
   FileSpreadsheet,
+  Loader2,
   Mail,
   Minus,
   Phone,
@@ -18,7 +19,12 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart";
-import { useSendQuoteOtp, useVerifyAndSubmitQuote } from "@/lib/data-client";
+import {
+  useQuoteSubmissionConfig,
+  useCreateQuote,
+  useSendQuoteOtp,
+  useVerifyAndSubmitQuote,
+} from "@/lib/data-client";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -38,6 +44,10 @@ export const Route = createFileRoute("/cart")({
 
 export function Cart() {
   const { lines, setQty, remove, clear, isLoaded } = useCart();
+  const { data: quoteConfig, refetch: refetchQuoteConfig } = useQuoteSubmissionConfig();
+  const requireEmailOtp = quoteConfig?.requireEmailOtp ?? false;
+
+  const createQuoteMutation = useCreateQuote();
   const sendOtpMutation = useSendQuoteOtp();
   const verifyAndSubmitMutation = useVerifyAndSubmitQuote();
 
@@ -46,6 +56,7 @@ export function Cart() {
   const [cooldown, setCooldown] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedViaOtp, setSubmittedViaOtp] = useState(false);
   const [refId, setRefId] = useState("");
   const [formData, setFormData] = useState({
     companyName: "",
@@ -54,9 +65,11 @@ export function Cart() {
     email: "",
     city: "Dhaka",
     notes: "",
+    honeypot: "",
   });
 
   const totalUnits = lines.reduce((acc, l) => acc + l.qty, 0);
+  const isSubmittingForm = sendOtpMutation.isPending || createQuoteMutation.isPending;
 
   // Cooldown timer for OTP resend
   useEffect(() => {
@@ -67,29 +80,45 @@ export function Cart() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  // Step 1: Send OTP to email
-  const handleInitiateOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.companyName.trim() || !formData.phone.trim() || !formData.email.trim()) {
-      setErrorMsg(
-        "Please provide your Company Name, Phone, and Email to receive your verification code.",
-      );
-      return;
-    }
-
-    setErrorMsg(null);
-
+  const buildQuotePayload = () => {
     const firstLine = lines[0];
     const productSummary =
       lines.length === 1 && firstLine
         ? `${firstLine.qty}x ${firstLine.product.name}`
         : `${lines.length} Products: ${lines.map((l) => `${l.qty}x ${l.product.name}`).join(", ")}`;
 
+    return {
+      companyName: formData.companyName.trim(),
+      contactName: formData.contactName.trim() || formData.companyName.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
+      productSlug: firstLine ? firstLine.product.slug : "custom-rfq",
+      productName: productSummary,
+      qty: totalUnits,
+      items: lines.map((l) => ({
+        productSlug: l.product.slug,
+        productName: l.product.name,
+        qty: l.qty,
+        unitPrice: l.product.price,
+      })),
+      businessType: "Cart Multi-Item Order",
+      city: formData.city || "Dhaka",
+      notes: formData.notes
+        ? `${formData.notes} [Cart Request]`
+        : `Quotation Cart Request (${lines.length} products, ${totalUnits} total units)`,
+      honeypot: formData.honeypot,
+    };
+  };
+
+  // Resend OTP during Step 2
+  const handleInitiateOtp = async () => {
+    const payload = buildQuotePayload();
+    setErrorMsg(null);
     try {
       await sendOtpMutation.mutateAsync({
-        email: formData.email.trim(),
-        companyName: formData.companyName.trim(),
-        productName: productSummary,
+        email: payload.email,
+        companyName: payload.companyName,
+        productName: payload.productName,
       });
 
       setCartStep("otp");
@@ -97,6 +126,51 @@ export function Cart() {
       setOtp("");
     } catch (err: any) {
       setErrorMsg(err?.message || "Failed to send verification code. Please check your email.");
+    }
+  };
+
+  // Step 1: Submit directly OR send Email OTP based on server config
+  const handleSubmitForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (lines.length === 0) return;
+
+    const companyName = formData.companyName.trim();
+    const phone = formData.phone.trim();
+    const email = formData.email.trim();
+
+    if (!companyName || !phone || !email) {
+      setErrorMsg(
+        "Please provide your Company Name, Phone, and Email to submit your quotation request.",
+      );
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrorMsg("Please provide a valid business email address.");
+      return;
+    }
+
+    setErrorMsg(null);
+
+    try {
+      const activeConfig = quoteConfig ?? (await refetchQuoteConfig()).data;
+      const needsOtp = activeConfig?.requireEmailOtp ?? false;
+
+      if (needsOtp) {
+        await handleInitiateOtp();
+        return;
+      }
+
+      const payload = buildQuotePayload();
+      const res = await createQuoteMutation.mutateAsync(payload);
+
+      setSubmittedViaOtp(false);
+      if (res.quoteNumber) {
+        setRefId(res.quoteNumber);
+      }
+      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to submit quotation request. Please check your details.");
     }
   };
 
@@ -113,34 +187,13 @@ export function Cart() {
 
     try {
       if (lines.length > 0) {
-        const firstLine = lines[0];
-        const productSummary =
-          lines.length === 1 && firstLine
-            ? `${firstLine.qty}x ${firstLine.product.name}`
-            : `${lines.length} Products: ${lines.map((l) => `${l.qty}x ${l.product.name}`).join(", ")}`;
-
+        const payload = buildQuotePayload();
         const res = await verifyAndSubmitMutation.mutateAsync({
           otp: cleanOtp,
-          companyName: formData.companyName.trim(),
-          contactName: formData.contactName.trim() || formData.companyName.trim(),
-          phone: formData.phone.trim(),
-          email: formData.email.trim(),
-          productSlug: firstLine ? firstLine.product.slug : "",
-          productName: productSummary,
-          qty: totalUnits,
-          items: lines.map((l) => ({
-            productSlug: l.product.slug,
-            productName: l.product.name,
-            qty: l.qty,
-            unitPrice: l.product.price,
-          })),
-          businessType: "Cart Multi-Item Order",
-          city: formData.city || "Dhaka",
-          notes: formData.notes
-            ? `${formData.notes} [Cart Request]`
-            : `Quotation Cart Request (${lines.length} products, ${totalUnits} total units)`,
+          ...payload,
         });
 
+        setSubmittedViaOtp(true);
         if (res.quoteNumber) {
           setRefId(res.quoteNumber);
         }
@@ -153,6 +206,7 @@ export function Cart() {
 
   const handleReset = () => {
     setSubmitted(false);
+    setSubmittedViaOtp(false);
     setCartStep("form");
     setOtp("");
     clear();
@@ -200,6 +254,10 @@ export function Cart() {
             <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-500/10 text-emerald-600">
               <CheckCircle2 className="h-10 w-10" />
             </div>
+
+            <span className="inline-block text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+              {submittedViaOtp ? "Email Verified • RFQ Confirmed" : "Direct RFQ Logged • Confirmed"}
+            </span>
 
             <h2 className="display-md text-foreground font-bold">
               Multi-Product Quotation Request Received!
@@ -499,7 +557,18 @@ export function Cart() {
                 </form>
               ) : (
                 /* Step 1: Client Information Form */
-                <form onSubmit={handleInitiateOtp} className="mt-4 space-y-3.5 text-xs">
+                <form onSubmit={handleSubmitForm} className="mt-4 space-y-3.5 text-xs">
+                  {/* Honeypot field for bot protection */}
+                  <input
+                    type="text"
+                    name="b_cart_hp"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={formData.honeypot}
+                    onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                    className="hidden"
+                    aria-hidden="true"
+                  />
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1">
                       Company / Workshop <span className="text-destructive">*</span>
@@ -565,13 +634,25 @@ export function Cart() {
 
                   <button
                     type="submit"
-                    disabled={sendOtpMutation.isPending}
+                    disabled={isSubmittingForm}
                     className="btn btn-primary w-full h-10 text-xs font-semibold flex items-center justify-center gap-2 rounded-xl shadow-sm cursor-pointer disabled:opacity-50 mt-1"
                   >
-                    <Send className="h-3.5 w-3.5" />
-                    <span>
-                      {sendOtpMutation.isPending ? "Sending Code..." : "Verify with Email OTP"}
-                    </span>
+                    {isSubmittingForm ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>{requireEmailOtp ? "Sending Code..." : "Submitting Request..."}</span>
+                      </>
+                    ) : requireEmailOtp ? (
+                      <>
+                        <Mail className="h-3.5 w-3.5" />
+                        <span>Verify with Email OTP</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-3.5 w-3.5" />
+                        <span>Submit Quotation Request</span>
+                      </>
+                    )}
                   </button>
                 </form>
               )}

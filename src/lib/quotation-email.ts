@@ -1,6 +1,7 @@
 export interface QuotationEmailPayload {
   quote: {
     id: string;
+    quoteNumber?: string | null | undefined;
     companyName: string;
     contactName: string;
     phone: string;
@@ -34,6 +35,7 @@ export function openGmailQuotationDraft({
   subject: string;
   body: string;
 } {
+  const quoteRef = (quote.quoteNumber || quote.id).toUpperCase();
   const total = unitPrice * qty;
   const dateStr = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -45,8 +47,8 @@ export function openGmailQuotationDraft({
   const isMultiItem = quoteItems && quoteItems.length > 1;
 
   const subject = isMultiItem
-    ? `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} (${quoteItems.length} Products Order)`
-    : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} for ${productName}`;
+    ? `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quoteRef} (${quoteItems.length} Products Order)`
+    : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quoteRef} for ${productName}`;
 
   const inquirySection =
     isMultiItem && quoteItems
@@ -86,12 +88,12 @@ ${quoteItems
 
   const body = `Dear ${quote.contactName || quote.companyName},
 
-Thank you for your business inquiry with PAGE International. Regarding your quotation request (Ref: #${quote.id.toUpperCase()}), please find our official commercial offer and quotation report below:
+Thank you for your business inquiry with PAGE International. Regarding your quotation request (Ref: #${quoteRef}), please find our official commercial offer and quotation report below:
 
 =======================================================
 PAGE INTERNATIONAL — COMMERCIAL QUOTATION REPORT
 =======================================================
-Quotation Ref: #${quote.id.toUpperCase()}
+Quotation Ref: #${quoteRef}
 Issue Date: ${dateStr}
 Validity: 15 Calendar Days
 Prepared For: ${quote.companyName}

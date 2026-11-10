@@ -1,6 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useQuotes, useInventory, useUpdateQuote, useDeleteQuote } from "@/lib/data-client";
+import {
+  useQuotes,
+  useQuoteSubmissionConfig,
+  useInventory,
+  useUpdateQuote,
+  useDeleteQuote,
+} from "@/lib/data-client";
 import { openGmailQuotationDraft } from "@/lib/quotation-email";
 import { taka } from "@/lib/data";
 import {
@@ -30,6 +36,7 @@ import {
   TrendingUp,
   DollarSign,
   Filter,
+  RefreshCw,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import {
@@ -74,7 +81,13 @@ function formatWhatsAppLink(phone: string) {
 }
 
 function AdminQuotes() {
-  const { data: rawQuotes = [], isLoading: quotesLoading } = useQuotes();
+  const {
+    data: rawQuotes = [],
+    isLoading: quotesLoading,
+    isFetching: quotesFetching,
+    refetch: refetchQuotes,
+  } = useQuotes();
+  const { data: quoteConfig } = useQuoteSubmissionConfig();
   const { data: inventory = [] } = useInventory();
   const updateQuoteMutation = useUpdateQuote();
   const deleteQuoteMutation = useDeleteQuote();
@@ -137,6 +150,8 @@ function AdminQuotes() {
     return quotes.filter((q: any) => {
       const matchSearch =
         !search ||
+        q.quoteNumber?.toLowerCase().includes(search.toLowerCase()) ||
+        q.id?.toLowerCase().includes(search.toLowerCase()) ||
         q.companyName?.toLowerCase().includes(search.toLowerCase()) ||
         q.contactName?.toLowerCase().includes(search.toLowerCase()) ||
         q.productName?.toLowerCase().includes(search.toLowerCase()) ||
@@ -343,11 +358,23 @@ function AdminQuotes() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium">
               <ShieldCheck className="h-3.5 w-3.5" />
-              Email OTP Verified System
+              {quoteConfig?.requireEmailOtp
+                ? "Email OTP Verified • Live 15s Sync"
+                : "Direct B2B RFQ Intake • Live 15s Sync"}
             </span>
+            <button
+              type="button"
+              onClick={() => refetchQuotes()}
+              disabled={quotesFetching}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-zinc-300 text-xs font-medium transition-colors cursor-pointer disabled:opacity-60"
+              title="Refresh quotation list"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${quotesFetching ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
 
@@ -409,7 +436,7 @@ function AdminQuotes() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by workshop, phone, contact or product..."
+              placeholder="Search by RFQ ID, workshop, phone, contact or product..."
               className="w-full bg-[#121214] border border-white/[0.08] rounded-lg pl-9 pr-8 py-2 text-[12px] text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all"
             />
             {search && (
@@ -530,8 +557,8 @@ function AdminQuotes() {
                           <h3 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
                             {q.companyName}
                           </h3>
-                          <span className="text-[10px] font-mono text-zinc-500 bg-white/[0.04] px-1.5 py-0.5 rounded">
-                            #{q.id.slice(0, 8).toUpperCase()}
+                          <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.05] px-1.5 py-0.5 rounded">
+                            #{(q.quoteNumber || q.id.slice(0, 8)).toUpperCase()}
                           </span>
                           {statusBadge(q.status)}
                           {isMulti ? (
@@ -583,7 +610,7 @@ function AdminQuotes() {
                         )}
                         <a
                           href={`mailto:${q.email}?subject=${encodeURIComponent(
-                            `[PAGE Commercial Quotation] Ref #${q.id.toUpperCase()}`,
+                            `[PAGE Commercial Quotation] Ref #${(q.quoteNumber || q.id).toUpperCase()}`,
                           )}`}
                           className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-sky-500/20 text-zinc-400 hover:text-sky-300 border border-white/[0.06] flex items-center justify-center transition-colors"
                           title={`Email ${q.email}`}
@@ -654,7 +681,7 @@ function AdminQuotes() {
                         </div>
                         <div>
                           <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider block">
-                            Verified Email
+                            Contact Email
                           </span>
                           <a
                             href={`mailto:${q.email}`}

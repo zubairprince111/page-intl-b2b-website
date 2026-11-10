@@ -5,20 +5,30 @@ interface RateLimitBucket {
   resetAt: number;
 }
 
-const buckets = new Map<string, RateLimitBucket>();
+const globalForRateLimit = globalThis as unknown as {
+  __pageRateLimitBuckets?: Map<string, RateLimitBucket>;
+  __pageRateLimitCleanupStarted?: boolean;
+};
+
+const buckets =
+  globalForRateLimit.__pageRateLimitBuckets ??
+  (globalForRateLimit.__pageRateLimitBuckets = new Map<string, RateLimitBucket>());
 
 // Clean expired buckets every 5 minutes
-setInterval(
-  () => {
-    const now = Date.now();
-    for (const [key, bucket] of buckets.entries()) {
-      if (bucket.resetAt <= now) {
-        buckets.delete(key);
+if (!globalForRateLimit.__pageRateLimitCleanupStarted && typeof setInterval !== "undefined") {
+  globalForRateLimit.__pageRateLimitCleanupStarted = true;
+  setInterval(
+    () => {
+      const now = Date.now();
+      for (const [key, bucket] of buckets.entries()) {
+        if (bucket.resetAt <= now) {
+          buckets.delete(key);
+        }
       }
-    }
-  },
-  5 * 60 * 1000,
-).unref?.();
+    },
+    5 * 60 * 1000,
+  ).unref?.();
+}
 
 export function checkRateLimit(
   identifier: string,

@@ -26,9 +26,12 @@ import crypto from "node:crypto";
 import {
   sendTransactionalEmail,
   renderQuoteConfirmationEmail,
+  renderAdminQuoteNotificationEmail,
   renderBookingConfirmationEmail,
   renderOrderConfirmationEmail,
+  isResendSandboxFrom,
 } from "./email.server";
+import { ensureServerEnvLoaded } from "./env.server";
 
 // -----------------------------------------------------------------------------
 // HELPER: Require Admin Privileges
@@ -59,6 +62,7 @@ export interface CreateQuoteInput {
   items?:
     { productSlug: string; productName: string; qty: number; unitPrice?: number }[] | undefined;
   honeypot?: string | undefined;
+  verifiedViaOtp?: boolean | undefined;
 }
 
 export async function createQuoteCore(data: CreateQuoteInput) {
@@ -67,6 +71,22 @@ export async function createQuoteCore(data: CreateQuoteInput) {
   if (data.honeypot && data.honeypot.trim().length > 0) {
     await new Promise((r) => setTimeout(r, 800));
     return { success: true, quoteNumber: `RFQ-${Math.floor(100000 + Math.random() * 900000)}` };
+  }
+
+  const companyName = (data.companyName || "").trim();
+  const phone = (data.phone || "").trim();
+  const normalizedEmail = (data.email || "").trim().toLowerCase();
+  const contactName = (data.contactName || "").trim() || companyName;
+  const productName = (data.productName || "").trim();
+  const productSlug = (data.productSlug || "").trim() || "custom-rfq";
+
+  if (!companyName || !phone || !productName) {
+    throw new Error("Please provide company name, phone number, and product details.");
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(normalizedEmail)) {
+    throw new Error("Please provide a valid business email address.");
   }
 
   const rateCheck = checkRateLimit(`quote:${ip}`, 10, 60);
@@ -79,6 +99,7 @@ export async function createQuoteCore(data: CreateQuoteInput) {
   const user = await getSessionUserCore();
   const id = `q-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
   const quoteNumber = `RFQ-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const normalizedQty = Math.max(1, Math.floor(Number(data.qty) || 1));
 
   const [row] = await db
     .insert(quotes)
@@ -86,48 +107,80 @@ export async function createQuoteCore(data: CreateQuoteInput) {
       id,
       quoteNumber,
       userId: user?.id || null,
-      companyName: data.companyName.trim(),
-      contactName: data.contactName.trim() || data.companyName.trim(),
-      phone: data.phone.trim(),
-      email: data.email.trim().toLowerCase(),
-      productSlug: data.productSlug,
-      productName: data.productName,
-      qty: Math.max(1, data.qty),
-      businessType: data.businessType || "Workshop / Garage",
-      city: data.city || "Dhaka",
-      notes: data.notes || null,
+      companyName,
+      contactName,
+      phone,
+      email: normalizedEmail,
+      productSlug,
+      productName,
+      qty: normalizedQty,
+      businessType: data.businessType?.trim() || "Workshop / Garage",
+      city: data.city?.trim() || "Dhaka",
+      notes: data.notes?.trim() || null,
       status: "PENDING",
       itemsJson: data.items && data.items.length > 0 ? data.items : null,
     })
     .returning();
 
-  // Log in Audit & Email
+  // Log in Audit & Dispatch Emails (non-blocking)
   try {
     await db.insert(auditLog).values({
       id: `audit-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
       actorId: user?.id || null,
-      actorEmail: data.email,
+      actorEmail: normalizedEmail,
       action: "quote.create",
       entityType: "quote",
       entityId: id,
-      metadata: { quoteNumber, product: data.productName },
+      metadata: {
+        quoteNumber,
+        product: productName,
+        verifiedViaOtp: Boolean(data.verifiedViaOtp),
+      },
       ipAddress: ip,
     });
 
-    const emailData = renderQuoteConfirmationEmail({
-      quoteNumber,
-      contactName: data.contactName,
-      companyName: data.companyName || undefined,
-      productName: data.productName,
-      qty: data.qty,
-    });
-    sendTransactionalEmail({
-      to: data.email,
-      subject: `Quotation Request Received [${quoteNumber}] — PAGE International`,
-      template: "QUOTE_CONFIRMATION",
-      html: emailData.html,
-      text: emailData.text,
-    }).catch(() => {});
+    ensureServerEnvLoaded();
+
+    if (!isResendSandboxFrom()) {
+      const emailData = renderQuoteConfirmationEmail({
+        quoteNumber,
+        contactName,
+        companyName: companyName || undefined,
+        productName,
+        qty: normalizedQty,
+      });
+      sendTransactionalEmail({
+        to: normalizedEmail,
+        subject: `Quotation Request Received [${quoteNumber}] — PAGE International`,
+        template: "QUOTE_CONFIRMATION",
+        html: emailData.html,
+        text: emailData.text,
+      }).catch(() => {});
+    }
+
+    const adminNotifyEmail = (process.env["MAIL_ADMIN_NOTIFICATION"] || "").trim().toLowerCase();
+    if (adminNotifyEmail && emailRegex.test(adminNotifyEmail)) {
+      const adminEmailData = renderAdminQuoteNotificationEmail({
+        quoteNumber,
+        companyName,
+        contactName,
+        phone,
+        email: normalizedEmail,
+        productName,
+        qty: normalizedQty,
+        city: data.city?.trim() || undefined,
+        notes: data.notes?.trim() || undefined,
+        verifiedViaOtp: Boolean(data.verifiedViaOtp),
+      });
+      sendTransactionalEmail({
+        to: adminNotifyEmail,
+        subject: `New B2B Quotation [${quoteNumber}] — ${companyName}`,
+        template: "ADMIN_QUOTE_NOTIFICATION",
+        html: adminEmailData.html,
+        text: adminEmailData.text,
+        replyTo: normalizedEmail,
+      }).catch(() => {});
+    }
   } catch {
     // Non-blocking
   }
@@ -152,12 +205,25 @@ export async function listQuotesCore(filter?: {
     throw new Error("Unauthorized. Please log in.");
   }
 
-  const query = db.select().from(quotes).orderBy(desc(quotes.createdAt));
-  const rows = await query;
+  let rows = await db.select().from(quotes).orderBy(desc(quotes.createdAt));
 
   if (filter?.status && filter.status !== "all") {
-    return rows.filter((r) => r.status.toLowerCase() === filter.status!.toLowerCase());
+    rows = rows.filter((r) => r.status.toLowerCase() === filter.status!.toLowerCase());
   }
+
+  if (filter?.search && filter.search.trim().length > 0) {
+    const q = filter.search.trim().toLowerCase();
+    rows = rows.filter(
+      (r) =>
+        r.companyName.toLowerCase().includes(q) ||
+        r.contactName.toLowerCase().includes(q) ||
+        r.productName.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q) ||
+        r.phone.toLowerCase().includes(q) ||
+        (r.quoteNumber || "").toLowerCase().includes(q),
+    );
+  }
+
   return rows;
 }
 

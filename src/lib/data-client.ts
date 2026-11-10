@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  getQuoteSubmissionConfigServerFn,
   sendQuoteOtpServerFn,
   verifyQuoteOtpAndSubmitServerFn,
   createQuoteServerFn,
@@ -52,12 +53,23 @@ export function useAdminStats() {
 // 2. QUOTATIONS HOOKS
 // =============================================================================
 
+export function useQuoteSubmissionConfig() {
+  return useQuery({
+    queryKey: ["quote-submission-config"],
+    queryFn: async () => {
+      return await getQuoteSubmissionConfigServerFn();
+    },
+    staleTime: 60_000,
+  });
+}
+
 export function useQuotes(filter?: { status?: string | undefined; search?: string | undefined }) {
   return useQuery({
     queryKey: ["quotes", filter?.status, filter?.search],
     queryFn: async () => {
       return await listQuotesServerFn({ data: filter || {} });
     },
+    refetchInterval: 15000, // Keep quotations queue live alongside admin stats
   });
 }
 

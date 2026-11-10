@@ -26,6 +26,14 @@ export function getConfiguredFromAddress(fallback = DEFAULT_RESEND_FROM): string
   return configured && configured.trim().length > 0 ? configured.trim() : fallback;
 }
 
+export function isResendSandboxFrom(): boolean {
+  const provider = getEmailProvider();
+  if (provider.name !== "resend") {
+    return false;
+  }
+  return getConfiguredFromAddress(DEFAULT_RESEND_FROM).toLowerCase().includes("@resend.dev");
+}
+
 export interface EmailPayload {
   to: string;
   subject: string;
@@ -482,6 +490,46 @@ export function renderQuoteConfirmationEmail(params: {
   `;
   const text = `Dear ${params.contactName},\n\nThank you for submitting a commercial quotation request [${params.quoteNumber}] to PAGE International Ltd.\n\nCompany: ${params.companyName || "Commercial Client"}\nProduct: ${params.productName} (${params.qty} Units)\n\nOur team will contact you within 24 hours.`;
   return { html: baseEmailWrapper(`Quotation Received [${params.quoteNumber}]`, content), text };
+}
+
+export function renderAdminQuoteNotificationEmail(params: {
+  quoteNumber: string;
+  companyName: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  productName: string;
+  qty: number;
+  city?: string | undefined;
+  notes?: string | undefined;
+  verifiedViaOtp?: boolean | undefined;
+}): { html: string; text: string } {
+  const verificationBadge = params.verifiedViaOtp
+    ? "EMAIL OTP VERIFIED RFQ"
+    : "NEW B2B QUOTATION REQUEST";
+  const content = `
+    <div class="pill">${verificationBadge}</div>
+    <h2>New Quotation Request [${escapeHtml(params.quoteNumber)}]</h2>
+    <p>A customer submitted a commercial quotation request through the PAGE International storefront.</p>
+    <div class="card">
+      <div class="card-title">Client & Request Details</div>
+      <div class="detail-row"><span class="label">Reference ID:</span><span class="value" style="font-family: monospace; color: #fb7185;">${escapeHtml(params.quoteNumber)}</span></div>
+      <div class="detail-row"><span class="label">Company / Workshop:</span><span class="value">${escapeHtml(params.companyName)}</span></div>
+      <div class="detail-row"><span class="label">Contact Person:</span><span class="value">${escapeHtml(params.contactName)}</span></div>
+      <div class="detail-row"><span class="label">Phone:</span><span class="value" style="font-family: monospace;">${escapeHtml(params.phone)}</span></div>
+      <div class="detail-row"><span class="label">Email:</span><span class="value">${escapeHtml(params.email)}</span></div>
+      ${params.city ? `<div class="detail-row"><span class="label">City:</span><span class="value">${escapeHtml(params.city)}</span></div>` : ""}
+      <div class="detail-row"><span class="label">Equipment / Items:</span><span class="value">${escapeHtml(params.productName)}</span></div>
+      <div class="detail-row"><span class="label">Total Units:</span><span class="value">${params.qty} Unit(s)</span></div>
+      ${params.notes ? `<div class="detail-row"><span class="label">Notes:</span><span class="value">${escapeHtml(params.notes)}</span></div>` : ""}
+    </div>
+    <p>Open the Admin Quotations dashboard to configure pricing and respond to this inquiry.</p>
+  `;
+  const text = `New quotation request [${params.quoteNumber}] from ${params.companyName}\nContact: ${params.contactName}\nPhone: ${params.phone}\nEmail: ${params.email}\nEquipment: ${params.productName} (${params.qty} units)${params.notes ? `\nNotes: ${params.notes}` : ""}`;
+  return {
+    html: baseEmailWrapper(`New RFQ ${params.quoteNumber} — ${params.companyName}`, content),
+    text,
+  };
 }
 
 export function renderBookingConfirmationEmail(params: {

@@ -12,10 +12,16 @@ import {
   RefreshCw,
   Copy,
   Check,
+  Send,
   Sparkles,
 } from "lucide-react";
 import type { Product } from "@/lib/data";
-import { useSendQuoteOtp, useVerifyAndSubmitQuote } from "@/lib/data-client";
+import {
+  useQuoteSubmissionConfig,
+  useCreateQuote,
+  useSendQuoteOtp,
+  useVerifyAndSubmitQuote,
+} from "@/lib/data-client";
 
 export interface QuoteModalProps {
   product: Product | null;
@@ -27,12 +33,17 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
   const [qty, setQty] = useState(1);
   const [otp, setOtp] = useState("");
   const [quoteNumber, setQuoteNumber] = useState("");
+  const [submittedViaOtp, setSubmittedViaOtp] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [copiedRef, setCopiedRef] = useState(false);
 
   const otpInputRef = useRef<HTMLInputElement>(null);
 
+  const { data: quoteConfig, refetch: refetchQuoteConfig } = useQuoteSubmissionConfig();
+  const requireEmailOtp = quoteConfig?.requireEmailOtp ?? false;
+
+  const createQuoteMutation = useCreateQuote();
   const sendOtpMutation = useSendQuoteOtp();
   const verifyAndSubmitMutation = useVerifyAndSubmitQuote();
 
@@ -46,6 +57,16 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
     notes: "",
     honeypot: "",
   });
+
+  // Reset transient modal state whenever product changes or modal closes
+  useEffect(() => {
+    setStep("form");
+    setQty(1);
+    setOtp("");
+    setQuoteNumber("");
+    setSubmittedViaOtp(false);
+    setErrorMsg(null);
+  }, [product?.slug]);
 
   // Prevent background body scrolling when modal is open
   useEffect(() => {
@@ -92,28 +113,66 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
 
   if (!product) return null;
 
-  // Step 1: Submit Form & Trigger OTP Dispatch
-  const handleInitiateOtp = async (e: React.FormEvent) => {
+  const isSubmittingForm = sendOtpMutation.isPending || createQuoteMutation.isPending;
+
+  // Step 1: Submit Form Directly OR Trigger Email OTP based on server configuration
+  const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.companyName.trim() || !formData.phone.trim() || !formData.email.trim()) {
+    const companyName = formData.companyName.trim();
+    const contactName = formData.contactName.trim() || companyName;
+    const phone = formData.phone.trim();
+    const email = formData.email.trim();
+
+    if (!companyName || !phone || !email) {
       setErrorMsg("Please fill in all required fields (Company, Phone, and Email).");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrorMsg("Please provide a valid business email address.");
       return;
     }
 
     setErrorMsg(null);
 
     try {
-      await sendOtpMutation.mutateAsync({
-        email: formData.email.trim(),
-        companyName: formData.companyName.trim(),
+      const activeConfig = quoteConfig ?? (await refetchQuoteConfig()).data;
+      const needsOtp = activeConfig?.requireEmailOtp ?? false;
+
+      if (needsOtp) {
+        await sendOtpMutation.mutateAsync({
+          email,
+          companyName,
+          productName: product.name,
+        });
+
+        setStep("otp");
+        setCooldown(60);
+        setOtp("");
+        return;
+      }
+
+      const res = await createQuoteMutation.mutateAsync({
+        companyName,
+        contactName,
+        phone,
+        email,
+        productSlug: product.slug,
         productName: product.name,
+        qty,
+        businessType: formData.businessType,
+        city: formData.city,
+        notes: formData.notes,
+        honeypot: formData.honeypot,
       });
 
-      setStep("otp");
-      setCooldown(60);
-      setOtp("");
+      setSubmittedViaOtp(false);
+      if (res.quoteNumber) {
+        setQuoteNumber(res.quoteNumber);
+      }
+      setStep("success");
     } catch (err: any) {
-      setErrorMsg(err?.message || "Failed to dispatch verification code. Please check your email.");
+      setErrorMsg(err?.message || "Failed to submit quotation request. Please check your details.");
     }
   };
 
@@ -160,6 +219,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
         honeypot: formData.honeypot,
       });
 
+      setSubmittedViaOtp(true);
       if (res.quoteNumber) {
         setQuoteNumber(res.quoteNumber);
       }
@@ -208,7 +268,9 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
 
             <div className="space-y-1">
               <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                Email Verified • Request Confirmed
+                {submittedViaOtp
+                  ? "Email Verified • Request Confirmed"
+                  : "Direct RFQ Logged • Request Confirmed"}
               </span>
               <h3 className="text-2xl font-display font-bold uppercase tracking-tight text-foreground">
                 Quotation Request Received
@@ -256,7 +318,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Verified Email:</span>
+                <span>{submittedViaOtp ? "Verified Email:" : "Email Address:"}</span>
                 <span className="font-mono text-foreground">{formData.email}</span>
               </div>
               <div className="flex justify-between">
@@ -428,7 +490,7 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleInitiateOtp} className="flex-1 overflow-y-auto space-y-3 pr-1">
+            <form onSubmit={handleSubmitForm} className="flex-1 overflow-y-auto space-y-3 pr-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label
@@ -542,18 +604,27 @@ export function QuoteModal({ product, onClose }: QuoteModalProps) {
               <div className="pt-1">
                 <button
                   type="submit"
-                  disabled={sendOtpMutation.isPending}
+                  disabled={isSubmittingForm}
                   className="btn btn-primary w-full h-10 text-xs font-semibold rounded-xl shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {sendOtpMutation.isPending ? (
+                  {isSubmittingForm ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Sending Verification Code...</span>
+                      <span>
+                        {requireEmailOtp
+                          ? "Sending Verification Code..."
+                          : "Submitting Quotation Request..."}
+                      </span>
                     </>
-                  ) : (
+                  ) : requireEmailOtp ? (
                     <>
                       <Mail className="h-4 w-4" />
                       <span>Verify with Email OTP</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      <span>Submit Quotation Request</span>
                     </>
                   )}
                 </button>

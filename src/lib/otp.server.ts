@@ -1,7 +1,13 @@
 import crypto from "node:crypto";
 import { getClientIp } from "./auth.server";
 import { checkRateLimit } from "./rate-limiter";
-import { sendTransactionalEmail, renderQuoteOtpEmail } from "./email.server";
+import { ensureServerEnvLoaded } from "./env.server";
+import {
+  sendTransactionalEmail,
+  renderQuoteOtpEmail,
+  getEmailProvider,
+  isResendSandboxFrom,
+} from "./email.server";
 import { createQuoteCore, type CreateQuoteInput } from "./data.server";
 
 interface StoredOtp {
@@ -12,11 +18,19 @@ interface StoredOtp {
   companyName?: string | undefined;
 }
 
-// In-memory sliding-window store for active quotation OTP codes
-const quoteOtpStore = new Map<string, StoredOtp>();
+const globalForOtp = globalThis as unknown as {
+  __pageQuoteOtpStore?: Map<string, StoredOtp>;
+  __pageQuoteOtpCleanupStarted?: boolean;
+};
+
+// Shared-across-SSR-reloads sliding-window store for active quotation OTP codes
+const quoteOtpStore =
+  globalForOtp.__pageQuoteOtpStore ??
+  (globalForOtp.__pageQuoteOtpStore = new Map<string, StoredOtp>());
 
 // Periodic cleanup of expired OTPs every 5 minutes
-if (typeof setInterval !== "undefined") {
+if (!globalForOtp.__pageQuoteOtpCleanupStarted && typeof setInterval !== "undefined") {
+  globalForOtp.__pageQuoteOtpCleanupStarted = true;
   setInterval(
     () => {
       const now = Date.now();
@@ -27,7 +41,36 @@ if (typeof setInterval !== "undefined") {
       }
     },
     5 * 60 * 1000,
-  );
+  ).unref?.();
+}
+
+/**
+ * Determines whether public quotation submissions require Email OTP verification.
+ * Controlled via `REQUIRE_QUOTE_EMAIL_OTP`:
+ * - "true"  => always require Email OTP
+ * - "false" => direct RFQ submission without Email OTP
+ * - "auto" (default) => require Email OTP only when real external email delivery
+ *   is configured (SMTP or Resend with a verified custom sender domain, not @resend.dev).
+ */
+export function isQuoteEmailOtpRequired(): boolean {
+  ensureServerEnvLoaded();
+  const mode = (process.env["REQUIRE_QUOTE_EMAIL_OTP"] || "auto").trim().toLowerCase();
+
+  if (["true", "1", "yes", "on"].includes(mode)) {
+    return true;
+  }
+  if (["false", "0", "no", "off"].includes(mode)) {
+    return false;
+  }
+
+  const provider = getEmailProvider();
+  if (provider.name === "smtp") {
+    return true;
+  }
+  if (provider.name === "resend") {
+    return !isResendSandboxFrom();
+  }
+  return false;
 }
 
 /**
@@ -164,7 +207,7 @@ export async function verifyQuoteOtpAndCreateCore(
   verifyQuoteOtpCore(data.email, data.otp);
 
   // 2. Submit quotation to PostgreSQL (userId is null, email is verified!)
-  const result = await createQuoteCore(data);
+  const result = await createQuoteCore({ ...data, verifiedViaOtp: true });
 
   return {
     success: true,

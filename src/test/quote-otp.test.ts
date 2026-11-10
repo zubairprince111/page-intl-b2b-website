@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetEmailProviderCache } from "@/lib/email.server";
-import { sendQuoteOtpCore, verifyQuoteOtpCore } from "@/lib/otp.server";
+import { isQuoteEmailOtpRequired, sendQuoteOtpCore, verifyQuoteOtpCore } from "@/lib/otp.server";
 
 const { insertValuesMock } = vi.hoisted(() => ({
   insertValuesMock: vi.fn().mockResolvedValue(undefined),
@@ -31,6 +31,7 @@ describe("Quotation Email OTP Verification System", () => {
     delete process.env["EMAIL_FROM"];
     delete process.env["MAIL_FROM"];
     delete process.env["SMTP_HOST"];
+    delete process.env["REQUIRE_QUOTE_EMAIL_OTP"];
     resetEmailProviderCache();
   });
 
@@ -124,5 +125,44 @@ describe("Quotation Email OTP Verification System", () => {
         status: "FAILED",
       }),
     );
+  });
+
+  describe("isQuoteEmailOtpRequired configuration matrix", () => {
+    it("defaults to false in auto mode for console provider and Resend sandbox sender", () => {
+      expect(isQuoteEmailOtpRequired()).toBe(false);
+
+      process.env["MAIL_PROVIDER"] = "auto";
+      process.env["RESEND_API_KEY"] = "re_test_key";
+      process.env["EMAIL_FROM"] = "PAGE International <onboarding@resend.dev>";
+      resetEmailProviderCache();
+      expect(isQuoteEmailOtpRequired()).toBe(false);
+    });
+
+    it("defaults to true in auto mode for SMTP or Resend with verified custom domain", () => {
+      process.env["MAIL_PROVIDER"] = "auto";
+      process.env["RESEND_API_KEY"] = "re_test_key";
+      process.env["EMAIL_FROM"] = "PAGE International <quotes@pageinternational.com>";
+      resetEmailProviderCache();
+      expect(isQuoteEmailOtpRequired()).toBe(true);
+
+      delete process.env["RESEND_API_KEY"];
+      delete process.env["EMAIL_FROM"];
+      process.env["SMTP_HOST"] = "smtp.example.com";
+      resetEmailProviderCache();
+      expect(isQuoteEmailOtpRequired()).toBe(true);
+    });
+
+    it("respects explicit REQUIRE_QUOTE_EMAIL_OTP overrides", () => {
+      process.env["MAIL_PROVIDER"] = "console";
+      process.env["REQUIRE_QUOTE_EMAIL_OTP"] = "true";
+      resetEmailProviderCache();
+      expect(isQuoteEmailOtpRequired()).toBe(true);
+
+      process.env["RESEND_API_KEY"] = "re_test_key";
+      process.env["EMAIL_FROM"] = "PAGE International <quotes@pageinternational.com>";
+      process.env["REQUIRE_QUOTE_EMAIL_OTP"] = "false";
+      resetEmailProviderCache();
+      expect(isQuoteEmailOtpRequired()).toBe(false);
+    });
   });
 });

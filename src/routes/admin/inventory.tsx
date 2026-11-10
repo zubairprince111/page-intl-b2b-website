@@ -277,7 +277,7 @@ function AdminInventory() {
   }
 
   function openQuoteReplyForProduct(product?: any) {
-    const pendingQuotes = quotes.filter((q: any) => q.status === "pending");
+    const pendingQuotes = quotes.filter((q: any) => q.status?.toLowerCase() === "pending");
     const firstQuote = pendingQuotes[0] || quotes[0];
 
     const targetProduct =
@@ -388,7 +388,7 @@ function AdminInventory() {
     (i) => i.warehouseQty > 0 && i.warehouseQty <= i.reorderLevel,
   ).length;
   const outCount = inventory.filter((i) => i.warehouseQty === 0).length;
-  const pendingQuotesCount = quotes.filter((q) => q.status === "pending").length;
+  const pendingQuotesCount = quotes.filter((q) => q.status?.toLowerCase() === "pending").length;
 
   return (
     <AdminLayout activeRoute="/admin/inventory">

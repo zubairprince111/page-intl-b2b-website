@@ -17,6 +17,7 @@ import { taka } from "@/lib/data";
 
 export type QuoteRequest = {
   id: string;
+  quoteNumber?: string | null | undefined;
   companyName: string;
   contactName: string;
   phone: string;
@@ -64,6 +65,7 @@ export function generateQuotationEmailHtml({
   qty: number;
   message?: string | undefined;
 }): string {
+  const quoteRef = (quote.quoteNumber || quote.id).toUpperCase();
   const isMulti = quote.items && quote.items.length > 1;
   const items =
     isMulti && quote.items
@@ -119,7 +121,7 @@ export function generateQuotationEmailHtml({
           </td>
           <td style="text-align: right; vertical-align: top;">
             <div style="display: inline-block; background-color: rgba(220, 38, 38, 0.15); border: 1px solid rgba(220, 38, 38, 0.4); color: #f87171; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-family: monospace;">
-              Ref: #${quote.id.toUpperCase()}
+              Ref: #${quoteRef}
             </div>
             <div style="margin-top: 8px; color: #a1a1aa; font-size: 11px;">
               Date: <strong style="color: #ffffff;">${dateStr}</strong>
@@ -314,10 +316,11 @@ export function downloadQuotationEml({
   productName: string;
   htmlContent: string;
 }) {
+  const quoteRef = (quote.quoteNumber || quote.id).toUpperCase();
   const isMulti = quote.items && quote.items.length > 1;
   const subject = isMulti
-    ? `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} (${quote.items?.length} Products Order)`
-    : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} for ${productName}`;
+    ? `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quoteRef} (${quote.items?.length} Products Order)`
+    : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quoteRef} for ${productName}`;
 
   const emlContent = [
     `From: "PAGE International Desk" <pageon18@gmail.com>`,
@@ -334,7 +337,7 @@ export function downloadQuotationEml({
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `PAGE-Quotation-${quote.id.toUpperCase()}.eml`;
+  a.download = `PAGE-Quotation-${quoteRef}.eml`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -428,6 +431,7 @@ export function QuotationEmailModal({
     message,
   });
 
+  const quoteRef = (quote.quoteNumber || quote.id).toUpperCase();
   const isMulti = quote.items && quote.items.length > 1;
   const items =
     isMulti && quote.items
@@ -442,12 +446,12 @@ export function QuotationEmailModal({
 
   const plainTextFallback = `Dear ${quote.contactName || quote.companyName},
 
-Thank you for your business inquiry with PAGE International. Regarding your quotation request (Ref: #${quote.id.toUpperCase()}), please find our official commercial offer and quotation report below:
+Thank you for your business inquiry with PAGE International. Regarding your quotation request (Ref: #${quoteRef}), please find our official commercial offer and quotation report below:
 
 =======================================================
 PAGE INTERNATIONAL — COMMERCIAL QUOTATION REPORT
 =======================================================
-Quotation Ref: #${quote.id.toUpperCase()}
+Quotation Ref: #${quoteRef}
 Issue Date: ${dateStr}
 Validity: 15 Calendar Days
 Prepared For: ${quote.companyName}
@@ -516,8 +520,8 @@ Website: www.pageinternational.com
 
     // 2. Open Gmail compose with recipient and subject pre-filled, but clean empty body
     const subject = isMulti
-      ? `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} (${quote.items?.length} Products Order)`
-      : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quote.id.toUpperCase()} for ${productName}`;
+      ? `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quoteRef} (${quote.items?.length} Products Order)`
+      : `[OFFICIAL COMMERCIAL QUOTATION] PAGE International — Ref #${quoteRef} for ${productName}`;
 
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
       quote.email,
@@ -561,7 +565,7 @@ Website: www.pageinternational.com
                 </span>
               </h3>
               <p className="text-[11px] text-zinc-400">
-                Client: {quote.companyName} ({quote.email}) · Ref #{quote.id.toUpperCase()}
+                Client: {quote.companyName} ({quote.email}) · Ref #{quoteRef}
               </p>
             </div>
           </div>
