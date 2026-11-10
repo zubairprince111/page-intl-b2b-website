@@ -4,13 +4,71 @@ export function PageHeader({
   eyebrow,
   title,
   intro,
+  image,
+  imageAlt,
   children,
 }: {
   eyebrow: string;
   title: string;
   intro?: string;
+  image?: string;
+  imageAlt?: string;
   children?: ReactNode;
 }) {
+  if (image) {
+    return (
+      <section className="relative overflow-hidden bg-ink text-ink-foreground border-b border-ink-border md:min-h-[430px] lg:min-h-[475px] flex items-end">
+        {/* Desktop/Tablet full-bleed background visual (right-anchored for clean left typography) */}
+        <img
+          src={image}
+          alt={imageAlt ?? title}
+          width={1376}
+          height={768}
+          fetchPriority="high"
+          className="hidden md:block absolute inset-y-0 right-0 h-full w-full object-cover object-[92%_12%] lg:w-[72%] xl:w-[68%]"
+        />
+        {/* Left fade into solid dark panel + soft vertical readability scrim */}
+        <div
+          className="hidden md:block absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--color-ink) 0%, oklch(0.12 0.005 260 / 0.96) 33%, oklch(0.12 0.005 260 / 0.72) 52%, oklch(0.12 0.005 260 / 0.14) 80%, transparent 100%)",
+          }}
+        />
+        <div className="hidden md:block absolute inset-0 bg-gradient-to-b from-ink/70 via-transparent to-ink/50 pointer-events-none" />
+
+        <div className="container-page relative z-10 pt-24 pb-8 sm:pt-28 sm:pb-10 md:pt-32 md:pb-14 lg:pt-36 lg:pb-16">
+          <div className="max-w-md lg:max-w-xl xl:max-w-2xl">
+            <p className="eyebrow flex items-center gap-2">
+              <span>PAGE</span>
+              <span className="text-ink-muted">/</span>
+              <span className="text-ink-foreground/85">{eyebrow}</span>
+            </p>
+            <h1 className="display-lg mt-3 text-ink-foreground">{title}</h1>
+            {intro && (
+              <p className="mt-5 border-t border-ink-border/70 pt-5 text-sm sm:text-base leading-relaxed text-zinc-300">
+                {intro}
+              </p>
+            )}
+            {children && <div className="mt-6">{children}</div>}
+          </div>
+
+          {/* Mobile clean 16:9 framed hero photo below copy so text never covers subject */}
+          <div className="mt-6 overflow-hidden rounded-xl border border-ink-border/70 shadow-lg md:hidden">
+            <img
+              src={image}
+              alt={imageAlt ?? title}
+              width={1376}
+              height={768}
+              fetchPriority="high"
+              className="w-full aspect-[16/9] object-cover object-center"
+            />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-ink pb-10 pt-28 text-ink-foreground lg:pb-14 lg:pt-36 border-b border-ink-border">
       <div className="container-page">

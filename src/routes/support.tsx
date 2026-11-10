@@ -17,6 +17,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PageHeader } from "@/components/site/PageHeader";
+import { images } from "@/lib/data";
 
 export const Route = createFileRoute("/support")({
   head: () => ({
@@ -73,6 +74,8 @@ export function Support() {
         eyebrow="Commercial Support & Engineering Desk"
         title="Technical Assistance & B2B Quotations"
         intro="Have questions regarding equipment dimensions, vehicle compatibility, or volume supply terms? Our technical applications engineers and B2B commercial advisors are ready to assist."
+        image={images.supportHero}
+        imageAlt="PAGE International commercial support engineer at technical desk in automotive workshop bay"
       />
 
       {/* Main Section: Custom Quotation Desk (Call / Email Direct) */}
