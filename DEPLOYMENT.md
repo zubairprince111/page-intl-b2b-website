@@ -86,12 +86,17 @@ DATABASE_URL=postgres://page_admin:GENERATE_A_64_CHAR_RANDOM_PASSWORD_HERE@postg
 DEFAULT_ADMIN_EMAIL=admin@page-bd.com
 DEFAULT_ADMIN_PASSWORD=GENERATE_A_SECURE_ADMIN_PASSWORD_HERE
 
-# Production Email (SMTP or Resend)
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USER=apikey
-SMTP_PASS=YOUR_SENDGRID_OR_POSTMARK_KEY
-EMAIL_FROM="PAGE International" <procurement@page-bd.com>
+# Production Email (Resend API — Recommended)
+MAIL_PROVIDER=resend
+RESEND_API_KEY=re_REPLACE_WITH_YOUR_RESEND_API_KEY
+EMAIL_FROM="PAGE International <no-reply@page-bd.com>"
+
+# Optional SMTP Alternative (if not using Resend)
+# MAIL_PROVIDER=smtp
+# SMTP_HOST=smtp.sendgrid.net
+# SMTP_PORT=587
+# SMTP_USER=apikey
+# SMTP_PASS=YOUR_SENDGRID_OR_POSTMARK_KEY
 ```
 
 ---

@@ -1,6 +1,30 @@
 import { db, emailLog } from "@/db";
 import crypto from "node:crypto";
 import nodemailer, { type Transporter } from "nodemailer";
+import { ensureServerEnvLoaded } from "./env.server";
+
+ensureServerEnvLoaded();
+
+const DEFAULT_RESEND_FROM = "PAGE International <onboarding@resend.dev>";
+const DEFAULT_SMTP_FROM = "PAGE International <no-reply@pageinternational.com>";
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function sanitizeEmailError(message: string): string {
+  return message.replace(/re_[A-Za-z0-9_]{8,}/g, "[REDACTED_API_KEY]");
+}
+
+export function getConfiguredFromAddress(fallback = DEFAULT_RESEND_FROM): string {
+  const configured = process.env["EMAIL_FROM"] || process.env["MAIL_FROM"];
+  return configured && configured.trim().length > 0 ? configured.trim() : fallback;
+}
 
 export interface EmailPayload {
   to: string;
@@ -50,38 +74,59 @@ export class ResendEmailProvider implements EmailProvider {
 
   constructor(apiKey: string, from?: string | undefined) {
     this.apiKey = apiKey;
-    this.from = from || process.env["EMAIL_FROM"] || "PAGE International <orders@page-bd.com>";
+    this.from = from?.trim() || getConfiguredFromAddress(DEFAULT_RESEND_FROM);
   }
 
   async send(
     payload: EmailPayload,
   ): Promise<{ success: boolean; messageId?: string | undefined; error?: string | undefined }> {
     try {
+      const requestBody: Record<string, unknown> = {
+        from: this.from,
+        to: [payload.to],
+        subject: payload.subject,
+        html: payload.html,
+      };
+      if (payload.text) {
+        requestBody["text"] = payload.text;
+      }
+      if (payload.replyTo) {
+        requestBody["reply_to"] = payload.replyTo;
+      }
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          from: this.from,
-          to: payload.to,
-          subject: payload.subject,
-          html: payload.html,
-          text: payload.text,
-          reply_to: payload.replyTo,
-        }),
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!res.ok) {
         const errorText = await res.text();
-        return { success: false, error: `Resend HTTP ${res.status}: ${errorText}` };
+        let detail = errorText;
+        try {
+          const parsed = JSON.parse(errorText) as { message?: string; name?: string };
+          detail = parsed.message || parsed.name || errorText;
+        } catch {
+          // Keep plain response body if not JSON
+        }
+        return {
+          success: false,
+          error: sanitizeEmailError(`Resend HTTP ${res.status}: ${detail || res.statusText}`),
+        };
       }
 
       const data = (await res.json()) as { id?: string };
       return { success: true, messageId: data?.id || undefined };
-    } catch (err: any) {
-      return { success: false, error: err?.message || "Resend network error" };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Resend network error";
+      return {
+        success: false,
+        error: sanitizeEmailError(msg),
+      };
     }
   }
 }
@@ -102,8 +147,7 @@ export class SmtpEmailProvider implements EmailProvider {
     secure?: boolean | undefined;
     from?: string | undefined;
   }) {
-    this.from =
-      config.from || process.env["EMAIL_FROM"] || "PAGE International <no-reply@page-bd.com>";
+    this.from = config.from?.trim() || getConfiguredFromAddress(DEFAULT_SMTP_FROM);
     this.transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
@@ -131,8 +175,12 @@ export class SmtpEmailProvider implements EmailProvider {
         replyTo: payload.replyTo,
       });
       return { success: true, messageId: info.messageId || undefined };
-    } catch (err: any) {
-      return { success: false, error: err?.message || "SMTP dispatch error" };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "SMTP dispatch error";
+      return {
+        success: false,
+        error: sanitizeEmailError(msg),
+      };
     }
   }
 }
@@ -141,44 +189,150 @@ export class SmtpEmailProvider implements EmailProvider {
 // 4. PROVIDER FACTORY
 // =============================================================================
 let activeProvider: EmailProvider | null = null;
+let activeConfigSignature: string | null = null;
+
+export function resetEmailProviderCache(): void {
+  activeProvider = null;
+  activeConfigSignature = null;
+}
+
+class MisconfiguredEmailProvider implements EmailProvider {
+  name: string;
+  private message: string;
+
+  constructor(name: string, message: string) {
+    this.name = name;
+    this.message = message;
+  }
+
+  async send(): Promise<{
+    success: boolean;
+    messageId?: string | undefined;
+    error?: string | undefined;
+  }> {
+    return { success: false, error: this.message };
+  }
+}
 
 export function getEmailProvider(): EmailProvider {
-  if (activeProvider) return activeProvider;
+  ensureServerEnvLoaded();
 
-  // 1. Resend API
-  const resendApiKey = process.env["RESEND_API_KEY"];
-  if (resendApiKey && resendApiKey.trim().length > 0) {
-    const provider: EmailProvider = new ResendEmailProvider(resendApiKey.trim());
-    activeProvider = provider;
-    return provider;
+  const mailProvider = (process.env["MAIL_PROVIDER"] || "").trim().toLowerCase();
+  const resendApiKey = (process.env["RESEND_API_KEY"] || "").trim();
+  const emailFrom = (process.env["EMAIL_FROM"] || process.env["MAIL_FROM"] || "").trim();
+  const smtpHost = (process.env["SMTP_HOST"] || "").trim();
+  const smtpPort = Number(process.env["SMTP_PORT"]) || 587;
+  const smtpSecureEnv = (process.env["SMTP_SECURE"] || "").trim().toLowerCase();
+  const smtpSecure = smtpSecureEnv ? smtpSecureEnv === "true" : smtpPort === 465;
+  const smtpUser = (process.env["SMTP_USER"] || "").trim();
+  const smtpPass = (process.env["SMTP_PASS"] || process.env["SMTP_PASSWORD"] || "").trim();
+
+  const signature = crypto
+    .createHash("sha256")
+    .update(
+      JSON.stringify([
+        mailProvider,
+        resendApiKey,
+        emailFrom,
+        smtpHost,
+        smtpPort,
+        smtpSecure,
+        smtpUser,
+        smtpPass,
+      ]),
+    )
+    .digest("hex");
+
+  if (activeProvider && activeConfigSignature === signature) {
+    return activeProvider;
   }
 
-  // 2. SMTP Transport
-  const smtpHost = process.env["SMTP_HOST"];
-  if (smtpHost && smtpHost.trim().length > 0) {
-    const smtpPort = Number(process.env["SMTP_PORT"]) || 587;
-    const smtpUser = process.env["SMTP_USER"];
-    const smtpPass = process.env["SMTP_PASS"];
-    const provider: EmailProvider = new SmtpEmailProvider({
-      host: smtpHost.trim(),
-      port: smtpPort,
-      user: smtpUser?.trim() || undefined,
-      pass: smtpPass?.trim() || undefined,
-      secure: smtpPort === 465,
-    });
+  const cache = (provider: EmailProvider): EmailProvider => {
     activeProvider = provider;
+    activeConfigSignature = signature;
     return provider;
+  };
+
+  // Explicit console override
+  if (mailProvider === "console") {
+    return cache(new ConsoleEmailProvider());
   }
 
-  // 3. Fallback to Console
-  const fallback: EmailProvider = new ConsoleEmailProvider();
-  activeProvider = fallback;
-  return fallback;
+  // Explicit Resend selection
+  if (mailProvider === "resend") {
+    if (!resendApiKey) {
+      return cache(
+        new MisconfiguredEmailProvider(
+          "resend",
+          "MAIL_PROVIDER is set to 'resend', but RESEND_API_KEY is not configured.",
+        ),
+      );
+    }
+    return cache(new ResendEmailProvider(resendApiKey, emailFrom || undefined));
+  }
+
+  // Explicit SMTP selection
+  if (mailProvider === "smtp") {
+    if (!smtpHost) {
+      return cache(
+        new MisconfiguredEmailProvider(
+          "smtp",
+          "MAIL_PROVIDER is set to 'smtp', but SMTP_HOST is not configured.",
+        ),
+      );
+    }
+    return cache(
+      new SmtpEmailProvider({
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser || undefined,
+        pass: smtpPass || undefined,
+        secure: smtpSecure,
+        from: emailFrom || undefined,
+      }),
+    );
+  }
+
+  // Auto-detection (when MAIL_PROVIDER is unset or "auto"): Resend -> SMTP -> Console
+  if (resendApiKey) {
+    return cache(new ResendEmailProvider(resendApiKey, emailFrom || undefined));
+  }
+
+  if (smtpHost) {
+    return cache(
+      new SmtpEmailProvider({
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser || undefined,
+        pass: smtpPass || undefined,
+        secure: smtpSecure,
+        from: emailFrom || undefined,
+      }),
+    );
+  }
+
+  return cache(new ConsoleEmailProvider());
 }
 
 // =============================================================================
 // 5. ASYNC TRANSACTIONAL DISPATCH & DATABASE LOGGING
 // =============================================================================
+async function persistEmailLog(entry: {
+  id: string;
+  recipient: string;
+  subject: string;
+  template: string;
+  status: "SENT" | "FAILED";
+  error: string | null;
+  sentAt: Date | null;
+}): Promise<void> {
+  try {
+    await db.insert(emailLog).values(entry);
+  } catch {
+    // Non-blocking audit persistence failure must not invalidate a sent email
+  }
+}
+
 export async function sendTransactionalEmail(payload: EmailPayload): Promise<{
   success: boolean;
   messageId?: string | undefined;
@@ -190,8 +344,14 @@ export async function sendTransactionalEmail(payload: EmailPayload): Promise<{
   try {
     const result = await provider.send(payload);
 
-    // Record in email_log table
-    await db.insert(emailLog).values({
+    if (!result.success) {
+      console.error(
+        `[Email Error] Provider "${provider.name}" failed for ${payload.to} (${payload.template}):`,
+        result.error || "Unknown error",
+      );
+    }
+
+    await persistEmailLog({
       id: logId,
       recipient: payload.to,
       subject: payload.subject,
@@ -202,23 +362,20 @@ export async function sendTransactionalEmail(payload: EmailPayload): Promise<{
     });
 
     return result;
-  } catch (err: any) {
-    const errorMsg = err?.message || "Unexpected email dispatch failure";
+  } catch (err: unknown) {
+    const rawMsg = err instanceof Error ? err.message : "Unexpected email dispatch failure";
+    const errorMsg = sanitizeEmailError(rawMsg);
     console.error(`[Email Error] Failed to send email to ${payload.to}:`, errorMsg);
 
-    try {
-      await db.insert(emailLog).values({
-        id: logId,
-        recipient: payload.to,
-        subject: payload.subject,
-        template: payload.template,
-        status: "FAILED",
-        error: errorMsg,
-        sentAt: null,
-      });
-    } catch {
-      // Non-blocking log persistence failure
-    }
+    await persistEmailLog({
+      id: logId,
+      recipient: payload.to,
+      subject: payload.subject,
+      template: payload.template,
+      status: "FAILED",
+      error: errorMsg,
+      sentAt: null,
+    });
 
     return { success: false, error: errorMsg };
   }
@@ -234,7 +391,7 @@ function baseEmailWrapper(title: string, contentHtml: string): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${title}</title>
+  <title>${escapeHtml(title)}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f1012; margin: 0; padding: 0; color: #f4f4f5; }
     .wrapper { max-width: 600px; margin: 0 auto; background: #18191c; border: 1px solid #27272a; border-radius: 12px; overflow: hidden; margin-top: 32px; margin-bottom: 32px; }
@@ -288,13 +445,13 @@ export function renderQuoteOtpEmail(params: {
     <p>Please enter the following 6-digit one-time verification code to verify your email and confirm your commercial price quotation request:</p>
     <div style="text-align: center; margin: 28px 0;">
       <span style="display: inline-block; font-family: monospace; font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #ffffff; background: #e11d48; padding: 14px 28px; border-radius: 8px; border: 1px solid #f43f5e; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);">
-        ${params.otp}
+        ${escapeHtml(params.otp)}
       </span>
     </div>
     <div class="card">
       <div class="card-title">Quotation Details</div>
-      ${params.companyName ? `<div class="detail-row"><span class="label">Workshop / Company:</span><span class="value">${params.companyName}</span></div>` : ""}
-      ${params.productName ? `<div class="detail-row"><span class="label">Equipment:</span><span class="value">${params.productName}</span></div>` : ""}
+      ${params.companyName ? `<div class="detail-row"><span class="label">Workshop / Company:</span><span class="value">${escapeHtml(params.companyName)}</span></div>` : ""}
+      ${params.productName ? `<div class="detail-row"><span class="label">Equipment:</span><span class="value">${escapeHtml(params.productName)}</span></div>` : ""}
       <div class="detail-row"><span class="label">Code Expiry:</span><span class="value">${expiresIn} minutes</span></div>
     </div>
     <p style="font-size: 12px; color: #71717a;">No account registration or password is required. If you did not request a price quotation from PAGE International, you can safely disregard this email.</p>
@@ -312,13 +469,13 @@ export function renderQuoteConfirmationEmail(params: {
 }): { html: string; text: string } {
   const content = `
     <div class="pill">QUOTATION INQUIRY RECEIVED</div>
-    <h2>Dear ${params.contactName},</h2>
-    <p>Thank you for submitting a commercial quotation request to <strong>PAGE International Ltd.</strong> Our engineering and procurement team has logged your specification under reference <strong>${params.quoteNumber}</strong>.</p>
+    <h2>Dear ${escapeHtml(params.contactName)},</h2>
+    <p>Thank you for submitting a commercial quotation request to <strong>PAGE International Ltd.</strong> Our engineering and procurement team has logged your specification under reference <strong>${escapeHtml(params.quoteNumber)}</strong>.</p>
     <div class="card">
       <div class="card-title">Inquiry Specifications</div>
-      <div class="detail-row"><span class="label">Reference ID:</span><span class="value" style="font-family: monospace; color: #fb7185;">${params.quoteNumber}</span></div>
-      ${params.companyName ? `<div class="detail-row"><span class="label">Company:</span><span class="value">${params.companyName}</span></div>` : ""}
-      <div class="detail-row"><span class="label">Equipment Requested:</span><span class="value">${params.productName}</span></div>
+      <div class="detail-row"><span class="label">Reference ID:</span><span class="value" style="font-family: monospace; color: #fb7185;">${escapeHtml(params.quoteNumber)}</span></div>
+      ${params.companyName ? `<div class="detail-row"><span class="label">Company:</span><span class="value">${escapeHtml(params.companyName)}</span></div>` : ""}
+      <div class="detail-row"><span class="label">Equipment Requested:</span><span class="value">${escapeHtml(params.productName)}</span></div>
       <div class="detail-row"><span class="label">Quantity:</span><span class="value">${params.qty} Unit(s)</span></div>
     </div>
     <p>An authorized equipment specialist will review power availability, installation specifications, and issue an official quotation with commercial pricing within 24 business hours.</p>
@@ -338,15 +495,15 @@ export function renderBookingConfirmationEmail(params: {
 }): { html: string; text: string } {
   const content = `
     <div class="pill">DEMONSTRATION BOOKING CONFIRMED</div>
-    <h2>Dear ${params.contactName},</h2>
-    <p>Your technical demonstration appointment has been reserved under booking reference <strong>${params.bookingNumber}</strong>.</p>
+    <h2>Dear ${escapeHtml(params.contactName)},</h2>
+    <p>Your technical demonstration appointment has been reserved under booking reference <strong>${escapeHtml(params.bookingNumber)}</strong>.</p>
     <div class="card">
       <div class="card-title">Appointment Details</div>
-      <div class="detail-row"><span class="label">Booking ID:</span><span class="value" style="font-family: monospace; color: #fb7185;">${params.bookingNumber}</span></div>
-      ${params.companyName ? `<div class="detail-row"><span class="label">Workshop:</span><span class="value">${params.companyName}</span></div>` : ""}
-      <div class="detail-row"><span class="label">Equipment / Service:</span><span class="value">${params.serviceType}</span></div>
-      <div class="detail-row"><span class="label">Demonstration Center:</span><span class="value">${params.centerName}</span></div>
-      <div class="detail-row"><span class="label">Date & Time:</span><span class="value">${params.bookingDate} (${params.timeSlot})</span></div>
+      <div class="detail-row"><span class="label">Booking ID:</span><span class="value" style="font-family: monospace; color: #fb7185;">${escapeHtml(params.bookingNumber)}</span></div>
+      ${params.companyName ? `<div class="detail-row"><span class="label">Workshop:</span><span class="value">${escapeHtml(params.companyName)}</span></div>` : ""}
+      <div class="detail-row"><span class="label">Equipment / Service:</span><span class="value">${escapeHtml(params.serviceType)}</span></div>
+      <div class="detail-row"><span class="label">Demonstration Center:</span><span class="value">${escapeHtml(params.centerName)}</span></div>
+      <div class="detail-row"><span class="label">Date & Time:</span><span class="value">${escapeHtml(params.bookingDate)} (${escapeHtml(params.timeSlot)})</span></div>
     </div>
     <p>Our lead workshop engineer will welcome your technical team and conduct an operational live-load trial at the scheduled time.</p>
   `;
@@ -367,14 +524,14 @@ export function renderOrderConfirmationEmail(params: {
 }): { html: string; text: string } {
   const content = `
     <div class="pill">COMMERCIAL ORDER CONFIRMATION</div>
-    <h2>Dear ${params.customerName},</h2>
-    <p>Your commercial procurement order <strong>${params.orderNumber}</strong> has been logged into our central distribution queue.</p>
+    <h2>Dear ${escapeHtml(params.customerName)},</h2>
+    <p>Your commercial procurement order <strong>${escapeHtml(params.orderNumber)}</strong> has been logged into our central distribution queue.</p>
     <div class="card">
       <div class="card-title">Order Summary</div>
-      <div class="detail-row"><span class="label">Order Number:</span><span class="value" style="font-family: monospace; color: #fb7185;">${params.orderNumber}</span></div>
-      ${params.companyName ? `<div class="detail-row"><span class="label">Enterprise:</span><span class="value">${params.companyName}</span></div>` : ""}
+      <div class="detail-row"><span class="label">Order Number:</span><span class="value" style="font-family: monospace; color: #fb7185;">${escapeHtml(params.orderNumber)}</span></div>
+      ${params.companyName ? `<div class="detail-row"><span class="label">Enterprise:</span><span class="value">${escapeHtml(params.companyName)}</span></div>` : ""}
       <div class="detail-row"><span class="label">Line Items:</span><span class="value">${params.itemsCount} Product(s)</span></div>
-      <div class="detail-row"><span class="label">Payment Terms:</span><span class="value">${params.paymentMethod}</span></div>
+      <div class="detail-row"><span class="label">Payment Terms:</span><span class="value">${escapeHtml(params.paymentMethod)}</span></div>
       <div class="detail-row"><span class="label">Total Amount:</span><span class="value" style="color: #10b981; font-size: 15px;">৳ ${params.total.toLocaleString("en-BD")}</span></div>
     </div>
     <p>Our dispatch division is preparing the shipment invoice. You can track this order status directly inside your customer portal.</p>
@@ -391,10 +548,10 @@ export function renderPasswordResetEmail(params: {
   const content = `
     <div class="pill">ACCOUNT SECURITY NOTIFICATION</div>
     <h2>Password Reset Request</h2>
-    <p>Hello ${params.name},</p>
+    <p>Hello ${escapeHtml(params.name)},</p>
     <p>We received a request to reset your password for your PAGE International customer portal account. Click the secure link below to proceed:</p>
     <p style="text-align: center;">
-      <a href="${params.resetLink}" class="btn">Reset Portal Password</a>
+      <a href="${escapeHtml(params.resetLink)}" class="btn">Reset Portal Password</a>
     </p>
     <p style="font-size: 12px; color: #a1a1aa;">This single-use link is valid for <strong>${params.expiresInMinutes} minutes</strong>. If you did not request a password reset, you can safely ignore this email.</p>
   `;

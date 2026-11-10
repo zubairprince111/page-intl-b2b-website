@@ -63,8 +63,8 @@ export async function sendQuoteOtpCore(input: {
     );
   }
 
-  // Generate cryptographic 6-digit OTP
-  const otp = crypto.randomInt(100000, 999999).toString();
+  // Generate cryptographic 6-digit OTP (100000 - 999999 inclusive)
+  const otp = crypto.randomInt(100000, 1000000).toString();
   const expiresInMinutes = 10;
   const expiresAt = Date.now() + expiresInMinutes * 60 * 1000;
 
@@ -76,14 +76,16 @@ export async function sendQuoteOtpCore(input: {
     companyName: input.companyName,
   });
 
-  // Log in dev/console for instant local developer & test convenience
-  console.log(`\n[QUOTATION EMAIL OTP] ---------------------------------`);
-  console.log(`To: ${normalizedEmail}`);
-  console.log(`OTP Code: ${otp}`);
-  console.log(`Expires in: ${expiresInMinutes} minutes`);
-  console.log(`--------------------------------------------------------\n`);
+  // Log in non-production for local developer & test visibility
+  if (process.env["NODE_ENV"] !== "production") {
+    console.log(`\n[QUOTATION EMAIL OTP] ---------------------------------`);
+    console.log(`To: ${normalizedEmail}`);
+    console.log(`OTP Code: ${otp}`);
+    console.log(`Expires in: ${expiresInMinutes} minutes`);
+    console.log(`--------------------------------------------------------\n`);
+  }
 
-  // Dispatch branded transactional email in background
+  // Dispatch branded transactional email
   const emailContent = renderQuoteOtpEmail({
     otp,
     email: normalizedEmail,
@@ -92,13 +94,23 @@ export async function sendQuoteOtpCore(input: {
     expiresInMinutes,
   });
 
-  await sendTransactionalEmail({
+  const emailResult = await sendTransactionalEmail({
     to: normalizedEmail,
     subject: `Your Verification Code: ${otp} — PAGE International`,
     template: "quote_otp",
     html: emailContent.html,
     text: emailContent.text,
   });
+
+  if (!emailResult.success) {
+    quoteOtpStore.delete(normalizedEmail);
+    const errorDetail = emailResult.error || "Unknown mail delivery error";
+    console.error(`[QUOTATION EMAIL OTP] Dispatch failed for ${normalizedEmail}: ${errorDetail}`);
+    const devHint = process.env["NODE_ENV"] !== "production" ? ` (${errorDetail})` : "";
+    throw new Error(
+      `Unable to deliver verification email. Please verify your email address or mail configuration and try again.${devHint}`,
+    );
+  }
 
   return {
     success: true,

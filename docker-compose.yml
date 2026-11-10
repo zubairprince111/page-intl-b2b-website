@@ -43,7 +43,17 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-page_admin}:${POSTGRES_PASSWORD:-replace_with_strong_password}@postgres:5432/${POSTGRES_DB:-page_international}
       AUTH_SECRET: ${AUTH_SECRET:-replace_with_random_secret}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
-      MAIL_PROVIDER: ${MAIL_PROVIDER:-console}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-auto}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-${MAIL_FROM:-PAGE International <onboarding@resend.dev>}}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_ADMIN_NOTIFICATION: ${MAIL_ADMIN_NOTIFICATION:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-${SMTP_PASSWORD:-}}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@pageinternational.com}
     volumes:
       - uploads_data:/app/public/uploads

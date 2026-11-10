@@ -366,7 +366,9 @@ export async function requestPasswordResetCore(data: {
       text: emailData.text,
     }).catch(() => {});
 
-    console.log(`[AUTH] Password reset token generated for ${user.email}: ${rawToken}`);
+    if (process.env["NODE_ENV"] !== "production") {
+      console.log(`[AUTH] Password reset token generated for ${user.email}: ${rawToken}`);
+    }
   }
 
   return {

@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import * as fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { migrate as migratePg } from "drizzle-orm/postgres-js/migrator";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
 import { db, isPostgres } from "./index";
@@ -23,13 +24,19 @@ export async function runMigrations() {
   }
 }
 
-// Execute migrations
-runMigrations()
-  .then(() => {
-    console.log("[db:migrate] Done.");
-    process.exit(0);
-  })
-  .catch((err) => {
-    console.error("[db:migrate] Failed:", err);
-    process.exit(1);
-  });
+// Execute migrations only when invoked directly via CLI (e.g. npm run db:migrate)
+const isDirectExecution = Boolean(
+  process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url)),
+);
+
+if (isDirectExecution) {
+  runMigrations()
+    .then(() => {
+      console.log("[db:migrate] Done.");
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error("[db:migrate] Failed:", err);
+      process.exit(1);
+    });
+}
