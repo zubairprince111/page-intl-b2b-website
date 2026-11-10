@@ -247,55 +247,24 @@ export function UpdatesFeedPage() {
                 </div>
               </div>
 
-              {/* Right: Key Stats + Direct CTAs */}
-              <div className="flex flex-col items-center lg:items-end justify-between gap-4 shrink-0 border-t lg:border-t-0 lg:border-l border-border/60 pt-5 lg:pt-0 lg:pl-7">
-                {/* Compact Stat Strip */}
-                <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-secondary/40 px-2 py-2.5 w-full sm:w-auto min-w-[270px]">
-                  <div className="px-3 text-center">
-                    <span className="block text-sm sm:text-base font-bold font-mono text-foreground">
-                      {allPosts.length}
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                      Dispatches
-                    </span>
-                  </div>
-                  <div className="px-3 text-center">
-                    <span className="block text-sm sm:text-base font-bold font-mono text-foreground">
-                      1,850+
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                      Active Bays
-                    </span>
-                  </div>
-                  <div className="px-3 text-center">
-                    <span className="block text-sm sm:text-base font-bold font-mono text-foreground">
-                      64
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                      Districts
-                    </span>
-                  </div>
-                </div>
+              {/* Right: Direct CTAs */}
+              <div className="flex items-center justify-center lg:justify-end gap-2.5 flex-wrap shrink-0">
+                <a
+                  href="https://wa.me/8809612724346?text=Hi%20PAGE%20International%2C%20I%20am%20following%20your%20field%20feed%20and%20would%20like%20to%20inquire%20about%20workshop%20machinery."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary h-9 px-4 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
+                >
+                  <span>Message WhatsApp</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
 
-                {/* CTAs */}
-                <div className="flex items-center justify-center lg:justify-end gap-2 flex-wrap w-full sm:w-auto">
-                  <a
-                    href="https://wa.me/8809612724346?text=Hi%20PAGE%20International%2C%20I%20am%20following%20your%20field%20feed%20and%20would%20like%20to%20inquire%20about%20workshop%20machinery."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary h-9 px-4 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
-                  >
-                    <span>Message WhatsApp</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-
-                  <Link
-                    to="/services/book"
-                    className="btn btn-outline h-9 px-3.5 text-xs font-semibold inline-flex items-center gap-1.5"
-                  >
-                    <span>Book Consultation</span>
-                  </Link>
-                </div>
+                <Link
+                  to="/services/book"
+                  className="btn btn-outline h-9 px-3.5 text-xs font-semibold inline-flex items-center gap-1.5"
+                >
+                  <span>Book Consultation</span>
+                </Link>
               </div>
             </div>
           </div>
