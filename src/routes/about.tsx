@@ -104,27 +104,39 @@ export function AboutPage() {
     <div className="bg-background text-foreground min-h-screen">
       {/* ── 1. HEADER ── */}
       <section className="border-b border-border">
-        <div className="container-page py-16 sm:py-24 max-w-5xl">
-          <p className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-primary mb-3">
-            PAGE International Ltd. / Bangladesh
-          </p>
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-display font-bold uppercase tracking-tight text-foreground leading-[1.05]">
-            We are passionate about our work.
-          </h1>
-          <p className="mt-5 text-base sm:text-lg text-muted-foreground max-w-3xl leading-relaxed">
-            A fast-growing journey. Our team comprises experienced engineers with over fifteen to
-            twenty years in the automobile industry, making us trusted partners in modernizing
-            Bangladesh’s automotive workshops, dealerships, and fleet service centers.
-          </p>
+        <div className="container-page pt-24 pb-14 sm:pt-32 sm:pb-20">
+          <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <p className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-primary mb-3">
+                PAGE International Ltd. / Bangladesh
+              </p>
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-display font-bold uppercase tracking-tight text-foreground leading-[1.05]">
+                We are passionate about our work.
+              </h1>
+            </div>
+            <div className="lg:col-span-5 lg:border-l lg:border-border lg:pl-8">
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                A fast-growing journey. Our team comprises experienced engineers with over fifteen
+                to twenty years in the automobile industry, making us trusted partners in
+                modernizing Bangladesh’s automotive workshops, dealerships, and fleet service
+                centers.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ── 2. METRICS ROW (Clean Swiss Divider) ── */}
       <section className="border-b border-border bg-card">
-        <div className="container-page py-10 max-w-5xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 divide-y md:divide-y-0 md:divide-x divide-border">
+        <div className="container-page py-10 sm:py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5 sm:gap-8 md:gap-0 md:divide-x divide-border">
             {stats.map((s, idx) => (
-              <div key={s.label} className={idx > 0 ? "pt-6 md:pt-0 md:pl-8" : ""}>
+              <div
+                key={s.label}
+                className={`${idx > 0 ? "md:px-8 last:md:pr-0" : "md:pr-8"} ${
+                  idx >= 2 ? "border-t pt-5 md:border-t-0 md:pt-0 border-border" : ""
+                }`}
+              >
                 <div className="text-3xl sm:text-4xl font-display font-bold text-foreground tracking-tight">
                   {s.value}
                 </div>
@@ -140,8 +152,8 @@ export function AboutPage() {
 
       {/* ── 3. HISTORY & MARKET OPPORTUNITY ── */}
       <section className="border-b border-border py-16 sm:py-24">
-        <div className="container-page max-w-5xl">
-          <div className="grid md:grid-cols-12 gap-10 lg:gap-14 items-start">
+        <div className="container-page">
+          <div className="grid md:grid-cols-12 gap-10 lg:gap-16 items-start">
             {/* Left Narrative */}
             <div className="md:col-span-7 space-y-5">
               <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
@@ -214,7 +226,7 @@ export function AboutPage() {
 
       {/* ── 4. OFFICIAL DISTRIBUTORS (Clean 4-Col Grid) ── */}
       <section className="border-b border-border bg-card py-14 sm:py-18">
-        <div className="container-page max-w-5xl space-y-6">
+        <div className="container-page space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-4 border-b border-border">
             <div>
               <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
@@ -229,11 +241,11 @@ export function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {distributors.map((d) => (
               <div
                 key={d.brand}
-                className="p-5 rounded-lg border border-border bg-background space-y-1.5"
+                className="p-6 rounded-lg border border-border bg-background space-y-1.5"
               >
                 <div className="text-xs font-mono font-semibold text-primary uppercase tracking-wider">
                   {d.role}
@@ -248,15 +260,17 @@ export function AboutPage() {
 
       {/* ── 5. PHILOSOPHY ── */}
       <section className="border-b border-border py-16 sm:py-20">
-        <div className="container-page max-w-5xl">
-          <div className="max-w-3xl space-y-4">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
-              03 / Philosophy
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold uppercase text-foreground leading-snug">
-              We strive to provide our customers with the highest quality.
-            </h2>
-            <div className="text-sm sm:text-base leading-relaxed text-muted-foreground space-y-4 pt-1">
+        <div className="container-page">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+            <div className="lg:col-span-5 space-y-3">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
+                03 / Philosophy
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-display font-bold uppercase text-foreground leading-snug">
+                We strive to provide our customers with the highest quality.
+              </h2>
+            </div>
+            <div className="lg:col-span-7 text-sm sm:text-base leading-relaxed text-muted-foreground space-y-4">
               <p>
                 PAGE International Ltd. operates on the philosophy that investing in the automotive
                 industry is an investment in Bangladesh’s future. We believe in empowering
@@ -276,40 +290,42 @@ export function AboutPage() {
 
       {/* ── 6. THE 5 PILLARS (Clean Numbered Index) ── */}
       <section className="border-b border-border bg-card py-16 sm:py-24">
-        <div className="container-page max-w-5xl space-y-8">
-          <div className="pb-4 border-b border-border">
-            <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
-              04 / Capabilities
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold uppercase text-foreground mt-1">
-              Pillars of PAGE that drive everything we do.
-            </h2>
-          </div>
+        <div className="container-page">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+            <div className="lg:col-span-4 space-y-2 pb-4 lg:pb-0 border-b lg:border-b-0 border-border">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
+                04 / Capabilities
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-display font-bold uppercase text-foreground leading-tight">
+                Pillars of PAGE that drive everything we do.
+              </h2>
+            </div>
 
-          <div className="divide-y divide-border">
-            {pillars.map((p) => (
-              <div
-                key={p.no}
-                className="py-5 sm:py-6 grid sm:grid-cols-12 gap-2 sm:gap-6 items-baseline group"
-              >
-                <div className="sm:col-span-1 text-xs font-mono font-bold text-muted-foreground">
-                  {p.no}
+            <div className="lg:col-span-8 divide-y divide-border border-t border-b border-border">
+              {pillars.map((p) => (
+                <div
+                  key={p.no}
+                  className="py-5 sm:py-6 grid sm:grid-cols-12 gap-2 sm:gap-6 items-baseline group"
+                >
+                  <div className="sm:col-span-1 text-xs font-mono font-bold text-primary">
+                    {p.no}
+                  </div>
+                  <div className="sm:col-span-4 text-base font-display font-bold text-foreground">
+                    {p.title}
+                  </div>
+                  <div className="sm:col-span-7 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    {p.description}
+                  </div>
                 </div>
-                <div className="sm:col-span-4 text-base font-display font-bold text-foreground">
-                  {p.title}
-                </div>
-                <div className="sm:col-span-7 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  {p.description}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── 7. LEADERSHIP / "OUR VISIONARIES" ── */}
       <section className="border-b border-border py-16 sm:py-24">
-        <div className="container-page max-w-5xl space-y-10">
+        <div className="container-page space-y-10">
           <div className="pb-4 border-b border-border">
             <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
               05 / Leadership
@@ -319,7 +335,7 @@ export function AboutPage() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-10">
             {/* Managing Director */}
             <div className="p-7 sm:p-8 rounded-xl border border-border bg-card space-y-4">
               <div>
@@ -370,10 +386,10 @@ export function AboutPage() {
 
       {/* ── 8. MISSION & VISION (Split Block) ── */}
       <section className="border-b border-border bg-card py-16 sm:py-20">
-        <div className="container-page max-w-5xl">
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12 divide-y md:divide-y-0 md:divide-x divide-border">
+        <div className="container-page">
+          <div className="grid md:grid-cols-2 gap-0 md:gap-10 lg:gap-16 divide-y md:divide-y-0 md:divide-x divide-border">
             {/* Mission */}
-            <div className="space-y-3 md:pr-8">
+            <div className="space-y-3 pb-8 md:pb-0 md:pr-8">
               <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
                 06 / Purpose
               </span>
@@ -389,7 +405,7 @@ export function AboutPage() {
             </div>
 
             {/* Vision */}
-            <div className="space-y-3 pt-6 md:pt-0 md:pl-8">
+            <div className="space-y-3 pt-8 md:pt-0 md:pl-8">
               <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block">
                 07 / Horizon
               </span>
@@ -408,7 +424,7 @@ export function AboutPage() {
 
       {/* ── 9. BRAND PARTNERS LOGO STRIP ── */}
       <section className="border-b border-border py-12">
-        <div className="container-page max-w-5xl space-y-6">
+        <div className="container-page space-y-6">
           <p className="text-center text-[10px] font-mono font-semibold uppercase tracking-[0.25em] text-muted-foreground">
             Authorized Equipment & Component Partners
           </p>
@@ -418,7 +434,7 @@ export function AboutPage() {
 
       {/* ── 10. SIMPLE DIRECT CTA ── */}
       <section className="py-14 sm:py-18">
-        <div className="container-page max-w-5xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="container-page flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-1">
             <h3 className="text-xl font-display font-bold uppercase text-foreground">
               Equip your workshop with PAGE International.
