@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { products, taka, type Product } from "@/lib/data";
+import { products, type Product } from "@/lib/data";
 
 interface EquipmentFanStackProps {
   className?: string;
@@ -296,8 +296,8 @@ export function EquipmentFanStack({ className = "" }: EquipmentFanStackProps) {
 
                     {/* Bottom CTA Row */}
                     <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
-                      <div className="font-display text-lg sm:text-xl font-bold text-zinc-950">
-                        {taka(p.price)}
+                      <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-600">
+                        Quotation on Request
                       </div>
 
                       <div

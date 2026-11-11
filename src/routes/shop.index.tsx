@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowUpRight,
   Bike,
   Car,
   Check,
@@ -8,12 +9,13 @@ import {
   RotateCcw,
   Search,
   SlidersHorizontal,
+  Tag,
   Truck,
   Wrench,
   X,
   Zap,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { cn } from "@/lib/utils";
 import { QuoteModal } from "@/components/site/QuoteModal";
@@ -26,8 +28,19 @@ import {
 } from "@/components/ui/sheet";
 import { brands, categories, products, type MobilityType, type Product } from "@/lib/data";
 import { useCart } from "@/lib/cart";
-import { listCatalogProductsServerFn } from "@/lib/server-functions";
-import { useCatalogProducts } from "@/lib/data-client";
+import {
+  getShopBannerVideoPublicServerFn,
+  listCatalogProductsServerFn,
+} from "@/lib/server-functions";
+import { useCatalogProducts, useShopBannerVideo } from "@/lib/data-client";
+import { DEFAULT_SHOP_BANNER_VIDEO_URL } from "@/lib/shop-banner-video";
+import {
+  buildProductSearchIndex,
+  buildShopSearchSuggestions,
+  searchIndexedProducts,
+  splitHighlightSegments,
+  type ShopSuggestionItem,
+} from "@/lib/shop-search";
 
 type S = {
   q?: string | undefined;
@@ -40,12 +53,17 @@ type S = {
 
 export const Route = createFileRoute("/shop/")({
   loader: async () => {
-    try {
-      const catalog = await listCatalogProductsServerFn();
-      return { initialCatalog: catalog };
-    } catch {
-      return { initialCatalog: products };
-    }
+    const [catalogRes, videoRes] = await Promise.allSettled([
+      listCatalogProductsServerFn(),
+      getShopBannerVideoPublicServerFn(),
+    ]);
+    return {
+      initialCatalog: catalogRes.status === "fulfilled" ? catalogRes.value : products,
+      initialShopVideoUrl:
+        videoRes.status === "fulfilled" && videoRes.value?.activeVideoUrl
+          ? videoRes.value.activeVideoUrl
+          : DEFAULT_SHOP_BANNER_VIDEO_URL,
+    };
   },
   validateSearch: (s: Record<string, unknown>): S => ({
     q: typeof s["q"] === "string" ? (s["q"] as string) : undefined,
@@ -88,15 +106,111 @@ export function Shop() {
     mobility: searchMobility,
   } = Route.useSearch();
   const nav = Route.useNavigate();
-  const { initialCatalog } = Route.useLoaderData();
+  const { initialCatalog, initialShopVideoUrl } = Route.useLoaderData();
   const { data: liveCatalog } = useCatalogProducts(initialCatalog);
+  const { data: liveShopBannerVideo } = useShopBannerVideo({
+    activeVideoUrl: initialShopVideoUrl,
+  });
+  const shopVideoUrl =
+    liveShopBannerVideo?.activeVideoUrl || initialShopVideoUrl || DEFAULT_SHOP_BANNER_VIDEO_URL;
+  const shopVideoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const videoEl = shopVideoRef.current;
+    if (!videoEl) return;
+    videoEl.muted = true;
+    videoEl.defaultMuted = true;
+    videoEl.play().catch(() => {});
+  }, [shopVideoUrl]);
+
   const { vehicle: savedVehicle } = useCart();
 
   const [query, setQuery] = useState(q);
+  const deferredQuery = useDeferredValue(query);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [activeSuggestionIdx, setActiveSuggestionIdx] = useState(-1);
   const [inStock, setInStock] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<string>(searchBrand ?? "");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [activeQuoteProduct, setActiveQuoteProduct] = useState<Product | null>(null);
+
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const lastSyncedQRef = useRef(q);
+  const urlSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestionsListboxId = useId();
+
+  useEffect(() => {
+    if (q !== lastSyncedQRef.current) {
+      lastSyncedQRef.current = q;
+      setQuery(q);
+    }
+  }, [q]);
+
+  useEffect(() => {
+    return () => {
+      if (urlSyncTimerRef.current) {
+        clearTimeout(urlSyncTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSearchOpen) return;
+
+    const handlePointerDownOutside = (event: PointerEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchOpen(false);
+        setActiveSuggestionIdx(-1);
+      }
+    };
+
+    const handleFocusInOutside = (event: FocusEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchOpen(false);
+        setActiveSuggestionIdx(-1);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDownOutside);
+    document.addEventListener("focusin", handleFocusInOutside);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDownOutside);
+      document.removeEventListener("focusin", handleFocusInOutside);
+    };
+  }, [isSearchOpen]);
+
+  const syncQueryToUrl = useCallback(
+    (nextRaw: string, immediate = false) => {
+      if (urlSyncTimerRef.current) {
+        clearTimeout(urlSyncTimerRef.current);
+        urlSyncTimerRef.current = null;
+      }
+      const trimmed = nextRaw.trim();
+      const applySync = () => {
+        const nextQ = trimmed || undefined;
+        if ((lastSyncedQRef.current || undefined) === nextQ) return;
+        lastSyncedQRef.current = trimmed;
+        void nav({
+          search: (s: S) => ({ ...s, q: nextQ }),
+          replace: true,
+          resetScroll: false,
+        });
+      };
+      if (immediate) {
+        applySync();
+      } else {
+        urlSyncTimerRef.current = setTimeout(applySync, 220);
+      }
+    },
+    [nav],
+  );
 
   const allProducts = useMemo(
     () => (liveCatalog && liveCatalog.length > 0 ? liveCatalog : initialCatalog || products),
@@ -119,69 +233,186 @@ export function Shop() {
     return Array.from(set);
   }, [allProducts]);
 
-  // Filter application
-  const filteredList = useMemo(() => {
-    return allProducts.filter((p) => {
-      // Mobility Platform filter (4-Wheeler, 2-Wheeler, 3-Wheeler, EV)
+  // Pre-build normalized lowercase & token index once per catalog load for instant keystroke lookup
+  const indexedCatalog = useMemo(() => buildProductSearchIndex(allProducts), [allProducts]);
+
+  // Apply zero-lag synchronous filtering on standard catalogs and defer only on very large catalogs
+  const activeSearchQuery = indexedCatalog.length > 150 ? deferredQuery : query;
+
+  const baseFilteredIndexed = useMemo(() => {
+    const vehicleLower = vehicle
+      ? vehicle.split(" ")[1]?.toLowerCase() || vehicle.toLowerCase()
+      : "";
+    return indexedCatalog.filter(({ product: p }) => {
       if (searchMobility && searchMobility !== "All") {
         if (!p.mobility.includes(searchMobility as MobilityType)) return false;
       }
-
-      // Category filter
       if (cat && p.category !== cat) return false;
-
-      // Search query filter (matches name, brand, category, SKU, description)
-      if (
-        q &&
-        !`${p.name} ${p.brand} ${p.category} ${p.sku} ${p.description} ${p.mobility.join(" ")}`
-          .toLowerCase()
-          .includes(q.toLowerCase())
-      ) {
-        return false;
-      }
-
-      // Brand filter
       if (selectedBrand && p.brand !== selectedBrand) return false;
-
-      // Stock filter
       if (inStock && p.stock === "Out of stock") return false;
-
-      // Product Type filter (Equipment vs Parts)
       if (searchType === "equipment" && !p.isEquipment) return false;
       if (searchType === "parts" && p.isEquipment) return false;
-
-      // Vehicle compatibility filter
-      if (vehicle) {
-        const v = vehicle.split(" ")[1]?.toLowerCase() || vehicle.toLowerCase();
+      if (vehicleLower) {
         const matchesFit = p.fits.some(
           (f) =>
-            f.toLowerCase().includes(v) ||
+            f.toLowerCase().includes(vehicleLower) ||
             f.toLowerCase().includes("universal") ||
             f.toLowerCase().includes("most"),
         );
         if (!matchesFit) return false;
       }
-
       return true;
     });
-  }, [allProducts, q, cat, vehicle, selectedBrand, inStock, searchType, searchMobility]);
+  }, [indexedCatalog, cat, vehicle, selectedBrand, inStock, searchType, searchMobility]);
+
+  // Instant live relevance-ranked filtering while typing ("h" -> "he" -> ...)
+  const filteredList = useMemo(() => {
+    return searchIndexedProducts(baseFilteredIndexed, activeSearchQuery).map(
+      (match) => match.item.product,
+    );
+  }, [baseFilteredIndexed, activeSearchQuery]);
+
+  // Immediate autocomplete suggestions under the search bar
+  const searchSuggestions = useMemo(
+    () =>
+      buildShopSearchSuggestions({
+        scopedItems: baseFilteredIndexed,
+        allIndexedItems: indexedCatalog,
+        rawQuery: query,
+        maxKeywords: 5,
+        maxProducts: 6,
+      }),
+    [baseFilteredIndexed, indexedCatalog, query],
+  );
+
+  const flatSuggestions = useMemo<ShopSuggestionItem[]>(
+    () => [...searchSuggestions.keywords, ...searchSuggestions.products],
+    [searchSuggestions],
+  );
+
+  const clampedActiveIdx =
+    activeSuggestionIdx >= 0 && activeSuggestionIdx < flatSuggestions.length
+      ? activeSuggestionIdx
+      : -1;
+  const activeOption = clampedActiveIdx >= 0 ? flatSuggestions[clampedActiveIdx] : undefined;
+  const activeOptionDomId = activeOption ? `${suggestionsListboxId}-${activeOption.id}` : undefined;
+  const hasAnySuggestions =
+    searchSuggestions.keywords.length > 0 || searchSuggestions.products.length > 0;
+  const showSuggestions = isSearchOpen && (hasAnySuggestions || query.trim().length > 0);
+
+  const handleSelectSuggestion = (option: ShopSuggestionItem) => {
+    if (urlSyncTimerRef.current) {
+      clearTimeout(urlSyncTimerRef.current);
+      urlSyncTimerRef.current = null;
+    }
+    setIsSearchOpen(false);
+    setActiveSuggestionIdx(-1);
+
+    if (option.kind === "category") {
+      lastSyncedQRef.current = "";
+      setQuery("");
+      void nav({
+        search: (s: S) => ({ ...s, cat: option.label, q: undefined }),
+        resetScroll: false,
+      });
+      return;
+    }
+
+    if (option.kind === "brand") {
+      setSelectedBrand(option.label);
+      lastSyncedQRef.current = "";
+      setQuery("");
+      void nav({
+        search: (s: S) => ({ ...s, q: undefined }),
+        replace: true,
+        resetScroll: false,
+      });
+      return;
+    }
+
+    if (option.kind === "keyword") {
+      setQuery(option.label);
+      syncQueryToUrl(option.label, true);
+      return;
+    }
+
+    if (option.kind === "product") {
+      void nav({
+        to: "/shop/$slug",
+        params: { slug: option.product.slug },
+      });
+    }
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nextValue = e.target.value;
+    setQuery(nextValue);
+    setIsSearchOpen(true);
+    setActiveSuggestionIdx(-1);
+    syncQueryToUrl(nextValue, false);
+  };
+
+  const handleClearSearchInput = () => {
+    setQuery("");
+    setActiveSuggestionIdx(-1);
+    setIsSearchOpen(true);
+    syncQueryToUrl("", true);
+    searchInputRef.current?.focus();
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      if (flatSuggestions.length === 0) return;
+      e.preventDefault();
+      setIsSearchOpen(true);
+      setActiveSuggestionIdx((prev) => (prev + 1) % flatSuggestions.length);
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      if (flatSuggestions.length === 0) return;
+      e.preventDefault();
+      setIsSearchOpen(true);
+      setActiveSuggestionIdx((prev) => (prev <= 0 ? flatSuggestions.length - 1 : prev - 1));
+      return;
+    }
+    if (e.key === "Escape") {
+      if (isSearchOpen) {
+        e.preventDefault();
+        setIsSearchOpen(false);
+        setActiveSuggestionIdx(-1);
+      }
+      return;
+    }
+    if (e.key === "Enter" && isSearchOpen && activeOption) {
+      e.preventDefault();
+      handleSelectSuggestion(activeOption);
+    }
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    nav({
-      search: (s: S) => ({ ...s, q: query.trim() || undefined }),
-    });
+    setIsSearchOpen(false);
+    setActiveSuggestionIdx(-1);
+    syncQueryToUrl(query, true);
   };
 
   const handleClearAll = () => {
+    if (urlSyncTimerRef.current) {
+      clearTimeout(urlSyncTimerRef.current);
+      urlSyncTimerRef.current = null;
+    }
+    lastSyncedQRef.current = "";
     setQuery("");
     setSelectedBrand("");
     setInStock(false);
-    nav({
+    setIsSearchOpen(false);
+    setActiveSuggestionIdx(-1);
+    void nav({
       search: () => ({}),
     });
   };
 
+  const trimmedActiveQuery = activeSearchQuery.trim();
   const activeFiltersCount = [
     searchMobility,
     cat,
@@ -189,7 +420,7 @@ export function Shop() {
     selectedBrand,
     searchType,
     inStock ? "1" : "",
-    q,
+    trimmedActiveQuery || q,
   ].filter(Boolean).length;
 
   return (
@@ -204,35 +435,266 @@ export function Shop() {
 
         {/* Centered Search Bar: Under the navbar, above the video */}
         <div className="flex justify-center w-full pt-1 sm:pt-2">
-          <form onSubmit={handleSearchSubmit} className="w-full max-w-xl sm:max-w-2xl">
-            <div className="relative flex items-center">
-              <input
-                id="shop-q"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search equipment, SKU, brand, or parts..."
-                className="w-full h-11 sm:h-12 pl-11 pr-24 rounded-2xl bg-white border border-zinc-300 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-sm hover:border-zinc-400"
-              />
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-              <button
-                type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 sm:h-9 px-4 sm:px-5 rounded-xl bg-primary text-white text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95 cursor-pointer shadow-xs"
+          <div ref={searchContainerRef} className="relative w-full max-w-xl sm:max-w-2xl z-30">
+            <form onSubmit={handleSearchSubmit} className="w-full">
+              <div className="relative flex items-center">
+                <input
+                  ref={searchInputRef}
+                  id="shop-q"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={showSuggestions}
+                  aria-controls={suggestionsListboxId}
+                  aria-activedescendant={activeOptionDomId}
+                  aria-label="Search automotive equipment, parts, SKU, or brand"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={query}
+                  onFocus={() => setIsSearchOpen(true)}
+                  onChange={handleSearchInputChange}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder="Search equipment, SKU, brand, or parts..."
+                  className={cn(
+                    "w-full h-11 sm:h-12 pl-11 rounded-2xl bg-white border border-zinc-300 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary transition-all shadow-sm hover:border-zinc-400",
+                    query ? "pr-32 sm:pr-36" : "pr-24 sm:pr-28",
+                  )}
+                />
+                <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                {query && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={handleClearSearchInput}
+                    aria-label="Clear search"
+                    className="absolute right-[5.75rem] sm:right-[6.5rem] top-1/2 -translate-y-1/2 grid h-7 w-7 place-items-center rounded-full text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 sm:h-9 px-4 sm:px-5 rounded-xl bg-primary text-white text-xs font-bold uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95 cursor-pointer shadow-xs"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+
+            {/* Instant Search Autocomplete Suggestions Dropdown */}
+            {showSuggestions && (
+              <div
+                id={suggestionsListboxId}
+                role="listbox"
+                aria-label="Search suggestions"
+                className="absolute left-0 right-0 top-full mt-2 z-40 rounded-2xl border border-zinc-200 bg-white/98 backdrop-blur-xl shadow-2xl ring-1 ring-black/5 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
               >
-                Search
-              </button>
-            </div>
-          </form>
+                <div className="max-h-[min(68vh,460px)] overflow-y-auto overscroll-contain divide-y divide-zinc-100">
+                  {hasAnySuggestions ? (
+                    <>
+                      {/* Keyword / Category / Brand Prefix Suggestions */}
+                      {searchSuggestions.keywords.length > 0 && (
+                        <div className="p-3 bg-zinc-50/70">
+                          <div className="flex items-center justify-between mb-2 px-1">
+                            <span className="text-[10.5px] font-bold uppercase tracking-wider text-zinc-500">
+                              {query.trim() ? "Suggested Matches" : "Popular Categories"}
+                            </span>
+                            {query.trim() && (
+                              <span className="text-[11px] font-medium text-zinc-500">
+                                {searchSuggestions.totalProductMatches}{" "}
+                                {searchSuggestions.totalProductMatches === 1
+                                  ? "product"
+                                  : "products"}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {searchSuggestions.keywords.map((kw, idx) => {
+                              const isHighlighted = clampedActiveIdx === idx;
+                              const optDomId = `${suggestionsListboxId}-${kw.id}`;
+                              return (
+                                <button
+                                  key={kw.id}
+                                  id={optDomId}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={isHighlighted}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onMouseEnter={() => setActiveSuggestionIdx(idx)}
+                                  onClick={() => handleSelectSuggestion(kw)}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer",
+                                    isHighlighted
+                                      ? "border-primary bg-primary/10 text-primary shadow-2xs"
+                                      : "border-zinc-200 bg-white text-zinc-800 hover:border-primary/40 hover:bg-primary/5",
+                                  )}
+                                >
+                                  {kw.kind === "keyword" ? (
+                                    <Search className="h-3 w-3 text-zinc-400 shrink-0" />
+                                  ) : (
+                                    <Tag className="h-3 w-3 text-primary/70 shrink-0" />
+                                  )}
+                                  <span>
+                                    {kw.kind === "category"
+                                      ? "Category: "
+                                      : kw.kind === "brand"
+                                        ? "Brand: "
+                                        : ""}
+                                    <HighlightedText text={kw.label} query={query} />
+                                  </span>
+                                  <span className="text-[10px] font-semibold text-zinc-400 tabular-nums">
+                                    ({kw.matchCount})
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Direct Matching Product Rows */}
+                      {searchSuggestions.products.length > 0 && (
+                        <div className="p-1.5">
+                          <div className="flex items-center justify-between px-2.5 py-1.5">
+                            <span className="text-[10.5px] font-bold uppercase tracking-wider text-zinc-500">
+                              {query.trim() ? "Matching Products" : "Featured Equipment & Parts"}
+                            </span>
+                            {searchSuggestions.usedCatalogFallback && (
+                              <span className="text-[10.5px] font-medium text-amber-600">
+                                Showing catalog matches
+                              </span>
+                            )}
+                          </div>
+                          <div className="space-y-0.5">
+                            {searchSuggestions.products.map((entry, idx) => {
+                              const flatIdx = searchSuggestions.keywords.length + idx;
+                              const isHighlighted = clampedActiveIdx === flatIdx;
+                              const optDomId = `${suggestionsListboxId}-${entry.id}`;
+                              const prod = entry.product;
+                              const isOut = prod.stock === "Out of stock";
+
+                              return (
+                                <Link
+                                  key={entry.id}
+                                  id={optDomId}
+                                  role="option"
+                                  aria-selected={isHighlighted}
+                                  to="/shop/$slug"
+                                  params={{ slug: prod.slug }}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onMouseEnter={() => setActiveSuggestionIdx(flatIdx)}
+                                  onClick={() => {
+                                    setIsSearchOpen(false);
+                                    setActiveSuggestionIdx(-1);
+                                  }}
+                                  className={cn(
+                                    "flex items-center gap-3 rounded-xl px-2.5 py-2 transition-colors",
+                                    isHighlighted
+                                      ? "bg-primary/8 ring-1 ring-primary/25"
+                                      : "hover:bg-zinc-50",
+                                  )}
+                                >
+                                  <img
+                                    src={prod.image}
+                                    alt=""
+                                    className="h-10 w-10 rounded-lg object-cover bg-zinc-100 border border-zinc-200/80 shrink-0"
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-xs sm:text-sm font-semibold text-zinc-900 truncate">
+                                      <HighlightedText text={prod.name} query={query} />
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-zinc-500 mt-0.5">
+                                      <span className="font-medium text-zinc-700">
+                                        {prod.brand}
+                                      </span>
+                                      <span>•</span>
+                                      <span className="truncate">{prod.category}</span>
+                                      <span>•</span>
+                                      <span className="font-mono text-[10px]">
+                                        <HighlightedText text={prod.sku} query={query} />
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <span
+                                      className={cn(
+                                        "hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                                        isOut
+                                          ? "bg-red-50 text-red-600"
+                                          : "bg-emerald-50 text-emerald-700",
+                                      )}
+                                    >
+                                      {prod.stock}
+                                    </span>
+                                    <ArrowUpRight className="h-3.5 w-3.5 text-zinc-400" />
+                                  </div>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Footer action to commit current filter query and view grid */}
+                      {query.trim() && searchSuggestions.totalProductMatches > 0 && (
+                        <div className="p-2 bg-zinc-50/80">
+                          <button
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              setIsSearchOpen(false);
+                              setActiveSuggestionIdx(-1);
+                              syncQueryToUrl(query, true);
+                            }}
+                            className="w-full flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/5 transition-colors cursor-pointer"
+                          >
+                            <span>
+                              View all {searchSuggestions.totalProductMatches} filtered{" "}
+                              {searchSuggestions.totalProductMatches === 1 ? "product" : "products"}{" "}
+                              for “{query.trim()}”
+                            </span>
+                            <ArrowUpRight className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="px-4 py-5 text-center space-y-2">
+                      <p className="text-xs sm:text-sm font-semibold text-zinc-800">
+                        No products matched “{query.trim()}”
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        Try searching a product name, category, brand (e.g. Torq), or SKU.
+                      </p>
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={handleClearSearchInput}
+                        className="inline-flex items-center gap-1 rounded-full bg-zinc-100 hover:bg-zinc-200 px-3 py-1 text-xs font-semibold text-zinc-700 transition-colors cursor-pointer"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Clear Search
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Hero Video Banner Card */}
         <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-zinc-950 border border-zinc-200 shadow-md ring-1 ring-black/5">
           <div className="relative w-full h-40 sm:h-48 md:h-56 lg:h-64 max-h-[265px] flex items-center justify-center bg-black overflow-hidden">
             <video
-              src="/1013.mp4"
+              ref={shopVideoRef}
+              key={shopVideoUrl}
+              src={shopVideoUrl}
               autoPlay
               loop
               muted
               playsInline
+              disablePictureInPicture
+              disableRemotePlayback
               className="w-full h-full object-cover object-center pointer-events-none"
             />
           </div>
@@ -267,6 +729,7 @@ export function Shop() {
                 {(cat ||
                   vehicle ||
                   selectedBrand ||
+                  trimmedActiveQuery ||
                   q ||
                   inStock ||
                   searchType ||
@@ -487,43 +950,48 @@ export function Shop() {
           <div>
             {/* Active Filter Chips Bar (Only shown when active filters exist) */}
             {activeFiltersCount > 0 && (
-              <div className="mb-4 flex flex-wrap items-center gap-2 text-xs border-b border-border/70 pb-3">
-                {searchMobility && (
-                  <Chip
-                    label={`Platform: ${searchMobility}`}
-                    onClear={() => nav({ search: (s: S) => ({ ...s, mobility: undefined }) })}
-                  />
-                )}
-                {vehicle && (
-                  <Chip
-                    label={`Fits: ${vehicle}`}
-                    onClear={() => nav({ search: (s: S) => ({ ...s, vehicle: undefined }) })}
-                  />
-                )}
-                {cat && (
-                  <Chip
-                    label={`Category: ${cat}`}
-                    onClear={() => nav({ search: (s: S) => ({ ...s, cat: undefined }) })}
-                  />
-                )}
-                {selectedBrand && (
-                  <Chip label={`Brand: ${selectedBrand}`} onClear={() => setSelectedBrand("")} />
-                )}
-                {searchType && (
-                  <Chip
-                    label={`Type: ${searchType === "equipment" ? "Machinery" : "Parts"}`}
-                    onClear={() => nav({ search: (s: S) => ({ ...s, type: undefined }) })}
-                  />
-                )}
-                {q && (
-                  <Chip
-                    label={`Search: “${q}”`}
-                    onClear={() => {
-                      setQuery("");
-                      nav({ search: (s: S) => ({ ...s, q: undefined }) });
-                    }}
-                  />
-                )}
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs border-b border-border/70 pb-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {searchMobility && (
+                    <Chip
+                      label={`Platform: ${searchMobility}`}
+                      onClear={() => nav({ search: (s: S) => ({ ...s, mobility: undefined }) })}
+                    />
+                  )}
+                  {vehicle && (
+                    <Chip
+                      label={`Fits: ${vehicle}`}
+                      onClear={() => nav({ search: (s: S) => ({ ...s, vehicle: undefined }) })}
+                    />
+                  )}
+                  {cat && (
+                    <Chip
+                      label={`Category: ${cat}`}
+                      onClear={() => nav({ search: (s: S) => ({ ...s, cat: undefined }) })}
+                    />
+                  )}
+                  {selectedBrand && (
+                    <Chip label={`Brand: ${selectedBrand}`} onClear={() => setSelectedBrand("")} />
+                  )}
+                  {searchType && (
+                    <Chip
+                      label={`Type: ${searchType === "equipment" ? "Machinery" : "Parts"}`}
+                      onClear={() => nav({ search: (s: S) => ({ ...s, type: undefined }) })}
+                    />
+                  )}
+                  {(trimmedActiveQuery || q) && (
+                    <Chip
+                      label={`Search: “${trimmedActiveQuery || q}”`}
+                      onClear={() => {
+                        setQuery("");
+                        syncQueryToUrl("", true);
+                      }}
+                    />
+                  )}
+                </div>
+                <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                  {filteredList.length} {filteredList.length === 1 ? "product" : "products"} found
+                </span>
               </div>
             )}
 
@@ -577,6 +1045,7 @@ export function Shop() {
                 {(cat ||
                   vehicle ||
                   selectedBrand ||
+                  trimmedActiveQuery ||
                   q ||
                   inStock ||
                   searchType ||
@@ -797,6 +1266,23 @@ export function Shop() {
         <QuoteModal product={activeQuoteProduct} onClose={() => setActiveQuoteProduct(null)} />
       )}
     </div>
+  );
+}
+
+function HighlightedText({ text, query }: { text: string; query: string }) {
+  const segments = splitHighlightSegments(text, query);
+  return (
+    <>
+      {segments.map((seg, i) =>
+        seg.highlighted ? (
+          <mark key={i} className="bg-primary/15 text-primary font-semibold rounded-[3px] px-0.5">
+            {seg.text}
+          </mark>
+        ) : (
+          <span key={i}>{seg.text}</span>
+        ),
+      )}
+    </>
   );
 }
 

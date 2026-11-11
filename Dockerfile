@@ -26,25 +26,27 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8080
-ENV NITRO_PORT=8080
 
 # Install PostgreSQL client tools & curl for healthcheck
 RUN apk add --no-cache curl postgresql-client
 
 # Create persistent storage directories and assign ownership to non-root node user
-RUN mkdir -p /app/public/uploads /app/.data && chown -R node:node /app
+RUN mkdir -p /app/public/uploads /app/.data /app/backups && chown -R node:node /app
 
 # Copy application runtime artifacts
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/.output ./.output
 COPY --from=builder --chown=node:node /app/package.json ./package.json
+COPY --from=builder --chown=node:node /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=node:node /app/drizzle ./drizzle
+COPY --from=builder --chown=node:node /app/scripts ./scripts
 COPY --from=builder --chown=node:node /app/src/db ./src/db
 COPY --from=builder --chown=node:node /app/src/lib ./src/lib
 COPY --from=builder --chown=node:node /app/src/assets ./src/assets
 COPY --from=builder --chown=node:node /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder --chown=node:node /app/docker-entrypoint.sh ./docker-entrypoint.sh
 
-RUN chmod +x ./docker-entrypoint.sh
+RUN sed -i 's/\r$//' ./docker-entrypoint.sh && chmod +x ./docker-entrypoint.sh
 
 # Switch to non-root user
 USER node
@@ -52,6 +54,6 @@ USER node
 EXPOSE 8080
 
 HEALTHCHECK --interval=20s --timeout=5s --start-period=15s --retries=3 \
-  CMD curl -f http://localhost:8080/api/health || exit 1
+  CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

@@ -47,7 +47,18 @@ async function backup() {
     db.select().from(bookings),
     db.select().from(banners),
     db.select().from(reviews),
-    db.select().from(media),
+    db
+      .select({
+        id: media.id,
+        filename: media.filename,
+        originalName: media.originalName,
+        mimeType: media.mimeType,
+        sizeBytes: media.sizeBytes,
+        url: media.url,
+        category: media.category,
+        createdAt: media.createdAt,
+      })
+      .from(media),
     db.select().from(orders),
     db.select().from(orderItems),
     db.select().from(settings),

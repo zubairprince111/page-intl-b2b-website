@@ -569,15 +569,26 @@ export function AdminUpdates() {
                     <span>{isUploading ? "Uploading..." : "Upload"}</span>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
                       className="hidden"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
+                        e.target.value = "";
                         if (file) handleFileUpload(file);
                       }}
                     />
                   </label>
                 </div>
+                {imageUrl.trim() && (
+                  <div className="mt-2 rounded-lg border border-white/[0.08] bg-black/30 p-2 flex items-center gap-3">
+                    <img
+                      src={imageUrl}
+                      alt="Update preview"
+                      className="h-14 w-24 rounded object-cover bg-zinc-900 shrink-0"
+                    />
+                    <span className="text-[11px] font-mono text-zinc-400 truncate">{imageUrl}</span>
+                  </div>
+                )}
               </div>
 
               {/* Summary (Hook) */}

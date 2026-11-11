@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useSettings, useUpdateSettings } from "@/lib/data-client";
 import {
@@ -13,6 +13,8 @@ import {
   Check,
   RotateCcw,
   Share2,
+  Film,
+  ArrowRight,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -44,14 +46,49 @@ function AdminSettings() {
 
   useEffect(() => {
     if (dbSettings && Object.keys(dbSettings).length > 0) {
-      setSettings((prev: any) => ({ ...prev, ...dbSettings }));
+      const editableKeys = [
+        "siteName",
+        "tagline",
+        "primaryColor",
+        "contactEmail",
+        "contactPhone",
+        "heroHeadline",
+        "heroSubline",
+        "announcementBar",
+        "announcementActive",
+        "socialLinkedin",
+        "socialFacebook",
+        "socialInstagram",
+      ] as const;
+      setSettings((prev: any) => {
+        const next = { ...prev };
+        for (const k of editableKeys) {
+          if (dbSettings[k] !== undefined) {
+            next[k] = dbSettings[k];
+          }
+        }
+        return next;
+      });
     }
   }, [dbSettings]);
 
   const [saved, setSaved] = useState(false);
 
   async function handleSave() {
-    await updateSettingsMutation.mutateAsync(settings);
+    await updateSettingsMutation.mutateAsync({
+      siteName: settings.siteName,
+      tagline: settings.tagline,
+      primaryColor: settings.primaryColor,
+      contactEmail: settings.contactEmail,
+      contactPhone: settings.contactPhone,
+      heroHeadline: settings.heroHeadline,
+      heroSubline: settings.heroSubline,
+      announcementBar: settings.announcementBar,
+      announcementActive: settings.announcementActive,
+      socialLinkedin: settings.socialLinkedin,
+      socialFacebook: settings.socialFacebook,
+      socialInstagram: settings.socialInstagram,
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -232,6 +269,29 @@ function AdminSettings() {
                 className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 text-[13px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
               />
             </Field>
+
+            <div className="pt-2 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+                  <Film className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[12px] font-medium text-zinc-200">
+                    Shop Page Hero Banner Video
+                  </p>
+                  <p className="text-[11px] text-zinc-500">
+                    Upload or switch the active looping banner video shown on `/shop`
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/admin/banners"
+                className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/20 transition-colors shrink-0"
+              >
+                <span>Manage in Banners</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
 

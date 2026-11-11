@@ -29,6 +29,13 @@
       "when": 1794310120019,
       "tag": "0003_nasty_karma",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794392716907,
+      "tag": "0004_rapid_silver_samurai",
+      "breakpoints": true
     }
   ]
 }

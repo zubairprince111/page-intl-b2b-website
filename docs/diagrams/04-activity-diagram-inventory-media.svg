@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 960" width="1420" height="960" role="img" aria-label="Figure 4 — UML 2.5 Activity Diagram: Inventory Curation &amp; Binary Media Upload Pipeline">
+  <defs>
+    <style>
+      .sans { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; }
+      .title { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 22px; font-weight: 800; fill: #0F172A; letter-spacing: -0.02em; }
+      .subtitle { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12.5px; font-weight: 500; fill: #475569; }
+      .stereo { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #475569; }
+      .lbl { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #0F172A; }
+      .lbl-sm { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; fill: #334155; }
+      .edge-lbl { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #334155; }
+    </style>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <!-- Filled Solid Arrowhead (Synchronous, Control Flow, Association Navigation) -->
+    <marker id="arrow-filled" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrow-filled-red" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#E11D48"/>
+    </marker>
+    <marker id="arrow-filled-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-filled-emerald" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#059669"/>
+    </marker>
+    <!-- Open V-Arrowhead (UML Dependency, Include/Extend, Async Message, Return) -->
+    <marker id="arrow-open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#1E293B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#2563EB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-purple" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#7C3AED" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <!-- Hollow Triangle Arrowhead (UML Generalization / Realization) -->
+    <marker id="arrow-inherit" viewBox="0 0 14 14" refX="12.5" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 12.5 7 L 1 12.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <!-- Filled Diamond (UML Composition) -->
+    <marker id="diamond-comp" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#1E293B" stroke="#1E293B" stroke-width="1.2"/>
+    </marker>
+    <!-- Hollow Diamond (UML Aggregation) -->
+    <marker id="diamond-agg" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.4"/>
+    </marker>
+    <!-- Crow's Foot Markers (ERD) -->
+    <marker id="erd-one" viewBox="0 0 14 14" refX="12" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <line x1="7" y1="2" x2="7" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+      <line x1="11" y1="2" x2="11" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-zero-one" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <circle cx="5.5" cy="7" r="3.5" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="12" y1="2" x2="12" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-many" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 16 2 L 7 7 L 16 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="5" y1="2" x2="5" y2="12" stroke="#1E293B" stroke-width="1.6"/>
+    </marker>
+    <marker id="erd-zero-many" viewBox="0 0 20 14" refX="18" refY="7" markerWidth="13" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 18 2 L 9.5 7 L 18 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <circle cx="4.5" cy="7" r="3.2" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+    </marker>
+    
+  </defs>
+
+  <!-- Solid White Backdrop for Light & Dark Markdown Readers -->
+  <rect x="0" y="0" width="1420" height="960" fill="#FFFFFF" rx="12"/>
+  <rect x="1" y="1" width="1418" height="958" fill="none" stroke="#E2E8F0" stroke-width="1.5" rx="11"/>
+
+  <!-- Header Banner -->
+  <rect x="0" y="0" width="1420" height="74" fill="#F8FAFC" rx="12"/>
+  <rect x="0" y="60" width="1420" height="14" fill="#F8FAFC"/>
+  <line x1="0" y1="74" x2="1420" y2="74" stroke="#E2E8F0" stroke-width="1.2"/>
+  <rect x="24" y="18" width="5" height="38" fill="#E11D48" rx="2.5"/>
+  <text x="40" y="38" class="title">Figure 4 — UML 2.5 Activity Diagram: Inventory Curation &amp; Binary Media Upload Pipeline</text>
+  <text x="40" y="57" class="subtitle">Multipart Upload Magic-Byte Verification, Path Traversal Guard, PostgreSQL JSONB Spec Normalization &amp; TanStack Query Cache Synchronization</text>
+  <text x="1396" y="42" text-anchor="end" class="stereo">PAGE International Ltd. · IEEE/UML 2.5</text>
+
+  <rect x="26" y="94" width="360" height="838" fill="#F5F3FF" fill-opacity="0.35" stroke="#94A3B8" stroke-width="1.5"/>
+<rect x="26" y="94" width="360" height="36" fill="#EDE9FE" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="206" y="117" text-anchor="middle" class="lbl" font-size="12.5">Administrator (/admin/inventory &amp; /banners)</text>
+<rect x="386" y="94" width="390" height="838" fill="#EFF6FF" fill-opacity="0.35" stroke="#94A3B8" stroke-width="1.5"/>
+<rect x="386" y="94" width="390" height="36" fill="#DBEAFE" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="581" y="117" text-anchor="middle" class="lbl" font-size="12.5">Browser Client (uploadMediaFile &amp; Hooks)</text>
+<rect x="776" y="94" width="618" height="838" fill="#FFFFFF" fill-opacity="0.35" stroke="#94A3B8" stroke-width="1.5"/>
+<rect x="776" y="94" width="618" height="36" fill="#ECFDF5" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="1085" y="117" text-anchor="middle" class="lbl" font-size="12.5">Nitro Server &amp; PostgreSQL (/api/media/upload &amp; data.server)</text>
+<circle cx="206" cy="162" r="11" fill="#0F172A"/>
+<path d="M 206 173 L 206 198" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="76" y="200" width="260" height="48" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="206" y="221" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Open Product Editor, Banner</text><text x="206" y="235" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Manager, or Shop Video Card</text></g>
+<path d="M 206 248 L 206 280" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><polygon points="206,281 280,314 206,347 132,314" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/><text x="206" y="311.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">Asset Source</text><text x="206" y="323.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">Selected?</text></g>
+<path d="M 206 347 L 206 490 L 452 490" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(206, 412)">
+    <rect x="-48.23" y="-9.5" width="96.46" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[Preset / URL]</text>
+  </g>
+<path d="M 280 314 L 448 314" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(358, 314)">
+    <rect x="-39.394999999999996" y="-9.5" width="78.78999999999999" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[File Drop]</text>
+  </g>
+<g filter="url(#shadow-sm)"><rect x="452.5" y="288" width="255" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="580" y="311" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Pre-check Client File Cap</text><text x="580" y="325" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(50MB Img/PDF | 100MB MP4/WebM)</text></g>
+<path d="M 580 340 L 580 375" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="452.5" y="376" width="255" height="48" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="580" y="397" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Build multipart/form-data &amp;</text><text x="580" y="411" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">POST /api/media/upload + Cookie</text></g>
+<path d="M 708 400 L 818 400 L 818 220 L 847 220" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="847.5" y="197" width="345" height="46" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1020" y="224" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Verify Session Cookie &amp; Admin RBAC (role === &#39;admin&#39;)</text></g>
+<path d="M 1020 243 L 1020 275" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><polygon points="1020,276 1102,312 1020,348 938,312" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/><text x="1020" y="309.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">Magic Bytes</text><text x="1020" y="321.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">Valid Image/Video?</text></g>
+<path d="M 1102 312 L 1300 312 L 1300 250" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(1202, 312)">
+    <rect x="-54.12" y="-9.5" width="108.24" height="19" rx="4" fill="#FFF1F2" stroke="#FDA4AF" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#BE123C">[SVG/Exe Reject]</text>
+  </g>
+<g filter="url(#shadow-sm)"><rect x="1228" y="201" width="144" height="46" rx="12" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.7"/><text x="1300" y="221" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">HTTP 400 / 413</text><text x="1300" y="235" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Error JSON</text></g>
+<path d="M 1300 201 L 1300 178" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g>
+      <circle cx="1300" cy="165" r="11" fill="#FFFFFF" stroke="#E11D48" stroke-width="2"/>
+      <line x1="1293" y1="158" x2="1307" y2="172" stroke="#E11D48" stroke-width="2"/>
+      <line x1="1307" y1="158" x2="1293" y2="172" stroke="#E11D48" stroke-width="2"/>
+    </g>
+<path d="M 1020 348 L 1020 385" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(1020, 365)">
+    <rect x="-60.01" y="-9.5" width="120.02" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[Authentic Binary]</text>
+  </g>
+<g filter="url(#shadow-sm)"><rect x="835" y="387" width="370" height="50" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1020" y="409" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Assert Path Containment, Write Random-Hex Filename to</text><text x="1020" y="423" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">public/uploads/&lt;category&gt;/ &amp; Insert media Row</text></g>
+<path d="M 835 412 L 735 412 L 735 490 L 708 490" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="452.5" y="464" width="255" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="580" y="487" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Attach Returned /uploads/... URL,</text><text x="580" y="501" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Validate Spec/Variant Inputs</text></g>
+<path d="M 580 516 L 580 562" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="452.5" y="563" width="255" height="50" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="580" y="585" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Invoke TanStack Mutation RPC</text><text x="580" y="599" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(updateInventory / saveShopVideo)</text></g>
+<path d="M 708 588 L 835 588" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="850" y="562" width="390" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1045" y="585" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">requireAdmin() -&gt; Normalize Tuples/Groups/URLs -&gt;</text><text x="1045" y="599" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Sanitize Legacy PriceLabels (No Unit Prices on Storefront)</text></g>
+<path d="M 1045 614 L 1045 645" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<rect x="820" y="645" width="450" height="7" rx="3" fill="#0F172A"/>
+<path d="M 920 652 L 920 682" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 1170 652 L 1170 682" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="807.5" y="684" width="225" height="48" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="920" y="705" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">UPDATE / INSERT products or</text><text x="920" y="719" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">settings (&#39;shop_banner_video&#39;)</text></g>
+<g filter="url(#shadow-sm)"><rect x="1057.5" y="684" width="225" height="48" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1170" y="705" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">INSERT audit_log</text><text x="1170" y="719" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(actorId, entityId, metadata)</text></g>
+<path d="M 920 732 L 920 760" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 1170 732 L 1170 760" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<rect x="820" y="760" width="450" height="7" rx="3" fill="#0F172A"/>
+<path d="M 820 763 L 708 763" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="452.5" y="737" width="255" height="52" rx="12" fill="#ECFDF5" stroke="#059669" stroke-width="1.7"/><text x="580" y="760" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Invalidate TanStack Query Keys</text><text x="580" y="774" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">([&#39;inventory&#39;,&#39;catalog&#39;,&#39;shop-banner-video&#39;])</text></g>
+<path d="M 580 789 L 580 835" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="425" y="837" width="310" height="50" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.7"/><text x="580" y="859" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Storefront (/shop &amp; /shop/$slug)</text><text x="580" y="873" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Hydrates Updated Asset &amp; Specs</text></g>
+<path d="M 425 862 L 222 862" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g><circle cx="206" cy="862" r="14" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.2"/><circle cx="206" cy="862" r="8.5" fill="#0F172A"/></g>
+</svg>

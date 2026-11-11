@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 1140" width="1480" height="1140" role="img" aria-label="Figure 3 — UML 2.5 Activity Diagram: Commercial RFQ Submission &amp; Pro-Forma Fulfillment">
+  <defs>
+    <style>
+      .sans { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; }
+      .title { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 22px; font-weight: 800; fill: #0F172A; letter-spacing: -0.02em; }
+      .subtitle { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12.5px; font-weight: 500; fill: #475569; }
+      .stereo { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #475569; }
+      .lbl { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #0F172A; }
+      .lbl-sm { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; fill: #334155; }
+      .edge-lbl { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #334155; }
+    </style>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <!-- Filled Solid Arrowhead (Synchronous, Control Flow, Association Navigation) -->
+    <marker id="arrow-filled" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrow-filled-red" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#E11D48"/>
+    </marker>
+    <marker id="arrow-filled-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-filled-emerald" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#059669"/>
+    </marker>
+    <!-- Open V-Arrowhead (UML Dependency, Include/Extend, Async Message, Return) -->
+    <marker id="arrow-open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#1E293B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#2563EB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-purple" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#7C3AED" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <!-- Hollow Triangle Arrowhead (UML Generalization / Realization) -->
+    <marker id="arrow-inherit" viewBox="0 0 14 14" refX="12.5" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 12.5 7 L 1 12.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <!-- Filled Diamond (UML Composition) -->
+    <marker id="diamond-comp" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#1E293B" stroke="#1E293B" stroke-width="1.2"/>
+    </marker>
+    <!-- Hollow Diamond (UML Aggregation) -->
+    <marker id="diamond-agg" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.4"/>
+    </marker>
+    <!-- Crow's Foot Markers (ERD) -->
+    <marker id="erd-one" viewBox="0 0 14 14" refX="12" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <line x1="7" y1="2" x2="7" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+      <line x1="11" y1="2" x2="11" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-zero-one" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <circle cx="5.5" cy="7" r="3.5" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="12" y1="2" x2="12" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-many" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 16 2 L 7 7 L 16 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="5" y1="2" x2="5" y2="12" stroke="#1E293B" stroke-width="1.6"/>
+    </marker>
+    <marker id="erd-zero-many" viewBox="0 0 20 14" refX="18" refY="7" markerWidth="13" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 18 2 L 9.5 7 L 18 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <circle cx="4.5" cy="7" r="3.2" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+    </marker>
+    
+  </defs>
+
+  <!-- Solid White Backdrop for Light & Dark Markdown Readers -->
+  <rect x="0" y="0" width="1480" height="1140" fill="#FFFFFF" rx="12"/>
+  <rect x="1" y="1" width="1478" height="1138" fill="none" stroke="#E2E8F0" stroke-width="1.5" rx="11"/>
+
+  <!-- Header Banner -->
+  <rect x="0" y="0" width="1480" height="74" fill="#F8FAFC" rx="12"/>
+  <rect x="0" y="60" width="1480" height="14" fill="#F8FAFC"/>
+  <line x1="0" y1="74" x2="1480" y2="74" stroke="#E2E8F0" stroke-width="1.2"/>
+  <rect x="24" y="18" width="5" height="38" fill="#E11D48" rx="2.5"/>
+  <text x="40" y="38" class="title">Figure 3 — UML 2.5 Activity Diagram: Commercial RFQ Submission &amp; Pro-Forma Fulfillment</text>
+  <text x="40" y="57" class="subtitle">3-Partition Swimlane Workflow with Guards, Honeypot/Rate-Limit Branching, Conditional 6-Digit Email OTP, Rollback Loop, Fork/Join &amp; Admin Quote Fulfillment</text>
+  <text x="1456" y="42" text-anchor="end" class="stereo">PAGE International Ltd. · IEEE/UML 2.5</text>
+
+  <rect x="26" y="94" width="390" height="1018" fill="#EFF6FF" fill-opacity="0.35" stroke="#94A3B8" stroke-width="1.5"/>
+<rect x="26" y="94" width="390" height="36" fill="#DBEAFE" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="221" y="117" text-anchor="middle" class="lbl" font-size="13">Workshop Buyer (Browser)</text>
+<rect x="416" y="94" width="675" height="1018" fill="#FFFFFF" fill-opacity="0.35" stroke="#94A3B8" stroke-width="1.5"/>
+<rect x="416" y="94" width="675" height="36" fill="#FFE4E6" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="753.5" y="117" text-anchor="middle" class="lbl" font-size="13">PAGE System (ServerFn / RateLimiter / OTP / Drizzle)</text>
+<rect x="1091" y="94" width="363" height="1018" fill="#F5F3FF" fill-opacity="0.35" stroke="#94A3B8" stroke-width="1.5"/>
+<rect x="1091" y="94" width="363" height="36" fill="#EDE9FE" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="1272.5" y="117" text-anchor="middle" class="lbl" font-size="13">PAGE Administrator (/admin/quotes)</text>
+<circle cx="220" cy="165" r="12" fill="#0F172A"/>
+<path d="M 220 177 L 220 205" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="95" y="206" width="250" height="44" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="220" y="225" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Browse Equipment or Add to</text><text x="220" y="239" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Quotation Cart (/shop, /cart)</text></g>
+<path d="M 220 250 L 220 282" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="90" y="283" width="260" height="46" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="220" y="303" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Fill Company, Contact, Phone,</text><text x="220" y="317" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Business Email, City &amp; RFQ Notes</text></g>
+<path d="M 350 306 L 590 306 L 590 218" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="100" y="536" width="240" height="48" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.7"/><text x="220" y="557" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Receive 6-Digit Email Code &amp;</text><text x="220" y="571" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Enter Code in QuoteModal / Cart</text></g>
+<path d="M 340 560 L 495 560 L 495 628" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="92.5" y="880" width="255" height="50" rx="12" fill="#ECFDF5" stroke="#059669" stroke-width="1.7"/><text x="220" y="902" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">View RFQ Confirmation Screen</text><text x="220" y="916" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(Ref ID: RFQ-YYYY-XXXX)</text></g>
+<g filter="url(#shadow-sm)"><rect x="475" y="173" width="230" height="44" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="590" y="192" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Inspect Honeypot &amp; Check</text><text x="590" y="206" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Sliding-Window IP Rate Limit</text></g>
+<path d="M 590 217 L 590 245" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><polygon points="590,247 653,278 590,309 527,278" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/><text x="590" y="275.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">Valid Input</text><text x="590" y="287.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">&amp; Rate OK?</text></g>
+<path d="M 653 278 L 835 278 L 835 200" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(755, 278)">
+    <rect x="-36.45" y="-9.5" width="72.9" height="19" rx="4" fill="#FFF1F2" stroke="#FDA4AF" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#BE123C">[No / Bot]</text>
+  </g>
+<g filter="url(#shadow-sm)"><rect x="740" y="157" width="190" height="42" rx="12" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.7"/><text x="835" y="175" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">429 Wait Error OR</text><text x="835" y="189" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Silent Fake Ref ID</text></g>
+<path d="M 930 178 L 975 178" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g>
+      <circle cx="990" cy="178" r="12" fill="#FFFFFF" stroke="#E11D48" stroke-width="2"/>
+      <line x1="982" y1="170" x2="998" y2="186" stroke="#E11D48" stroke-width="2"/>
+      <line x1="998" y1="170" x2="982" y2="186" stroke="#E11D48" stroke-width="2"/>
+    </g>
+<path d="M 590 309 L 590 355" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(590, 330)">
+    <rect x="-22" y="-9.5" width="44" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[Yes]</text>
+  </g>
+<g filter="url(#shadow-sm)"><polygon points="590,357 664,392 590,427 516,392" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/><text x="590" y="389.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">REQUIRE_QUOTE_</text><text x="590" y="401.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">EMAIL_OTP = on?</text></g>
+<path d="M 664 392 L 1062 392 L 1062 732 L 920 732 L 920 758" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(865, 392)">
+    <rect x="-57.065" y="-9.5" width="114.13" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[false / sandbox]</text>
+  </g>
+<path d="M 590 427 L 590 462" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(590, 443)">
+    <rect x="-45.285" y="-9.5" width="90.57" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[true / auto]</text>
+  </g>
+<g filter="url(#shadow-sm)"><rect x="470" y="464" width="240" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="590" y="487" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Generate crypto.randomInt OTP,</text><text x="590" y="501" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Store 10m TTL &amp; Dispatch Email</text></g>
+<path d="M 710 490 L 765 490" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><polygon points="820,459 874,490 820,521 766,490" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/><text x="820" y="487.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">Mail Sent</text><text x="820" y="499.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">OK?</text></g>
+<path d="M 874 490 L 960 490 L 960 526" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(942, 476)">
+    <rect x="-22" y="-9.5" width="44" height="19" rx="4" fill="#FFF1F2" stroke="#FDA4AF" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#BE123C">[No]</text>
+  </g>
+<g filter="url(#shadow-sm)"><rect x="879" y="528" width="162" height="44" rx="12" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.7"/><text x="960" y="547" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Rollback OTP Slot &amp;</text><text x="960" y="561" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Throw Delivery Error</text></g>
+<path d="M 960 572 L 960 604" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g>
+      <circle cx="960" cy="620" r="12" fill="#FFFFFF" stroke="#E11D48" stroke-width="2"/>
+      <line x1="952" y1="612" x2="968" y2="628" stroke="#E11D48" stroke-width="2"/>
+      <line x1="968" y1="612" x2="952" y2="628" stroke="#E11D48" stroke-width="2"/>
+    </g>
+<path d="M 820 521 L 820 542 L 220 542 L 220 536" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(590, 542)">
+    <rect x="-62.955" y="-9.5" width="125.91" height="19" rx="4" fill="#FFFFFF" stroke="#93C5FD" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#1D4ED8">[Yes: Prompt Buyer]</text>
+  </g>
+<g filter="url(#shadow-sm)"><rect x="445" y="628" width="220" height="44" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="555" y="647" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Verify Code Against Store &amp;</text><text x="555" y="661" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Check Attempts &lt; 5 / Expiry</text></g>
+<path d="M 665 650 L 745 650" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><polygon points="800,619 855,650 800,681 745,650" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/><text x="800" y="647.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">OTP</text><text x="800" y="659.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="700" fill="#0F172A">Valid?</text></g>
+<path d="M 800 619 L 800 594 L 285 594 L 285 584" fill="none" stroke="#D97706" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(640, 594)">
+    <rect x="-101.24" y="-9.5" width="202.48" height="19" rx="4" fill="#FFFFFF" stroke="#FCD34D" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#B45309">[Invalid: +1 attempt / &gt;=5 lock]</text>
+  </g>
+<path d="M 800 681 L 800 715 L 675 715 L 675 758" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(765, 715)">
+    <rect x="-65.9" y="-9.5" width="131.8" height="19" rx="4" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#047857">[Valid: Consume OTP]</text>
+  </g>
+<rect x="455" y="758" width="520" height="7" rx="3" fill="#0F172A"/>
+<text x="455" y="748" class="stereo" fill="#0F172A">«fork» Parallel Execution</text>
+<path d="M 515 765 L 515 796" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 705 765 L 705 796" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 895 765 L 895 796" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="434" y="797" width="162" height="50" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="515" y="819" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">INSERT quotes</text><text x="515" y="833" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(status=&#39;PENDING&#39;)</text></g>
+<g filter="url(#shadow-sm)"><rect x="620" y="797" width="170" height="50" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="705" y="819" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">INSERT audit_log</text><text x="705" y="833" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(quote.create + IP)</text></g>
+<g filter="url(#shadow-sm)"><rect x="812" y="797" width="166" height="50" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="895" y="819" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Dispatch Client Conf.</text><text x="895" y="833" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">&amp; Admin Alert Emails</text></g>
+<path d="M 515 847 L 515 876" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 705 847 L 705 876" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 895 847 L 895 876" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<rect x="455" y="876" width="520" height="7" rx="3" fill="#0F172A"/>
+<text x="455" y="896" class="stereo" fill="#0F172A">«join»</text>
+<path d="M 520 883 L 520 905 L 348 905" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 895 883 L 895 950 L 1120 950 L 1120 245 L 1145 245" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="1144.5" y="219" width="255" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1272" y="242" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Inspect New RFQ in Live Queue</text><text x="1272" y="256" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(/admin/quotes, 15s Poll)</text></g>
+<path d="M 1272 271 L 1272 315" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="1144.5" y="316" width="255" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1272" y="339" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Configure Unit BDT Quote,</text><text x="1272" y="353" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Line Breakdown &amp; Delivery Terms</text></g>
+<path d="M 1272 368 L 1272 415" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="1144.5" y="416" width="255" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1272" y="439" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Update Quote via updateQuoteCore()</text><text x="1272" y="453" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">(PENDING -&gt; QUOTED / COMPLETED)</text></g>
+<path d="M 1272 468 L 1272 515" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g filter="url(#shadow-sm)"><rect x="1144.5" y="516" width="255" height="52" rx="12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.7"/><text x="1272" y="539" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Generate Commercial Report &amp;</text><text x="1272" y="553" text-anchor="middle" class="sans" font-size="11.5" font-weight="600" fill="#0F172A">Open Gmail / Mailto Quote Draft</text></g>
+<path d="M 1272 568 L 1272 620" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g>
+      <circle cx="1272" cy="636" r="14" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.2"/>
+      <circle cx="1272" cy="636" r="8.5" fill="#0F172A"/>
+    </g>
+<text x="1272" y="670" text-anchor="middle" class="lbl-sm">RFQ Pro-Forma Issued</text>
+</svg>

@@ -7,6 +7,7 @@ import type {
   CreateInventoryItemInput,
   UpdateInventoryItemInput,
 } from "./data.server";
+import type { ShopBannerVideoItem } from "./shop-banner-video";
 
 // =============================================================================
 // 1. QUOTES RPC FUNCTIONS
@@ -311,6 +312,27 @@ export const updateSettingsServerFn = createServerFn({ method: "POST" })
     return (await updateSettingsCore(data.settings)) as any;
   });
 
+export const getShopBannerVideoPublicServerFn = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { getShopBannerVideoPublicCore } = await import("./data.server");
+    return await getShopBannerVideoPublicCore();
+  },
+);
+
+export const getShopBannerVideoAdminServerFn = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { getShopBannerVideoAdminCore } = await import("./data.server");
+    return await getShopBannerVideoAdminCore();
+  },
+);
+
+export const saveShopBannerVideoServerFn = createServerFn({ method: "POST" })
+  .validator((data: { activeVideoUrl: string; videos?: ShopBannerVideoItem[] | undefined }) => data)
+  .handler(async ({ data }) => {
+    const { saveShopBannerVideoCore } = await import("./data.server");
+    return await saveShopBannerVideoCore(data);
+  });
+
 // =============================================================================
 // 9. DASHBOARD STATS RPC
 // =============================================================================
@@ -319,3 +341,23 @@ export const getAdminStatsServerFn = createServerFn({ method: "GET" }).handler(a
   const { getAdminStatsCore } = await import("./data.server");
   return (await getAdminStatsCore()) as any;
 });
+
+// =============================================================================
+// 10. ADMIN DATABASE TABLE INSPECTOR RPC
+// =============================================================================
+
+export const getAdminDatabaseOverviewServerFn = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { getAdminDatabaseOverviewCore } = await import("./admin-database.server");
+    return await getAdminDatabaseOverviewCore();
+  },
+);
+
+export const getAdminDatabaseTableRowsServerFn = createServerFn({ method: "GET" })
+  .validator(
+    (data: { tableName: string; limit?: number | undefined; offset?: number | undefined }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { getAdminDatabaseTableRowsCore } = await import("./admin-database.server");
+    return await getAdminDatabaseTableRowsCore(data);
+  });

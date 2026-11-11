@@ -1,8 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useBanners, useSaveBanner, useDeleteBanner, useReorderBanners } from "@/lib/data-client";
+import {
+  useBanners,
+  useSaveBanner,
+  useDeleteBanner,
+  useReorderBanners,
+  useAdminShopBannerVideo,
+  useSaveShopBannerVideo,
+} from "@/lib/data-client";
 import {
   ImageIcon,
+  Film,
   Plus,
   Trash2,
   Edit3,
@@ -23,6 +31,14 @@ import {
 } from "lucide-react";
 import { useState, useRef, useMemo } from "react";
 import { uploadMediaFile, deleteMediaFile } from "@/lib/client-media";
+import {
+  DEFAULT_SHOP_BANNER_VIDEO_URL,
+  PRESET_SHOP_BANNER_VIDEOS,
+  applyActiveShopBannerVideo,
+  isPresetShopBannerVideoUrl,
+  removeShopBannerVideo,
+  sanitizeShopBannerVideoUrl,
+} from "@/lib/shop-banner-video";
 
 export const Route = createFileRoute("/admin/banners")({
   component: AdminBanners,
@@ -88,7 +104,28 @@ function AdminBanners() {
   const saveBannerMutation = useSaveBanner();
   const deleteBannerMutation = useDeleteBanner();
   const reorderBannersMutation = useReorderBanners();
+  const { data: shopVideoConfig } = useAdminShopBannerVideo();
+  const saveShopVideoMutation = useSaveShopBannerVideo();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Shop Page Hero Banner Video State (1 active video at a time)
+  const [shopVideoTab, setShopVideoTab] = useState<"upload" | "url">("upload");
+  const [shopVideoTitleInput, setShopVideoTitleInput] = useState("");
+  const [shopVideoUrlInput, setShopVideoUrlInput] = useState("");
+  const [isUploadingShopVideo, setIsUploadingShopVideo] = useState(false);
+  const [isDraggingShopVideo, setIsDraggingShopVideo] = useState(false);
+  const [shopVideoError, setShopVideoError] = useState<string | null>(null);
+  const shopVideoInputRef = useRef<HTMLInputElement>(null);
+
+  const currentShopVideoConfig = useMemo(
+    () =>
+      shopVideoConfig ?? {
+        activeVideoUrl: DEFAULT_SHOP_BANNER_VIDEO_URL,
+        videos: [],
+      },
+    [shopVideoConfig],
+  );
+  const activeShopVideoUrl = currentShopVideoConfig.activeVideoUrl || DEFAULT_SHOP_BANNER_VIDEO_URL;
 
   const banners = useMemo(() => {
     return rawBanners.map((b: any) => ({
@@ -121,6 +158,7 @@ function AdminBanners() {
   const [formActive, setFormActive] = useState(true);
   const [imageTab, setImageTab] = useState<"upload" | "presets" | "url">("upload");
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -223,29 +261,154 @@ function AdminBanners() {
     showToast("Default banners preserved in database.");
   }
 
+  async function uploadBannerImageFile(file: File) {
+    if (file.size > 20 * 1024 * 1024) {
+      alert("Please select an image smaller than 20MB");
+      return;
+    }
+    try {
+      setIsUploading(true);
+      const res = await uploadMediaFile(file, "banners");
+      if (res.success && res.url) {
+        setFormImage(res.url);
+        if (!formTitle) {
+          setFormTitle(file.name.replace(/\.[^/.]+$/, ""));
+        }
+        showToast("Banner image saved to server storage & PostgreSQL");
+      }
+    } catch (err: any) {
+      console.error("Banner upload error:", err);
+      alert(err.message || "Failed to upload banner image");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
-      if (file.size > 20 * 1024 * 1024) {
-        alert("Please select an image smaller than 20MB");
-        return;
+      await uploadBannerImageFile(file);
+    }
+  }
+
+  function handleBannerDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (isUploading) return;
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      void uploadBannerImageFile(file);
+    }
+  }
+
+  async function uploadShopVideoFile(file: File) {
+    const lowerName = file.name.toLowerCase();
+    const isAllowedVideo =
+      file.type === "video/mp4" ||
+      file.type === "video/webm" ||
+      lowerName.endsWith(".mp4") ||
+      lowerName.endsWith(".webm");
+    if (!isAllowedVideo) {
+      setShopVideoError("Please select a valid MP4 or WebM video file.");
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      setShopVideoError("Video file exceeds maximum allowed size of 100MB.");
+      return;
+    }
+
+    try {
+      setShopVideoError(null);
+      setIsUploadingShopVideo(true);
+      const res = await uploadMediaFile(file, "banners");
+      if (!res.success || !res.url) {
+        throw new Error("Server did not return an uploaded video URL.");
       }
-      try {
-        setIsUploading(true);
-        const res = await uploadMediaFile(file, "banners");
-        if (res.success) {
-          setFormImage(res.url);
-          if (!formTitle) {
-            setFormTitle(file.name.replace(/\.[^/.]+$/, ""));
-          }
-          showToast("Banner image saved to server storage & PostgreSQL");
+
+      const nextTitle =
+        shopVideoTitleInput.trim() || file.name.replace(/\.[^/.]+$/, "") || "Custom Shop Video";
+      const nextConfig = applyActiveShopBannerVideo(currentShopVideoConfig, res.url, nextTitle);
+      await saveShopVideoMutation.mutateAsync(nextConfig);
+      setShopVideoTitleInput("");
+      showToast("Shop banner video uploaded & set live on /shop");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to upload shop banner video.";
+      console.error("Shop video upload error:", err);
+      setShopVideoError(msg);
+    } finally {
+      setIsUploadingShopVideo(false);
+    }
+  }
+
+  function handleShopVideoFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (file) {
+      void uploadShopVideoFile(file);
+    }
+  }
+
+  function handleShopVideoDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingShopVideo(false);
+    if (isUploadingShopVideo) return;
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      void uploadShopVideoFile(file);
+    }
+  }
+
+  async function handleSaveShopVideoUrl(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      setShopVideoError(null);
+      const safeUrl = sanitizeShopBannerVideoUrl(shopVideoUrlInput);
+      const nextConfig = applyActiveShopBannerVideo(
+        currentShopVideoConfig,
+        safeUrl,
+        shopVideoTitleInput.trim() || undefined,
+      );
+      await saveShopVideoMutation.mutateAsync(nextConfig);
+      setShopVideoUrlInput("");
+      setShopVideoTitleInput("");
+      showToast("Shop banner video updated & set live on /shop");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Invalid video URL or path.";
+      setShopVideoError(msg);
+    }
+  }
+
+  async function handleSelectActiveShopVideo(url: string, title?: string) {
+    try {
+      setShopVideoError(null);
+      const nextConfig = applyActiveShopBannerVideo(currentShopVideoConfig, url, title);
+      await saveShopVideoMutation.mutateAsync(nextConfig);
+      showToast("Active shop banner video switched");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to switch shop banner video.";
+      setShopVideoError(msg);
+    }
+  }
+
+  async function handleRemoveCustomShopVideo(videoId: string) {
+    try {
+      setShopVideoError(null);
+      const { nextConfig, removedUrl } = removeShopBannerVideo(currentShopVideoConfig, videoId);
+      await saveShopVideoMutation.mutateAsync(nextConfig);
+      if (removedUrl && removedUrl.startsWith("/uploads/")) {
+        try {
+          await deleteMediaFile({ url: removedUrl });
+        } catch (err) {
+          console.warn("Could not delete shop video media file:", err);
         }
-      } catch (err: any) {
-        console.error("Banner upload error:", err);
-        alert(err.message || "Failed to upload banner image");
-      } finally {
-        setIsUploading(false);
       }
+      showToast("Custom shop video removed");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to remove custom shop video.";
+      setShopVideoError(msg);
     }
   }
 
@@ -329,6 +492,322 @@ function AdminBanners() {
           <div className="bg-[#232323] border border-white/[0.06] rounded-xl p-4">
             <p className="text-xs text-zinc-400">Carousel Cycle</p>
             <p className="text-xl font-bold text-sky-400 mt-1">5s Auto-play</p>
+          </div>
+        </div>
+
+        {/* Shop Page Hero Banner Video (One Active at a Time) */}
+        <div className="bg-[#232323] border border-white/[0.06] rounded-xl p-5 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
+            <div>
+              <div className="flex items-center gap-2">
+                <Film className="h-4 w-4 text-sky-400" />
+                <h2 className="text-sm font-semibold text-white">Shop Page Hero Banner Video</h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                  1 Active Video Shown
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 mt-1">
+                Change the single looping video shown above the product catalog on{" "}
+                <code className="text-zinc-300 font-mono">/shop</code>. Uses the same banner aspect
+                ratio and auto-plays cleanly with no player controls.
+              </p>
+            </div>
+            <a
+              href="/shop"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-zinc-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] text-xs font-medium px-3 py-1.5 rounded-lg border border-white/[0.08] transition-colors shrink-0 self-start sm:self-center"
+            >
+              <Eye className="h-3.5 w-3.5 text-zinc-400" />
+              <span>View /shop Banner</span>
+              <ExternalLink className="h-3 w-3 text-zinc-500" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            {/* Live Preview in exact Shop Banner ratio */}
+            <div className="lg:col-span-6 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-zinc-300">
+                  Live Storefront Banner Ratio Preview
+                </span>
+                <span className="text-[11px] font-mono text-zinc-500">
+                  h-40..h-64 / object-cover
+                </span>
+              </div>
+              <div className="relative w-full rounded-2xl overflow-hidden bg-zinc-950 border border-white/[0.1] shadow-md">
+                <div className="relative w-full h-40 sm:h-48 lg:h-52 max-h-[265px] flex items-center justify-center bg-black overflow-hidden">
+                  <video
+                    key={activeShopVideoUrl}
+                    src={activeShopVideoUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    className="w-full h-full object-cover object-center pointer-events-none"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-3 bg-black/30 border border-white/[0.06] rounded-lg px-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold text-emerald-400">Active on /shop</p>
+                  <p
+                    className="text-[11px] font-mono text-zinc-400 truncate"
+                    title={activeShopVideoUrl}
+                  >
+                    {activeShopVideoUrl}
+                  </p>
+                </div>
+                {activeShopVideoUrl !== DEFAULT_SHOP_BANNER_VIDEO_URL && (
+                  <button
+                    type="button"
+                    disabled={saveShopVideoMutation.isPending}
+                    onClick={() =>
+                      void handleSelectActiveShopVideo(
+                        DEFAULT_SHOP_BANNER_VIDEO_URL,
+                        "Default Shop Banner Video",
+                      )
+                    }
+                    className="text-[11px] text-zinc-300 hover:text-white bg-white/[0.05] hover:bg-white/[0.1] px-2.5 py-1 rounded-md border border-white/[0.08] shrink-0 transition-colors cursor-pointer"
+                  >
+                    Restore Default
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Replace / Upload / URL Controls */}
+            <div className="lg:col-span-6 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-zinc-300">
+                  Upload or Replace Shop Video
+                </label>
+                <div className="flex rounded-lg bg-black/40 p-0.5 border border-white/[0.08]">
+                  <button
+                    type="button"
+                    onClick={() => setShopVideoTab("upload")}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                      shopVideoTab === "upload"
+                        ? "bg-emerald-500 text-white"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                  >
+                    <Upload className="h-3 w-3 inline mr-1" />
+                    Upload Video
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShopVideoTab("url")}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                      shopVideoTab === "url"
+                        ? "bg-emerald-500 text-white"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                  >
+                    <LinkIcon className="h-3 w-3 inline mr-1" />
+                    Video URL / Path
+                  </button>
+                </div>
+              </div>
+
+              <input
+                type="text"
+                value={shopVideoTitleInput}
+                onChange={(e) => setShopVideoTitleInput(e.target.value)}
+                placeholder="Optional label (e.g. Q4 Workshop Highlight Reel)"
+                className="w-full bg-[#141414] border border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 outline-none transition-colors"
+              />
+
+              {shopVideoTab === "upload" ? (
+                <div>
+                  <input
+                    ref={shopVideoInputRef}
+                    type="file"
+                    accept="video/mp4,video/webm"
+                    onChange={handleShopVideoFileChange}
+                    className="hidden"
+                  />
+                  <div
+                    onClick={() => !isUploadingShopVideo && shopVideoInputRef.current?.click()}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!isUploadingShopVideo) setIsDraggingShopVideo(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDraggingShopVideo(false);
+                    }}
+                    onDrop={handleShopVideoDrop}
+                    className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors bg-black/20 ${
+                      isUploadingShopVideo
+                        ? "border-emerald-500/50 bg-emerald-500/[0.04] cursor-wait"
+                        : isDraggingShopVideo
+                          ? "border-emerald-400 bg-emerald-500/[0.08]"
+                          : "border-white/[0.12] hover:border-emerald-500/50 hover:bg-emerald-500/[0.02]"
+                    }`}
+                  >
+                    {isUploadingShopVideo ? (
+                      <div className="space-y-1.5">
+                        <RefreshCw className="h-6 w-6 text-emerald-400 mx-auto animate-spin" />
+                        <p className="text-xs font-semibold text-emerald-300">
+                          Uploading video &amp; updating live shop banner...
+                        </p>
+                        <p className="text-[11px] text-zinc-500">
+                          Saving to persistent disk storage &amp; PostgreSQL
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <Film className="h-6 w-6 text-sky-400 mx-auto mb-1.5" />
+                        <p className="text-xs font-medium text-zinc-200">
+                          Click to upload or drag &amp; drop an MP4 / WebM video
+                        </p>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">
+                          Recommended landscape banner ratio (up to 100MB, auto-sets live on /shop)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSaveShopVideoUrl} className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={shopVideoUrlInput}
+                      onChange={(e) => setShopVideoUrlInput(e.target.value)}
+                      placeholder="/uploads/banners/video.mp4 or https://.../banner.mp4"
+                      className="flex-1 bg-[#141414] border border-white/[0.08] focus:border-emerald-500 rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-zinc-500 outline-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={saveShopVideoMutation.isPending || !shopVideoUrlInput.trim()}
+                      className="px-3.5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                    >
+                      Set Live
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    Paste a direct MP4/WebM URL or relative `/...` video path.
+                  </p>
+                </form>
+              )}
+
+              {shopVideoError && (
+                <div className="rounded-lg bg-red-500/10 border border-red-500/25 px-3 py-2 text-xs text-red-300 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+                  <span>{shopVideoError}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Video Switcher (Strictly 1 Active at a Time) */}
+          <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-zinc-300">
+                Available Shop Videos (select one active video)
+              </p>
+              <span className="text-[11px] text-zinc-500">
+                Only the selected video displays on /shop
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              {currentShopVideoConfig.videos.map((vid) => {
+                const isActive = activeShopVideoUrl === vid.url;
+                return (
+                  <div
+                    key={vid.id}
+                    className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
+                      isActive
+                        ? "border-emerald-500/60 bg-emerald-500/10"
+                        : "border-white/[0.06] bg-[#181818] hover:border-white/[0.14]"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-white truncate">{vid.title}</p>
+                        {isActive && (
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded shrink-0">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-mono text-zinc-500 truncate mt-0.5">
+                        {vid.url}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {!isActive && (
+                        <button
+                          type="button"
+                          disabled={saveShopVideoMutation.isPending}
+                          onClick={() => void handleSelectActiveShopVideo(vid.url, vid.title)}
+                          className="text-[11px] font-medium px-2.5 py-1 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 transition-colors cursor-pointer"
+                        >
+                          Use Video
+                        </button>
+                      )}
+                      {!isPresetShopBannerVideoUrl(vid.url) && (
+                        <button
+                          type="button"
+                          disabled={saveShopVideoMutation.isPending}
+                          onClick={() => void handleRemoveCustomShopVideo(vid.id)}
+                          title="Remove custom video"
+                          className="p-1.5 rounded-md hover:bg-red-500/15 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {PRESET_SHOP_BANNER_VIDEOS.map((preset) => {
+                const isActive = activeShopVideoUrl === preset.url;
+                return (
+                  <div
+                    key={preset.id}
+                    className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-colors ${
+                      isActive
+                        ? "border-emerald-500/60 bg-emerald-500/10"
+                        : "border-white/[0.06] bg-[#181818] hover:border-white/[0.14]"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-white truncate">{preset.title}</p>
+                        <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.06] px-1.5 py-0.5 rounded shrink-0">
+                          Preset
+                        </span>
+                        {isActive && (
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded shrink-0">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-zinc-500 truncate mt-0.5">{preset.subtitle}</p>
+                    </div>
+                    {!isActive && (
+                      <button
+                        type="button"
+                        disabled={saveShopVideoMutation.isPending}
+                        onClick={() => void handleSelectActiveShopVideo(preset.url, preset.title)}
+                        className="text-[11px] font-medium px-2.5 py-1 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 transition-colors shrink-0 cursor-pointer"
+                      >
+                        Use Video
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -715,16 +1194,29 @@ function AdminBanners() {
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                          accept="image/png,image/jpeg,image/webp,image/gif"
                           onChange={handleImageUpload}
                           className="hidden"
                         />
                         <div
                           onClick={() => !isUploading && fileInputRef.current?.click()}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!isUploading) setIsDragging(true);
+                          }}
+                          onDragLeave={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsDragging(false);
+                          }}
+                          onDrop={handleBannerDrop}
                           className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors bg-black/20 ${
                             isUploading
                               ? "border-emerald-500/50 bg-emerald-500/[0.04] cursor-wait"
-                              : "border-white/[0.12] hover:border-emerald-500/50 hover:bg-emerald-500/[0.02]"
+                              : isDragging
+                                ? "border-emerald-400 bg-emerald-500/[0.08]"
+                                : "border-white/[0.12] hover:border-emerald-500/50 hover:bg-emerald-500/[0.02]"
                           }`}
                         >
                           {isUploading ? (

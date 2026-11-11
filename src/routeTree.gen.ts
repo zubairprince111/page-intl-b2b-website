@@ -15,6 +15,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ConsultationRouteImport } from './routes/consultation'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ServiceCentersRouteImport } from './routes/service-centers'
@@ -27,6 +28,7 @@ import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminBannersRouteImport } from './routes/admin/banners'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as AdminDatabaseRouteImport } from './routes/admin/database'
 import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
@@ -66,6 +68,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const ConsultationRoute = ConsultationRouteImport.update({
   id: '/consultation',
   path: '/consultation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -128,6 +135,11 @@ const AdminBookingsRoute = AdminBookingsRouteImport.update({
   path: '/admin/bookings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDatabaseRoute = AdminDatabaseRouteImport.update({
+  id: '/admin/database',
+  path: '/admin/database',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminInventoryRoute = AdminInventoryRouteImport.update({
   id: '/admin/inventory',
   path: '/admin/inventory',
@@ -186,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
+  '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/service-centers': typeof ServiceCentersRoute
@@ -197,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/warranty': typeof WarrantyRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/database': typeof AdminDatabaseRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
@@ -216,6 +230,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
+  '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/service-centers': typeof ServiceCentersRoute
@@ -227,6 +242,7 @@ export interface FileRoutesByTo {
   '/warranty': typeof WarrantyRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/database': typeof AdminDatabaseRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
@@ -247,6 +263,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
+  '/docs': typeof DocsRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/service-centers': typeof ServiceCentersRoute
@@ -258,6 +275,7 @@ export interface FileRoutesById {
   '/warranty': typeof WarrantyRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/database': typeof AdminDatabaseRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/media': typeof AdminMediaRoute
@@ -279,6 +297,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/consultation'
+    | '/docs'
     | '/login'
     | '/privacy'
     | '/service-centers'
@@ -290,6 +309,7 @@ export interface FileRouteTypes {
     | '/warranty'
     | '/admin/banners'
     | '/admin/bookings'
+    | '/admin/database'
     | '/admin/inventory'
     | '/admin/login'
     | '/admin/media'
@@ -309,6 +329,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/consultation'
+    | '/docs'
     | '/login'
     | '/privacy'
     | '/service-centers'
@@ -320,6 +341,7 @@ export interface FileRouteTypes {
     | '/warranty'
     | '/admin/banners'
     | '/admin/bookings'
+    | '/admin/database'
     | '/admin/inventory'
     | '/admin/login'
     | '/admin/media'
@@ -339,6 +361,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/consultation'
+    | '/docs'
     | '/login'
     | '/privacy'
     | '/service-centers'
@@ -350,6 +373,7 @@ export interface FileRouteTypes {
     | '/warranty'
     | '/admin/banners'
     | '/admin/bookings'
+    | '/admin/database'
     | '/admin/inventory'
     | '/admin/login'
     | '/admin/media'
@@ -370,6 +394,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ConsultationRoute: typeof ConsultationRoute
+  DocsRoute: typeof DocsRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   ServiceCentersRoute: typeof ServiceCentersRoute
@@ -381,6 +406,7 @@ export interface RootRouteChildren {
   WarrantyRoute: typeof WarrantyRoute
   AdminBannersRoute: typeof AdminBannersRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminDatabaseRoute: typeof AdminDatabaseRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMediaRoute: typeof AdminMediaRoute
@@ -436,6 +462,13 @@ declare module '@tanstack/react-router' {
       path: '/consultation'
       fullPath: '/consultation'
       preLoaderRoute: typeof ConsultationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -522,6 +555,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/database': {
+      id: '/admin/database'
+      path: '/admin/database'
+      fullPath: '/admin/database'
+      preLoaderRoute: typeof AdminDatabaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/inventory': {
       id: '/admin/inventory'
       path: '/admin/inventory'
@@ -602,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ConsultationRoute: ConsultationRoute,
+  DocsRoute: DocsRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   ServiceCentersRoute: ServiceCentersRoute,
@@ -613,6 +654,7 @@ const rootRouteChildren: RootRouteChildren = {
   WarrantyRoute: WarrantyRoute,
   AdminBannersRoute: AdminBannersRoute,
   AdminBookingsRoute: AdminBookingsRoute,
+  AdminDatabaseRoute: AdminDatabaseRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMediaRoute: AdminMediaRoute,

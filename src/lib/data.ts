@@ -23,6 +23,7 @@ import {
   getDefaultProductPresentation,
   getDistinctProductFeatures,
   inferIsEquipment,
+  normalizeStorefrontPriceLabel,
   resolveOrderedSpecs,
   sanitizeGuaranteeBadges,
   sanitizeHighlightTuples,
@@ -1388,15 +1389,57 @@ export const taka = (n: number) => "৳" + n.toLocaleString("en-IN");
  */
 const validMobilitySet = new Set<MobilityType>(["4-Wheeler", "2-Wheeler", "3-Wheeler", "EV"]);
 
+const STATIC_ASSET_BY_BASENAME: Record<string, string> = {
+  "p-brakepads.jpg": brakepads,
+  "p-battery.jpg": battery,
+  "p-oil.jpg": oil,
+  "p-scanner.jpg": scanner,
+  "brakes.jpg": brakes,
+  "engine.jpg": engine,
+  "workshop.jpg": workshop,
+  "hero-car.jpg": heroCar,
+  "hero-workshop.jpg": heroWorkshop,
+  "p-lift.jpg": lift,
+  "p-tyre-changer.jpg": tyreChanger,
+  "p-wheel-balancer.jpg": wheelBalancer,
+  "p-compressor.jpg": compressor,
+  "p-ev-tools.jpg": evTools,
+  "p-ev-battery-analyzer.jpg": evBatteryAnalyzer,
+  "p-moto-lift.jpg": motoLift,
+  "ev-workshop-bay.jpg": evWorkshopBay,
+  "commercial-3w-hub.jpg": commercial3wHub,
+  "support-hero.jpg": supportHero,
+  "solutions-hero.jpg": solutionsHero,
+};
+
+/**
+ * Normalizes seeded `/src/assets/<file>` paths to Vite's active runtime URL
+ * (`/assets/<file>-<hash>.<ext>` in production Nitro builds, `/src/assets/...` in dev).
+ */
+export function normalizeProductAssetUrl(src: string): string {
+  const trimmed = src.trim();
+  if (!trimmed.startsWith("/src/assets/")) {
+    return trimmed;
+  }
+  const basename = trimmed.slice("/src/assets/".length).split(/[?#]/)[0] || "";
+  return STATIC_ASSET_BY_BASENAME[basename] || trimmed;
+}
+
 export function mapDbProductToProduct(row: ProductLikeRow): Product {
   const fallback = products.find((p) => p.slug === row.slug);
   const resolvedImages =
     Array.isArray(row.images) && row.images.length > 0
-      ? row.images.filter((src): src is string => typeof src === "string" && src.trim().length > 0)
-      : fallback
-        ? [fallback.image]
-        : [lift];
-  const primaryImage = resolvedImages[0] || row.image || fallback?.image || lift;
+        ? row.images
+          .filter((src): src is string => typeof src === "string" && src.trim().length > 0)
+          .map(normalizeProductAssetUrl)
+        : fallback
+          ? [fallback.image]
+          : [lift];
+  const primaryImage =
+    resolvedImages[0] ||
+    (row.image ? normalizeProductAssetUrl(row.image) : undefined) ||
+    fallback?.image ||
+    lift;
 
   const resolvedMobility: MobilityType[] =
     Array.isArray(row.mobility) && row.mobility.length > 0
@@ -1465,12 +1508,13 @@ export function mapDbProductToProduct(row: ProductLikeRow): Product {
         ? fallback.dispatchHub
         : defaults.dispatchHub;
 
-  const resolvedPriceLabel =
+  const rawPriceLabel =
     row.priceLabel !== undefined && row.priceLabel !== null
       ? row.priceLabel.trim()
       : fallback?.priceLabel !== undefined
         ? fallback.priceLabel
         : defaults.priceLabel;
+  const resolvedPriceLabel = normalizeStorefrontPriceLabel(rawPriceLabel);
 
   return {
     slug: row.slug,

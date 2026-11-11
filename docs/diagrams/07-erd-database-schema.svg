@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1790 1280" width="1790" height="1280" role="img" aria-label="Figure 7 — Entity-Relationship Diagram (Crow&#39;s Foot Notation): All 16 Drizzle PostgreSQL Tables">
+  <defs>
+    <style>
+      .sans { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; }
+      .title { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 22px; font-weight: 800; fill: #0F172A; letter-spacing: -0.02em; }
+      .subtitle { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12.5px; font-weight: 500; fill: #475569; }
+      .stereo { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #475569; }
+      .lbl { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #0F172A; }
+      .lbl-sm { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; fill: #334155; }
+      .edge-lbl { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #334155; }
+    </style>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <!-- Filled Solid Arrowhead (Synchronous, Control Flow, Association Navigation) -->
+    <marker id="arrow-filled" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrow-filled-red" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#E11D48"/>
+    </marker>
+    <marker id="arrow-filled-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-filled-emerald" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#059669"/>
+    </marker>
+    <!-- Open V-Arrowhead (UML Dependency, Include/Extend, Async Message, Return) -->
+    <marker id="arrow-open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#1E293B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#2563EB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-purple" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#7C3AED" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <!-- Hollow Triangle Arrowhead (UML Generalization / Realization) -->
+    <marker id="arrow-inherit" viewBox="0 0 14 14" refX="12.5" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 12.5 7 L 1 12.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <!-- Filled Diamond (UML Composition) -->
+    <marker id="diamond-comp" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#1E293B" stroke="#1E293B" stroke-width="1.2"/>
+    </marker>
+    <!-- Hollow Diamond (UML Aggregation) -->
+    <marker id="diamond-agg" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.4"/>
+    </marker>
+    <!-- Crow's Foot Markers (ERD) -->
+    <marker id="erd-one" viewBox="0 0 14 14" refX="12" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <line x1="7" y1="2" x2="7" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+      <line x1="11" y1="2" x2="11" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-zero-one" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <circle cx="5.5" cy="7" r="3.5" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="12" y1="2" x2="12" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-many" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 16 2 L 7 7 L 16 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="5" y1="2" x2="5" y2="12" stroke="#1E293B" stroke-width="1.6"/>
+    </marker>
+    <marker id="erd-zero-many" viewBox="0 0 20 14" refX="18" refY="7" markerWidth="13" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 18 2 L 9.5 7 L 18 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <circle cx="4.5" cy="7" r="3.2" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+    </marker>
+    
+  </defs>
+
+  <!-- Solid White Backdrop for Light & Dark Markdown Readers -->
+  <rect x="0" y="0" width="1790" height="1280" fill="#FFFFFF" rx="12"/>
+  <rect x="1" y="1" width="1788" height="1278" fill="none" stroke="#E2E8F0" stroke-width="1.5" rx="11"/>
+
+  <!-- Header Banner -->
+  <rect x="0" y="0" width="1790" height="74" fill="#F8FAFC" rx="12"/>
+  <rect x="0" y="60" width="1790" height="14" fill="#F8FAFC"/>
+  <line x1="0" y1="74" x2="1790" y2="74" stroke="#E2E8F0" stroke-width="1.2"/>
+  <rect x="24" y="18" width="5" height="38" fill="#E11D48" rx="2.5"/>
+  <text x="40" y="38" class="title">Figure 7 — Entity-Relationship Diagram (Crow&#39;s Foot Notation): All 16 Drizzle PostgreSQL Tables</text>
+  <text x="40" y="57" class="subtitle">Complete Normalized Relational &amp; JSONB Schema (src/db/schema.ts) with PK/FK/UK Constraints, Referential Actions &amp; Crow&#39;s Foot Cardinalities</text>
+  <text x="1766" y="42" text-anchor="end" class="stereo">PAGE International Ltd. · IEEE/UML 2.5</text>
+
+  <path d="M 82 200 L 54 200 L 54 395 L 82 395" fill="none" stroke="#059669" stroke-width="1.6" marker-start="url(#erd-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 82 214 L 40 214 L 40 555 L 82 555" fill="none" stroke="#059669" stroke-width="1.6" marker-start="url(#erd-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 82 228 L 26 228 L 26 715 L 82 715" fill="none" stroke="#059669" stroke-width="1.6" marker-start="url(#erd-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 82 242 L 14 242 L 14 918 L 82 918" fill="none" stroke="#7C3AED" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 82 256 L 66 256 L 66 1070 L 82 1070" fill="none" stroke="#475569" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 382 165 L 485 165" fill="none" stroke="#E11D48" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 382 185 L 434 185 L 434 430 L 485 430" fill="none" stroke="#E11D48" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 382 205 L 420 205 L 420 710 L 485 710" fill="none" stroke="#E11D48" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 657 822 L 657 940" fill="none" stroke="#E11D48" stroke-width="1.6" marker-start="url(#erd-one)" marker-end="url(#erd-many)"/>
+<path d="M 955 265 L 895 265 L 895 1010 L 830 1010" fill="none" stroke="#2563EB" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 382 250 L 875 250 L 875 510 L 955 510" fill="none" stroke="#2563EB" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<path d="M 875 510 L 875 765 L 955 765" fill="none" stroke="#7C3AED" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<rect x="82" y="110" width="300" height="167" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="82" y="110" width="300" height="27" rx="6" fill="#D1FAE5"/>
+<rect x="82" y="131" width="300" height="6" fill="#D1FAE5"/>
+<line x1="82" y1="137" x2="382" y2="137" stroke="#059669" stroke-width="1.2"/>
+<text x="92" y="128" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">1. users</text>
+<rect x="89" y="142" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="100" y="152" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="116" y="152" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="374" y="152" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="89" y="158.5" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="100" y="168.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="116" y="168.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">email</text>
+<text x="374" y="168.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text NOT NULL</text>
+<text x="116" y="185" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">name, phone</text>
+<text x="374" y="185" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="116" y="201.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">password_hash</text>
+<text x="374" y="201.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text (bcrypt 12)</text>
+<text x="116" y="218" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">company_name, city</text>
+<text x="374" y="218" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="116" y="234.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">role</text>
+<text x="374" y="234.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">&#39;admin&#39;|&#39;customer&#39;</text>
+<text x="116" y="251" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">email_verified, is_active</text>
+<text x="374" y="251" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">boolean</text>
+<text x="116" y="267.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">last_login, created_at</text>
+<text x="374" y="267.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">timestamptz</text>
+<rect x="82" y="345" width="300" height="101" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="82" y="345" width="300" height="27" rx="6" fill="#D1FAE5"/>
+<rect x="82" y="366" width="300" height="6" fill="#D1FAE5"/>
+<line x1="82" y1="372" x2="382" y2="372" stroke="#059669" stroke-width="1.2"/>
+<text x="92" y="363" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">2. sessions</text>
+<rect x="89" y="377" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="100" y="387" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="116" y="387" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="374" y="387" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="89" y="393.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="100" y="403.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="116" y="403.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">user_id -&gt; users.id</text>
+<text x="374" y="403.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">CASCADE</text>
+<rect x="89" y="410" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="100" y="420" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="116" y="420" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">token</text>
+<text x="374" y="420" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text NOT NULL</text>
+<text x="116" y="436.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">expires_at, created_at</text>
+<text x="374" y="436.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">timestamptz</text>
+<rect x="82" y="505" width="300" height="101" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="82" y="505" width="300" height="27" rx="6" fill="#D1FAE5"/>
+<rect x="82" y="526" width="300" height="6" fill="#D1FAE5"/>
+<line x1="82" y1="532" x2="382" y2="532" stroke="#059669" stroke-width="1.2"/>
+<text x="92" y="523" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">3. password_reset_tokens</text>
+<rect x="89" y="537" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="100" y="547" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="116" y="547" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="374" y="547" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="89" y="553.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="100" y="563.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="116" y="563.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">user_id -&gt; users.id</text>
+<text x="374" y="563.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">CASCADE</text>
+<rect x="89" y="570" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="100" y="580" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="116" y="580" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">token_hash</text>
+<text x="374" y="580" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text (SHA-256)</text>
+<text x="116" y="596.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">expires_at, used_at</text>
+<text x="374" y="596.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">timestamptz</text>
+<rect x="82" y="665" width="300" height="101" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="82" y="665" width="300" height="27" rx="6" fill="#D1FAE5"/>
+<rect x="82" y="686" width="300" height="6" fill="#D1FAE5"/>
+<line x1="82" y1="692" x2="382" y2="692" stroke="#059669" stroke-width="1.2"/>
+<text x="92" y="683" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">4. email_verification_tokens</text>
+<rect x="89" y="697" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="100" y="707" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="116" y="707" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="374" y="707" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="89" y="713.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="100" y="723.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="116" y="723.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">user_id -&gt; users.id</text>
+<text x="374" y="723.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">CASCADE</text>
+<rect x="89" y="730" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="100" y="740" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="116" y="740" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">token_hash</text>
+<text x="374" y="740" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text (SHA-256)</text>
+<text x="116" y="756.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">expires_at, used_at</text>
+<text x="374" y="756.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">timestamptz</text>
+<rect x="82" y="840" width="300" height="117.5" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="82" y="840" width="300" height="27" rx="6" fill="#EDE9FE"/>
+<rect x="82" y="861" width="300" height="6" fill="#EDE9FE"/>
+<line x1="82" y1="867" x2="382" y2="867" stroke="#7C3AED" stroke-width="1.2"/>
+<text x="92" y="858" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">5. settings</text>
+<rect x="89" y="872" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="100" y="882" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="116" y="882" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">key</text>
+<text x="374" y="882" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text (e.g. shop_banner_video)</text>
+<text x="116" y="898.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">value</text>
+<text x="374" y="898.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">jsonb NOT NULL</text>
+<text x="116" y="915" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">description</text>
+<text x="374" y="915" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="89" y="921.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="100" y="931.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="116" y="931.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">updated_by -&gt; users.id</text>
+<text x="374" y="931.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<text x="116" y="948" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">updated_at</text>
+<text x="374" y="948" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">timestamptz</text>
+<rect x="82" y="1020" width="300" height="134" rx="6" fill="#FFFFFF" stroke="#475569" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="82" y="1020" width="300" height="27" rx="6" fill="#F1F5F9"/>
+<rect x="82" y="1041" width="300" height="6" fill="#F1F5F9"/>
+<line x1="82" y1="1047" x2="382" y2="1047" stroke="#475569" stroke-width="1.2"/>
+<text x="92" y="1038" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">6. audit_log</text>
+<rect x="89" y="1052" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="100" y="1062" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="116" y="1062" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="374" y="1062" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="89" y="1068.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="100" y="1078.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="116" y="1078.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">actor_id -&gt; users.id</text>
+<text x="374" y="1078.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<text x="116" y="1095" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">actor_email, action</text>
+<text x="374" y="1095" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="116" y="1111.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">entity_type, entity_id</text>
+<text x="374" y="1111.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="116" y="1128" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">metadata</text>
+<text x="374" y="1128" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">jsonb</text>
+<text x="116" y="1144.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">ip_address, created_at</text>
+<text x="374" y="1144.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / timestamptz</text>
+<rect x="485" y="110" width="345" height="183.5" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="485" y="110" width="345" height="27" rx="6" fill="#FFE4E6"/>
+<rect x="485" y="131" width="345" height="6" fill="#FFE4E6"/>
+<line x1="485" y1="137" x2="830" y2="137" stroke="#E11D48" stroke-width="1.2"/>
+<text x="495" y="128" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">7. quotes (RFQ)</text>
+<rect x="492" y="142" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="503" y="152" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="519" y="152" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="822" y="152" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="168.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">quote_number</text>
+<text x="822" y="168.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="492" y="175" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="503" y="185" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="519" y="185" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">user_id -&gt; users.id</text>
+<text x="822" y="185" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<text x="519" y="201.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">company_name, contact_name</text>
+<text x="822" y="201.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="218" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">phone, email, city</text>
+<text x="822" y="218" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="234.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">product_slug, product_name, qty</text>
+<text x="822" y="234.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / int</text>
+<text x="519" y="251" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">status</text>
+<text x="822" y="251" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">PENDING|QUOTED|...</text>
+<text x="519" y="267.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">reply, quoted_price</text>
+<text x="822" y="267.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / int</text>
+<text x="519" y="284" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">items_json</text>
+<text x="822" y="284" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">jsonb[]</text>
+<rect x="485" y="375" width="345" height="183.5" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="485" y="375" width="345" height="27" rx="6" fill="#FFE4E6"/>
+<rect x="485" y="396" width="345" height="6" fill="#FFE4E6"/>
+<line x1="485" y1="402" x2="830" y2="402" stroke="#E11D48" stroke-width="1.2"/>
+<text x="495" y="393" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">8. bookings</text>
+<rect x="492" y="407" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="503" y="417" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="519" y="417" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="822" y="417" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="433.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">booking_number</text>
+<text x="822" y="433.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="492" y="440" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="503" y="450" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="519" y="450" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">user_id -&gt; users.id</text>
+<text x="822" y="450" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<text x="519" y="466.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">company_name, contact_name</text>
+<text x="822" y="466.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="483" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">phone, email, city</text>
+<text x="822" y="483" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="499.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">service_type</text>
+<text x="822" y="499.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="516" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">booking_date, time_slot</text>
+<text x="822" y="516" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="532.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">center_id, center_name</text>
+<text x="822" y="532.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="549" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">status, admin_notes</text>
+<text x="822" y="549" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="485" y="655" width="345" height="167" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="485" y="655" width="345" height="27" rx="6" fill="#FFE4E6"/>
+<rect x="485" y="676" width="345" height="6" fill="#FFE4E6"/>
+<line x1="485" y1="682" x2="830" y2="682" stroke="#E11D48" stroke-width="1.2"/>
+<text x="495" y="673" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">9. orders</text>
+<rect x="492" y="687" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="503" y="697" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="519" y="697" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="822" y="697" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="492" y="703.5" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="503" y="713.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="519" y="713.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">order_number</text>
+<text x="822" y="713.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text NOT NULL</text>
+<rect x="492" y="720" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="503" y="730" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="519" y="730" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">user_id -&gt; users.id</text>
+<text x="822" y="730" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<text x="519" y="746.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">customer_name, email, phone</text>
+<text x="822" y="746.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="763" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">shipping_address, city</text>
+<text x="822" y="763" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="779.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">subtotal, shipping_fee, total</text>
+<text x="822" y="779.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">integer (BDT)</text>
+<text x="519" y="796" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">status, payment_method</text>
+<text x="822" y="796" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="812.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">payment_status, metadata</text>
+<text x="822" y="812.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / jsonb</text>
+<rect x="485" y="940" width="345" height="117.5" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="485" y="940" width="345" height="27" rx="6" fill="#FFE4E6"/>
+<rect x="485" y="961" width="345" height="6" fill="#FFE4E6"/>
+<line x1="485" y1="967" x2="830" y2="967" stroke="#E11D48" stroke-width="1.2"/>
+<text x="495" y="958" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">10. order_items</text>
+<rect x="492" y="972" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="503" y="982" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="519" y="982" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="822" y="982" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="492" y="988.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="503" y="998.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="519" y="998.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">order_id -&gt; orders.id</text>
+<text x="822" y="998.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">CASCADE</text>
+<rect x="492" y="1005" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="503" y="1015" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="519" y="1015" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">product_id -&gt; products.id</text>
+<text x="822" y="1015" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<text x="519" y="1031.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">product_slug, product_name</text>
+<text x="822" y="1031.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="519" y="1048" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">unit_price, quantity, subtotal</text>
+<text x="822" y="1048" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">integer</text>
+<rect x="955" y="110" width="380" height="233" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="955" y="110" width="380" height="27" rx="6" fill="#DBEAFE"/>
+<rect x="955" y="131" width="380" height="6" fill="#DBEAFE"/>
+<line x1="955" y1="137" x2="1335" y2="137" stroke="#2563EB" stroke-width="1.2"/>
+<text x="965" y="128" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">11. products</text>
+<rect x="962" y="142" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="973" y="152" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="989" y="152" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="1327" y="152" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="962" y="158.5" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="973" y="168.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="989" y="168.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">slug</text>
+<text x="1327" y="168.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text NOT NULL</text>
+<text x="989" y="185" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">sku, name, brand</text>
+<text x="1327" y="185" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="989" y="201.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">category, subcategory</text>
+<text x="1327" y="201.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="989" y="218" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">mobility</text>
+<text x="1327" y="218" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">jsonb (string[])</text>
+<text x="989" y="234.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">is_equipment, requires_quote</text>
+<text x="1327" y="234.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">boolean</text>
+<text x="989" y="251" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">price_bdt {server}, warehouse_qty</text>
+<text x="1327" y="251" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">integer</text>
+<text x="989" y="267.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">in_stock, reorder_level</text>
+<text x="1327" y="267.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">boolean / int</text>
+<text x="989" y="284" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">specs, highlights</text>
+<text x="1327" y="284" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">jsonb tuples</text>
+<text x="989" y="300.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">variant_options, guarantees</text>
+<text x="1327" y="300.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">jsonb objects</text>
+<text x="989" y="317" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">dispatch_hub, price_label</text>
+<text x="1327" y="317" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="989" y="333.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">features, images, fits</text>
+<text x="1327" y="333.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">jsonb (string[])</text>
+<rect x="955" y="455" width="380" height="117.5" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="955" y="455" width="380" height="27" rx="6" fill="#DBEAFE"/>
+<rect x="955" y="476" width="380" height="6" fill="#DBEAFE"/>
+<line x1="955" y1="482" x2="1335" y2="482" stroke="#2563EB" stroke-width="1.2"/>
+<text x="965" y="473" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">12. reviews</text>
+<rect x="962" y="487" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="973" y="497" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="989" y="497" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="1327" y="497" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="962" y="503.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="973" y="513.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="989" y="513.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">user_id -&gt; users.id</text>
+<text x="1327" y="513.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<text x="989" y="530" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">name, role, workshop</text>
+<text x="1327" y="530" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="989" y="546.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">equipment, comment</text>
+<text x="1327" y="546.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="989" y="563" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">rating, is_published</text>
+<text x="1327" y="563" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">int / boolean</text>
+<rect x="955" y="660" width="380" height="134" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="955" y="660" width="380" height="27" rx="6" fill="#EDE9FE"/>
+<rect x="955" y="681" width="380" height="6" fill="#EDE9FE"/>
+<line x1="955" y1="687" x2="1335" y2="687" stroke="#7C3AED" stroke-width="1.2"/>
+<text x="965" y="678" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">13. updates</text>
+<rect x="962" y="692" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="973" y="702" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="989" y="702" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="1327" y="702" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<rect x="962" y="708.5" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="973" y="718.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="989" y="718.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">slug</text>
+<text x="1327" y="718.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text NOT NULL</text>
+<text x="989" y="735" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">title, content, excerpt</text>
+<text x="1327" y="735" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="989" y="751.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">cover_image, category</text>
+<text x="1327" y="751.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="989" y="768" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">is_published, published_at</text>
+<text x="1327" y="768" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">boolean / timestamptz</text>
+<rect x="962" y="774.5" width="22" height="13" rx="3" fill="#DBEAFE"/>
+<text x="973" y="784.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#1D4ED8">FK</text>
+<text x="989" y="784.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">author_id -&gt; users.id</text>
+<text x="1327" y="784.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">SET NULL</text>
+<rect x="1415" y="110" width="335" height="117.5" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="1415" y="110" width="335" height="27" rx="6" fill="#EDE9FE"/>
+<rect x="1415" y="131" width="335" height="6" fill="#EDE9FE"/>
+<line x1="1415" y1="137" x2="1750" y2="137" stroke="#7C3AED" stroke-width="1.2"/>
+<text x="1425" y="128" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">14. banners</text>
+<rect x="1422" y="142" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="1433" y="152" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="1449" y="152" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="1742" y="152" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="168.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">title, subtitle</text>
+<text x="1742" y="168.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="185" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">image_url, badge, link</text>
+<text x="1742" y="185" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="201.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">category, sort_order</text>
+<text x="1742" y="201.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / int</text>
+<text x="1449" y="218" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">is_active, updated_at</text>
+<text x="1742" y="218" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">boolean / timestamptz</text>
+<rect x="1415" y="345" width="335" height="117.5" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="1415" y="345" width="335" height="27" rx="6" fill="#EDE9FE"/>
+<rect x="1415" y="366" width="335" height="6" fill="#EDE9FE"/>
+<line x1="1415" y1="372" x2="1750" y2="372" stroke="#7C3AED" stroke-width="1.2"/>
+<text x="1425" y="363" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">15. media</text>
+<rect x="1422" y="377" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="1433" y="387" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="1449" y="387" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="1742" y="387" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="403.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">filename, original_name</text>
+<text x="1742" y="403.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="420" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">mime_type, size_bytes</text>
+<text x="1742" y="420" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / int</text>
+<rect x="1422" y="426.5" width="22" height="13" rx="3" fill="#EDE9FE"/>
+<text x="1433" y="436.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#6D28D9">UK</text>
+<text x="1449" y="436.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">url (/uploads/...)</text>
+<text x="1742" y="436.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text NOT NULL</text>
+<text x="1449" y="453" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">category, created_at</text>
+<text x="1742" y="453" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / timestamptz</text>
+<rect x="1415" y="580" width="335" height="117.5" rx="6" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6" filter="url(#shadow-sm)"/>
+<rect x="1415" y="580" width="335" height="27" rx="6" fill="#FFFBEB"/>
+<rect x="1415" y="601" width="335" height="6" fill="#FFFBEB"/>
+<line x1="1415" y1="607" x2="1750" y2="607" stroke="#D97706" stroke-width="1.2"/>
+<text x="1425" y="598" class="mono" font-size="11.5" font-weight="800" fill="#0F172A">16. email_log</text>
+<rect x="1422" y="612" width="22" height="13" rx="3" fill="#FEF3C7"/>
+<text x="1433" y="622" text-anchor="middle" class="mono" font-size="8.5" font-weight="800" fill="#B45309">PK</text>
+<text x="1449" y="622" class="mono" font-size="10.2" font-weight="700" fill="#0F172A">id</text>
+<text x="1742" y="622" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="638.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">recipient, subject</text>
+<text x="1742" y="638.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="655" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">template</text>
+<text x="1742" y="655" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="671.5" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">status (QUEUED|SENT|FAILED)</text>
+<text x="1742" y="671.5" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text</text>
+<text x="1449" y="688" class="mono" font-size="10.2" font-weight="500" fill="#0F172A">error, sent_at, created_at</text>
+<text x="1742" y="688" text-anchor="end" class="mono" font-size="9.5" fill="#64748B">text / timestamptz</text>
+<rect x="1415" y="810" width="335" height="285" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>
+<text x="1435" y="838" class="lbl" font-size="13">Crow's Foot ERD Notation Legend</text>
+<line x1="1435" y1="850" x2="1730" y2="850" stroke="#CBD5E1"/>
+<path d="M 1440 878 L 1510 878" fill="none" stroke="#334155" stroke-width="1.6" marker-start="url(#erd-one)" marker-end="url(#erd-many)"/>
+<text x="1525" y="882" class="lbl-sm">Mandatory One-to-Many (1 : 1..*)</text>
+<path d="M 1440 912 L 1510 912" fill="none" stroke="#334155" stroke-width="1.6" marker-start="url(#erd-zero-one)" marker-end="url(#erd-zero-many)"/>
+<text x="1525" y="916" class="lbl-sm">Optional Zero/One-to-Many (0..1 : 0..*)</text>
+<rect x="1440" y="938" width="26" height="15" rx="3" fill="#FEF3C7"/><text x="1453" y="949" text-anchor="middle" class="mono" font-size="9" font-weight="800" fill="#B45309">PK</text><text x="1477" y="949" class="lbl-sm">Primary Key</text>
+<rect x="1440" y="964" width="26" height="15" rx="3" fill="#DBEAFE"/><text x="1453" y="975" text-anchor="middle" class="mono" font-size="9" font-weight="800" fill="#1D4ED8">FK</text><text x="1477" y="975" class="lbl-sm">Foreign Key (Cascade / Set Null)</text>
+<rect x="1440" y="990" width="26" height="15" rx="3" fill="#EDE9FE"/><text x="1453" y="1001" text-anchor="middle" class="mono" font-size="9" font-weight="800" fill="#6D28D9">UK</text><text x="1477" y="1001" class="lbl-sm">Unique Indexed Column</text>
+<text x="1440" y="1032" class="mono" font-size="10" fill="#475569">Engines supported by src/db/index.ts:</text>
+<text x="1440" y="1050" class="lbl-sm">• Production: PostgreSQL 16 (postgres.js)</text>
+<text x="1440" y="1068" class="lbl-sm">• Local Dev/Test: Embedded PGlite (.data/postgres)</text>
+</svg>

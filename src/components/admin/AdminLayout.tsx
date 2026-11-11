@@ -18,6 +18,7 @@ import {
   Image as ImageIcon,
   FolderOpen,
   Newspaper,
+  Database,
 } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/lib/auth-client";
 import { useAdminStats } from "@/lib/data-client";
@@ -31,6 +32,7 @@ const navItems = [
   { to: "/admin/users", icon: Users, label: "Users" },
   { to: "/admin/quotes", icon: FileText, label: "Quotations", badgeKey: "quotes" as const },
   { to: "/admin/bookings", icon: CalendarCheck, label: "Bookings", badgeKey: "bookings" as const },
+  { to: "/admin/database", icon: Database, label: "DB Tables" },
   { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 

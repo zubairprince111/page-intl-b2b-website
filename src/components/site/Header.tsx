@@ -108,7 +108,8 @@ export function Header() {
     path === "/" ||
     path.startsWith("/solutions") ||
     path.startsWith("/support") ||
-    path.startsWith("/service-centers");
+    path.startsWith("/service-centers") ||
+    path.startsWith("/docs");
 
   // Show liquid glass if user has scrolled down, if on a light-background page, or if mobile menu is open
   const isGlass = scrolled || !isDarkTopPage || open;

@@ -4,12 +4,21 @@ import {
   listMediaServerFn,
   getMediaStatsServerFn,
   syncExistingMediaServerFn,
+  type MediaListItem,
   type UploadResult,
   type MediaStats,
 } from "./media";
-import type { MediaRow } from "@/db/schema";
+
+import { MAX_IMAGE_DOCUMENT_BYTES, MAX_VIDEO_BYTES } from "./media-magic";
 
 export type MediaCategory = "products" | "banners" | "documents" | "general";
+
+function isVideoFileCandidate(file: File): boolean {
+  const lowerName = file.name.toLowerCase();
+  return (
+    file.type.startsWith("video/") || lowerName.endsWith(".mp4") || lowerName.endsWith(".webm")
+  );
+}
 
 /**
  * Format raw byte size into human readable string (KB, MB, GB)
@@ -45,18 +54,31 @@ export async function uploadMediaFile(
   file: File,
   category: MediaCategory = "general",
 ): Promise<UploadResult> {
-  if (file.size > 50 * 1024 * 1024) {
-    throw new Error("File exceeds maximum allowed size of 50MB");
+  const isVideo = isVideoFileCandidate(file);
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_DOCUMENT_BYTES;
+  if (file.size > maxBytes) {
+    const limitMb = Math.round(maxBytes / (1024 * 1024));
+    throw new Error(`File exceeds maximum allowed size of ${limitMb}MB`);
   }
 
-  const base64Data = await readFileAsBase64(file);
-  return await uploadMediaServerFn({
-    data: {
-      fileName: file.name,
-      base64Data,
-      category,
-    },
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("category", category);
+
+  const response = await fetch("/api/media/upload", {
+    method: "POST",
+    body: formData,
+    credentials: "same-origin",
   });
+
+  const payload = (await response.json().catch(() => null)) as
+    (UploadResult & { error?: string }) | { error?: string } | null;
+
+  if (!response.ok || !payload || !("success" in payload) || !payload.success) {
+    throw new Error(payload?.error || `Media upload failed (HTTP ${response.status}).`);
+  }
+
+  return payload;
 }
 
 /**
@@ -87,23 +109,23 @@ export async function deleteMediaFile(target: { url?: string; id?: string }): Pr
 /**
  * List media records from PostgreSQL
  */
-export async function fetchMediaList(category?: string): Promise<MediaRow[]> {
-  const payload = category ? { category } : {};
-  const list = await listMediaServerFn({ data: payload });
-  return list as unknown as MediaRow[];
-}
+  export async function fetchMediaList(category?: string): Promise<MediaListItem[]> {
+    const payload = category ? { category } : {};
+    const list = await listMediaServerFn({ data: payload });
+    return list as unknown as MediaListItem[];
+  }
 
-/**
- * Fetch storage usage statistics
- */
-export async function fetchMediaStats(): Promise<MediaStats> {
-  return await getMediaStatsServerFn();
-}
+  /**
+   * Fetch storage usage statistics
+   */
+  export async function fetchMediaStats(): Promise<MediaStats> {
+    return await getMediaStatsServerFn();
+  }
 
-/**
- * Scan public/uploads disk directory and index any uncataloged files into PostgreSQL
- */
-export async function syncDiskFiles(): Promise<{ addedCount: number }> {
-  const res = await syncExistingMediaServerFn();
-  return { addedCount: res.addedCount };
-}
+  /**
+   * Scan public/uploads disk directory and index any uncataloged files into PostgreSQL
+   */
+  export async function syncDiskFiles(): Promise<{ addedCount: number }> {
+    const res = await syncExistingMediaServerFn();
+    return { addedCount: res.addedCount };
+  }

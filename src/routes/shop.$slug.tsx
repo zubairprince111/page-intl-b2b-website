@@ -6,21 +6,22 @@ import {
   ClipboardList,
   FileSpreadsheet,
   FileText,
-  Maximize2,
   Minus,
   Plus,
-  Wrench,
-  X,
-  Zap,
+  ZoomIn,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
+import { ProductImageZoomModal } from "@/components/site/ProductImageZoomModal";
 import { QuoteModal } from "@/components/site/QuoteModal";
-import { products, getProductBySlug, taka, type Product } from "@/lib/data";
+import { products, getProductBySlug, type Product } from "@/lib/data";
+import { computeHoverOriginPercent, normalizeProductGalleryImages } from "@/lib/image-zoom";
 import {
+  buildProductJsonLdOffers,
   getDefaultProductPresentation,
   getDistinctProductFeatures,
   hasProductWarranty,
+  normalizeStorefrontPriceLabel,
   sanitizeGuaranteeBadges,
   sanitizeHighlightTuples,
   sanitizeVariantGroups,
@@ -82,20 +83,7 @@ export const Route = createFileRoute("/shop/$slug")({
               "@type": "Brand",
               name: p.brand,
             },
-            offers: {
-              "@type": "Offer",
-              url: `https://page-bd.com/shop/${p.slug}`,
-              priceCurrency: "BDT",
-              price: p.price,
-              availability:
-                p.stock === "In stock"
-                  ? "https://schema.org/InStock"
-                  : "https://schema.org/OutOfStock",
-              seller: {
-                "@type": "Organization",
-                name: "PAGE International Ltd.",
-              },
-            },
+            offers: buildProductJsonLdOffers(p),
           }),
         },
       ],
@@ -115,7 +103,7 @@ export const Route = createFileRoute("/shop/$slug")({
   component: ProductPage,
 });
 
-function ProductPage() {
+export function ProductPage() {
   const { p: initialProduct, initialCatalog } = Route.useLoaderData();
   const { data: liveProduct } = useProductBySlug(initialProduct.slug, initialProduct);
   const { data: liveCatalog } = useCatalogProducts(initialCatalog);
@@ -126,6 +114,8 @@ function ProductPage() {
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [isInlineZooming, setIsInlineZooming] = useState(false);
+  const [inlineHoverOrigin, setInlineHoverOrigin] = useState({ x: 50, y: 50 });
 
   const presentationDefaults = useMemo(
     () =>
@@ -165,9 +155,9 @@ function ProductPage() {
 
   const effectiveHub =
     p.dispatchHub !== undefined ? p.dispatchHub.trim() : presentationDefaults.dispatchHub;
-  const effectivePriceLabel =
-    p.priceLabel !== undefined ? p.priceLabel.trim() : presentationDefaults.priceLabel;
-  const showUnitPrice = p.requiresQuote === false && p.price > 0;
+  const effectivePriceLabel = normalizeStorefrontPriceLabel(
+    p.priceLabel !== undefined ? p.priceLabel : presentationDefaults.priceLabel,
+  );
   const productHasWarranty = hasProductWarranty({
     guarantees: effectiveGuarantees,
     specs: p.specs,
@@ -179,6 +169,8 @@ function ProductPage() {
     setQty(1);
     setActiveImageIndex(0);
     setQuoteModalOpen(false);
+    setZoomOpen(false);
+    setIsInlineZooming(false);
     setSelectedOptions({});
   }, [p.slug]);
 
@@ -194,16 +186,10 @@ function ProductPage() {
   const low = p.stock === "Low stock";
 
   // Gallery view configurations
-  const galleryViews = useMemo(() => {
-    const rawList = p.images && p.images.length > 0 ? p.images : [p.image];
-    const unique = Array.from(new Set(rawList.filter(Boolean)));
-    const sourceImages = unique.length > 0 ? unique : [p.image];
-    return sourceImages.map((img, idx) => ({
-      id: `view-${idx}`,
-      label: idx === 0 ? "Primary View" : `Detail View ${idx + 1}`,
-      img,
-    }));
-  }, [p.images, p.image]);
+  const galleryViews = useMemo(
+    () => normalizeProductGalleryImages({ image: p.image, images: p.images }),
+    [p.images, p.image],
+  );
 
   const activeImage = galleryViews[activeImageIndex]?.img || p.image;
 
@@ -260,16 +246,16 @@ function ProductPage() {
   // Vehicle compatibility match status
   const isVehicleCompatible = vehicle
     ? p.fits.some(
-        (f) =>
-          f.toLowerCase().includes(vehicle.model.toLowerCase()) ||
-          f.toLowerCase().includes(vehicle.make.toLowerCase()) ||
-          f.toLowerCase().includes("universal") ||
-          f.toLowerCase().includes("most"),
-      )
+      (f) =>
+        f.toLowerCase().includes(vehicle.model.toLowerCase()) ||
+        f.toLowerCase().includes(vehicle.make.toLowerCase()) ||
+        f.toLowerCase().includes("universal") ||
+        f.toLowerCase().includes("most"),
+    )
     : false;
 
   return (
-    <div className="bg-white text-zinc-900 pt-20 lg:pt-24 min-h-screen selection:bg-primary selection:text-white">
+    <div className="bg-white text-zinc-900 pt-16 lg:pt-[4.25rem] min-h-screen selection:bg-primary selection:text-white">
       {/* ======================================================== */}
       {/* CLEAN MINIMALIST BREADCRUMBS                             */}
       {/* ======================================================== */}
@@ -307,57 +293,71 @@ function ProductPage() {
           {/* LEFT COLUMN: Clean Minimal Product Gallery Stage     */}
           {/* ==================================================== */}
           <div className="lg:col-span-6 space-y-4">
-            {/* Main Image Stage - Edge-to-Edge Border Cover */}
+            {/* Main Image Stage - Edge-to-Edge Border Cover with Hover Inspect & Zoom View */}
             <div className="relative aspect-square w-full rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-xs group">
-              {/* Minimal Platform Icon Badges */}
-              <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-1.5">
-                {p.mobility?.includes("EV") && (
-                  <span
-                    className="grid h-7 w-7 place-items-center rounded-full bg-white/90 border border-white/60 text-emerald-600 shadow-xs backdrop-blur-md transition-all cursor-help"
-                    title="EV Platform Compatible"
-                    aria-label="EV Platform Compatible"
-                  >
-                    <Zap className="h-3.5 w-3.5 stroke-[1.75] fill-none" />
-                  </span>
-                )}
-                {p.isEquipment ? (
-                  <span
-                    className="grid h-7 w-7 place-items-center rounded-full bg-white/90 border border-white/60 text-zinc-700 shadow-xs backdrop-blur-md transition-all cursor-help"
-                    title="Garage Machinery Equipment"
-                    aria-label="Garage Machinery Equipment"
-                  >
-                    <Wrench className="h-3.5 w-3.5 stroke-[1.75]" />
-                  </span>
-                ) : !p.mobility?.includes("EV") ? (
-                  <span
-                    className="grid h-7 w-7 place-items-center rounded-full bg-white/90 border border-white/60 text-primary shadow-xs backdrop-blur-md transition-all cursor-help"
-                    title="OEM Genuine Replacement"
-                    aria-label="OEM Genuine Replacement"
-                  >
-                    <CheckCircle2 className="h-3.5 w-3.5 stroke-[1.75]" />
-                  </span>
-                ) : null}
-              </div>
-
-              {/* Fullscreen Zoom Trigger */}
+              {/* Clickable Product Image with Desktop Cursor-Tracked Hover Zoom */}
               <button
                 type="button"
-                onClick={() => setZoomOpen(true)}
-                className="absolute top-3.5 right-3.5 z-10 grid h-8 w-8 place-items-center rounded-full bg-white/90 hover:bg-white text-zinc-700 hover:text-zinc-950 shadow-sm border border-white/60 backdrop-blur-md transition-all cursor-pointer"
-                title="View High-Resolution Gallery"
-                aria-label="Expand image"
+                onClick={() => {
+                  setIsInlineZooming(false);
+                  setZoomOpen(true);
+                }}
+                onPointerEnter={(e) => {
+                  if (e.pointerType !== "mouse") return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setInlineHoverOrigin(
+                    computeHoverOriginPercent({
+                      clientX: e.clientX,
+                      clientY: e.clientY,
+                      rect,
+                    }),
+                  );
+                  setIsInlineZooming(true);
+                }}
+                onPointerMove={(e) => {
+                  if (e.pointerType !== "mouse") return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setInlineHoverOrigin(
+                    computeHoverOriginPercent({
+                      clientX: e.clientX,
+                      clientY: e.clientY,
+                      rect,
+                    }),
+                  );
+                  if (!isInlineZooming) {
+                    setIsInlineZooming(true);
+                  }
+                }}
+                onPointerLeave={() => setIsInlineZooming(false)}
+                aria-label={`Inspect and zoom ${p.name}`}
+                className="block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <Maximize2 className="h-4 w-4" />
+                <img
+                  src={activeImage}
+                  alt={p.name}
+                  width={700}
+                  height={700}
+                  style={
+                    isInlineZooming
+                      ? {
+                          transformOrigin: `${inlineHoverOrigin.x}% ${inlineHoverOrigin.y}%`,
+                          transform: "scale(1.85)",
+                        }
+                      : undefined
+                  }
+                  className="h-full w-full object-cover object-center transition-transform duration-150 ease-out will-change-transform"
+                />
               </button>
 
-              {/* Product Visual - Full Border Cover */}
-              <img
-                src={activeImage}
-                alt={p.name}
-                width={700}
-                height={700}
-                className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-              />
+              {/* Subtle Desktop Inspection Hint */}
+              <span
+                className={`pointer-events-none hidden sm:inline-flex items-center gap-1.5 absolute bottom-3 right-3 rounded-full bg-zinc-950/65 text-white/90 px-2.5 py-1 text-[10.5px] font-medium backdrop-blur-sm transition-opacity duration-200 ${
+                  isInlineZooming ? "opacity-0" : "opacity-85"
+                }`}
+              >
+                <ZoomIn className="h-3 w-3" />
+                <span>Hover to inspect · Click to zoom</span>
+              </span>
             </div>
 
             {/* Thumbnail Switcher (Shown when product has multiple gallery images) */}
@@ -370,11 +370,10 @@ function ProductPage() {
                       key={item.id}
                       type="button"
                       onClick={() => setActiveImageIndex(idx)}
-                      className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer ${
-                        isActive
-                          ? "border-primary ring-2 ring-primary/20 shadow-xs"
-                          : "border-zinc-200 hover:border-zinc-400"
-                      }`}
+                      className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer ${isActive
+                        ? "border-primary ring-2 ring-primary/20 shadow-xs"
+                        : "border-zinc-200 hover:border-zinc-400"
+                        }`}
                     >
                       <img
                         src={item.img}
@@ -404,18 +403,7 @@ function ProductPage() {
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-zinc-600">
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-500">Price:</span>
-                  {showUnitPrice ? (
-                    <>
-                      <span className="font-semibold text-zinc-950 font-mono">{taka(p.price)}</span>
-                      {p.oldPrice && p.oldPrice > p.price && (
-                        <span className="text-xs text-zinc-400 line-through font-mono">
-                          {taka(p.oldPrice)}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="font-medium text-zinc-900">Quotation on Request</span>
-                  )}
+                  <span className="font-medium text-zinc-900">Quotation on Request</span>
                   {effectivePriceLabel && (
                     <span className="text-xs text-zinc-400 font-normal">
                       ({effectivePriceLabel})
@@ -424,14 +412,12 @@ function ProductPage() {
                 </div>
                 <span className="text-zinc-300">|</span>
                 <span
-                  className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs ${
-                    out ? "text-destructive" : low ? "text-amber-600" : "text-emerald-600"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs ${out ? "text-destructive" : low ? "text-amber-600" : "text-emerald-600"
+                    }`}
                 >
                   <span
-                    className={`h-2 w-2 rounded-full ${
-                      out ? "bg-destructive" : low ? "bg-amber-500" : "bg-emerald-500"
-                    }`}
+                    className={`h-2 w-2 rounded-full ${out ? "bg-destructive" : low ? "bg-amber-500" : "bg-emerald-500"
+                      }`}
                   />
                   {p.stock}
                 </span>
@@ -506,11 +492,10 @@ function ProductPage() {
                                 [group.name]: opt,
                               }))
                             }
-                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
-                              activeChoice === opt
-                                ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
-                                : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400"
-                            }`}
+                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${activeChoice === opt
+                              ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
+                              : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400"
+                              }`}
                           >
                             {opt}
                           </button>
@@ -553,11 +538,10 @@ function ProductPage() {
                   type="button"
                   disabled={out}
                   onClick={() => add(p.slug, qty)}
-                  className={`flex-1 h-12 text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-xs transition-all cursor-pointer ${
-                    inCart
-                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                      : "bg-primary text-white hover:bg-primary/90 shadow-sm active:scale-[0.99]"
-                  }`}
+                  className={`flex-1 h-12 text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-xs transition-all cursor-pointer ${inCart
+                    ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                    : "bg-primary text-white hover:bg-primary/90 shadow-sm active:scale-[0.99]"
+                    }`}
                 >
                   {inCart ? (
                     <>
@@ -589,13 +573,12 @@ function ProductPage() {
             {/* Configurable Warranty, Dispatch & Certification Badges */}
             {effectiveGuarantees.length > 0 && (
               <div
-                className={`pt-3 border-t border-zinc-200/80 grid gap-2 text-[11px] sm:text-xs text-zinc-600 font-medium text-center ${
-                  effectiveGuarantees.length === 1
-                    ? "grid-cols-1"
-                    : effectiveGuarantees.length === 2
-                      ? "grid-cols-2"
-                      : "grid-cols-3"
-                }`}
+                className={`pt-3 border-t border-zinc-200/80 grid gap-2 text-[11px] sm:text-xs text-zinc-600 font-medium text-center ${effectiveGuarantees.length === 1
+                  ? "grid-cols-1"
+                  : effectiveGuarantees.length === 2
+                    ? "grid-cols-2"
+                    : "grid-cols-3"
+                  }`}
               >
                 {effectiveGuarantees.map((badge, idx) => (
                   <div
@@ -649,9 +632,8 @@ function ProductPage() {
                         {k}
                       </td>
                       <td
-                        className={`py-3.5 px-5 sm:px-6 font-medium ${
-                          isMono ? "font-mono text-zinc-950" : "text-zinc-950"
-                        }`}
+                        className={`py-3.5 px-5 sm:px-6 font-medium ${isMono ? "font-mono text-zinc-950" : "text-zinc-950"
+                          }`}
                       >
                         {v}
                       </td>
@@ -734,8 +716,7 @@ function ProductPage() {
                     </li>
                     <li>
                       Available for B2B wholesale pricing, VAT commercial invoicing, and{" "}
-                      {effectiveHub ? `dispatch from ${effectiveHub}` : "nationwide fleet delivery"}
-                      .
+                      {effectiveHub ? `dispatch from ${effectiveHub}` : "nationwide fleet delivery"}.
                     </li>
                   </ul>
                 </div>
@@ -795,56 +776,18 @@ function ProductPage() {
       </section>
 
       {/* ======================================================== */}
-      {/* FULLSCREEN IMAGE LIGHTBOX MODAL                           */}
+      {/* INTERACTIVE FULLSCREEN IMAGE ZOOM VIEWER MODAL            */}
       {/* ======================================================== */}
-      {zoomOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md animate-in fade-in duration-200"
-        >
-          <div className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-zinc-950 p-6 sm:p-10 text-white shadow-2xl">
-            <button
-              onClick={() => setZoomOpen(false)}
-              aria-label="Close high-res view"
-              className="absolute right-5 top-5 grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white/80 hover:text-white hover:bg-white/20 transition-all cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="text-center mb-4">
-              <h3 className="font-display text-2xl uppercase tracking-wide">{p.name}</h3>
-              <p className="text-xs text-white/60">
-                {p.brand} · SKU: {p.sku}
-              </p>
-            </div>
-            <div className="relative aspect-square sm:aspect-16/10 max-h-[65vh] w-full flex items-center justify-center p-4">
-              <img
-                src={activeImage}
-                alt={p.name}
-                className="max-h-full max-w-full object-contain rounded-xl"
-              />
-            </div>
-            {galleryViews.length > 1 && (
-              <div className="mt-4 flex justify-center gap-3">
-                {galleryViews.map((item, idx) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
-                      activeImageIndex === idx
-                        ? "bg-primary text-white"
-                        : "bg-white/10 text-white/70 hover:bg-white/20"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ProductImageZoomModal
+        open={zoomOpen}
+        onOpenChange={setZoomOpen}
+        productName={p.name}
+        brand={p.brand}
+        sku={p.sku}
+        images={galleryViews}
+        activeIndex={activeImageIndex}
+        onActiveIndexChange={setActiveImageIndex}
+      />
 
       {/* ======================================================== */}
       {/* QUICK B2B QUOTE MODAL (EMAIL OTP VERIFICATION)           */}

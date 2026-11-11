@@ -49,7 +49,7 @@ export async function initAndSeedDatabase() {
       passwordHash: adminPasswordHash,
       companyName: "PAGE International Head Office",
       businessType: "Industrial Machinery Importer",
-      city: "Dhaka (Tejgaon)",
+      city: "Dhaka",
       role: "admin",
       emailVerified: true,
       isActive: true,
@@ -181,6 +181,11 @@ export async function initAndSeedDatabase() {
         priceLabel: presentation.priceLabel,
       })
       .where(and(eq(productsTable.slug, p.slug), isNull(productsTable.highlights)));
+
+    await db
+      .update(productsTable)
+      .set({ priceLabel: "Pro-Forma B2B" })
+      .where(and(eq(productsTable.slug, p.slug), eq(productsTable.priceLabel, "B2B Unit Price")));
   }
 
   // 4. Seed Homepage Machinery Banners (2100x654 High-Resolution Showcases)

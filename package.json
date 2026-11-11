@@ -3,12 +3,16 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && node scripts/copy-pglite-assets.cjs",
+    "build": "vite build && node scripts/copy-pglite-assets.cjs && node scripts/build-render-cli.mjs",
     "build:dev": "vite build --mode development",
     "preview": "node .output/server/index.mjs",
     "start": "node .output/server/index.mjs",
+    "start:render": "node --max-old-space-size=400 scripts/render-start.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -69,6 +73,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "docx": "^9.15.3",
     "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
     "embla-carousel-react": "^8.6.0",

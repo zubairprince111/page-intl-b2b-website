@@ -1,32 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAdminStats } from "@/lib/data-client";
-import { taka } from "@/lib/data";
 import {
   Package,
   AlertTriangle,
-  XCircle,
   FileText,
   CalendarCheck,
-  Users,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
-  DollarSign,
-  Activity,
+  CheckCircle2,
   Image as ImageIcon,
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
@@ -42,16 +25,12 @@ function StatCard({
   label,
   value,
   sub,
-  trend,
-  trendUp,
   color,
 }: {
   icon: any;
   label: string;
   value: string | number;
   sub?: string;
-  trend?: string;
-  trendUp?: boolean;
   color: string;
 }) {
   return (
@@ -63,20 +42,6 @@ function StatCard({
         >
           <Icon className="h-4.5 w-4.5" style={{ color }} />
         </div>
-        {trend && (
-          <span
-            className={`flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-              trendUp ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
-            }`}
-          >
-            {trendUp ? (
-              <ArrowUpRight className="h-3 w-3" />
-            ) : (
-              <ArrowDownRight className="h-3 w-3" />
-            )}
-            {trend}
-          </span>
-        )}
       </div>
       <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
       <p className="text-[12px] text-zinc-500 mt-1">{label}</p>
@@ -85,7 +50,7 @@ function StatCard({
   );
 }
 
-function AdminDashboard() {
+export function AdminDashboard() {
   const { data: stats, isLoading } = useAdminStats();
 
   if (isLoading || !stats) {
@@ -115,15 +80,7 @@ function AdminDashboard() {
 
   const recentQuotes = stats.recentQuotes || [];
   const recentBookings = stats.recentBookings || [];
-
-  const revenuePoints = [
-    { month: "Jun", revenue: 850000 },
-    { month: "Jul", revenue: 1200000 },
-    { month: "Aug", revenue: 1650000 },
-    { month: "Sep", revenue: 2100000 },
-    { month: "Oct", revenue: 2850000 },
-    { month: "Nov", revenue: Math.max(3400000, stats.totalRevenue) },
-  ];
+  const lowStockItems = stats.lowStockItems || [];
 
   return (
     <AdminLayout activeRoute="/admin">
@@ -132,7 +89,7 @@ function AdminDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard</h1>
           <p className="text-[13px] text-zinc-500 mt-1">
-            Real-time PostgreSQL overview of store catalog, quotes, bookings, and revenue.
+            Real-time PostgreSQL overview of store catalog, stock alerts, quotes, and bookings.
           </p>
         </div>
 
@@ -143,94 +100,93 @@ function AdminDashboard() {
             label="Total Products"
             value={stats.totalProducts}
             sub={`${stats.lowStockCount} low stock`}
-            trend="+4.3%"
-            trendUp
             color="#10b981"
           />
           <StatCard
-            icon={DollarSign}
-            label="Realized Revenue"
-            value={taka(stats.totalRevenue)}
-            sub={`${stats.totalOrders} total orders`}
-            trend="+12.5%"
-            trendUp
-            color="#3b82f6"
+            icon={AlertTriangle}
+            label="Low Stock Alerts"
+            value={stats.lowStockCount}
+            sub="At or below reorder threshold"
+            color="#ef4444"
           />
           <StatCard
             icon={FileText}
             label="Pending Quotations"
             value={stats.pendingQuotes}
             sub={`${stats.totalQuotes} total requests`}
-            trend="-2.1%"
-            trendUp={false}
             color="#f59e0b"
           />
           <StatCard
             icon={CalendarCheck}
             label="Upcoming Bookings"
-            value={stats.totalBookings - stats.pendingBookings}
+            value={Math.max(0, stats.totalBookings - stats.pendingBookings)}
             sub={`${stats.pendingBookings} awaiting confirmation`}
-            trend="+8.7%"
-            trendUp
             color="#8b5cf6"
           />
         </div>
 
-        {/* Charts Row */}
+        {/* Catalog & Stock Breakdown Row */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          {/* Revenue Chart */}
-          <div className="xl:col-span-2 bg-[#232323] border border-white/[0.06] rounded-xl p-5">
-            <div className="flex items-center justify-between mb-5">
+          {/* Low Stock Watchlist (Real DB data) */}
+          <div className="xl:col-span-2 bg-[#232323] border border-white/[0.06] rounded-xl overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
               <div>
-                <h3 className="text-[14px] font-semibold text-white">Revenue Overview</h3>
-                <p className="text-[11px] text-zinc-500 mt-0.5">Commercial machinery & parts</p>
+                <h3 className="text-[14px] font-semibold text-white">Low Stock Watchlist</h3>
+                <p className="text-[11px] text-zinc-500 mt-0.5">
+                  Warehouse items at or below configured reorder level
+                </p>
               </div>
-              <div className="flex items-center gap-1.5 text-emerald-400 text-[12px] font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full">
-                <TrendingUp className="h-3.5 w-3.5" />
-                Live Sync
-              </div>
+              <a
+                href="/admin/inventory"
+                className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+              >
+                Manage stock →
+              </a>
             </div>
-            <div className="h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenuePoints}>
-                  <defs>
-                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis
-                    dataKey="month"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#71717a", fontSize: 11 }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#71717a", fontSize: 11 }}
-                    tickFormatter={(v: number) => `${(v / 1000000).toFixed(1)}M`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#232323",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "8px",
-                      boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-                    }}
-                    labelStyle={{ color: "#fff", fontSize: 12, fontWeight: 600 }}
-                    itemStyle={{ color: "#10b981", fontSize: 12 }}
-                    formatter={(value: any) => [taka(Number(value) || 0), "Revenue"]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    fill="url(#revGrad)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="divide-y divide-white/[0.04] flex-1">
+              {lowStockItems.map((item: any) => (
+                <div
+                  key={item.id ?? item.slug}
+                  className="px-5 py-3.5 flex items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12.5px] font-medium text-zinc-200 truncate">{item.name}</p>
+                    <p className="text-[11px] text-zinc-500 truncate mt-0.5">
+                      {item.sku} · {item.category}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <p className="text-[12px] font-semibold text-white tabular-nums">
+                        {item.warehouseQty} units
+                      </p>
+                      <p className="text-[10px] text-zinc-500 tabular-nums">
+                        Reorder at {item.reorderLevel}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        item.warehouseQty <= 0
+                          ? "bg-red-500/15 text-red-400"
+                          : "bg-amber-500/15 text-amber-400"
+                      }`}
+                    >
+                      {item.warehouseQty <= 0 ? "Out of stock" : "Low stock"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {lowStockItems.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  <CheckCircle2 className="h-7 w-7 text-emerald-400 mb-2" />
+                  <p className="text-[13px] font-medium text-zinc-200">
+                    All catalog stock levels are healthy
+                  </p>
+                  <p className="text-[11px] text-zinc-500 mt-1">
+                    No equipment or spare parts are currently below their reorder threshold.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

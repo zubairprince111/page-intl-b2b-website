@@ -36,21 +36,39 @@ export interface SanitizedUser {
 }
 
 export function getClientIp(): string {
+  const trustProxy =
+    Boolean(process.env["RENDER"] || process.env["RENDER_SERVICE_ID"]) ||
+    process.env["TRUST_PROXY"] === "true" ||
+    process.env["NODE_ENV"] === "production";
   try {
-    return getRequestIP() || "127.0.0.1";
+    return getRequestIP({ xForwardedFor: trustProxy }) || getRequestIP() || "127.0.0.1";
   } catch {
     return "127.0.0.1";
   }
 }
 
-export async function getSessionUserCore(): Promise<SanitizedUser | null> {
-  let token: string | undefined;
-  try {
-    token = getCookie(SESSION_COOKIE_NAME);
-  } catch {
-    return null;
+export function parseSessionTokenFromCookieHeader(cookieHeader: string | null): string | undefined {
+  if (!cookieHeader) return undefined;
+  const parts = cookieHeader.split(";");
+  for (const part of parts) {
+    const eqIdx = part.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = part.slice(0, eqIdx).trim();
+    if (key !== SESSION_COOKIE_NAME) continue;
+    const rawValue = part.slice(eqIdx + 1).trim();
+    if (!rawValue) return undefined;
+    try {
+      return decodeURIComponent(rawValue);
+    } catch {
+      return rawValue;
+    }
   }
+  return undefined;
+}
 
+export async function getSessionUserByToken(
+  token: string | undefined,
+): Promise<SanitizedUser | null> {
   if (!token || token.trim().length === 0) {
     return null;
   }
@@ -68,11 +86,6 @@ export async function getSessionUserCore(): Promise<SanitizedUser | null> {
 
   const matched = sessionRows[0];
   if (!matched) {
-    try {
-      deleteCookie(SESSION_COOKIE_NAME, { path: "/" });
-    } catch {
-      // ignore
-    }
     return null;
   }
 
@@ -95,6 +108,31 @@ export async function getSessionUserCore(): Promise<SanitizedUser | null> {
     lastLogin: user.lastLogin,
     createdAt: user.createdAt,
   };
+}
+
+export async function getSessionUserCore(): Promise<SanitizedUser | null> {
+  let token: string | undefined;
+  try {
+    token = getCookie(SESSION_COOKIE_NAME);
+  } catch {
+    return null;
+  }
+
+  if (!token || token.trim().length === 0) {
+    return null;
+  }
+
+  const user = await getSessionUserByToken(token);
+  if (!user) {
+    try {
+      deleteCookie(SESSION_COOKIE_NAME, { path: "/" });
+    } catch {
+      // ignore
+    }
+    return null;
+  }
+
+  return user;
 }
 
 export async function loginUserCore(data: {
@@ -351,7 +389,12 @@ export async function requestPasswordResetCore(data: {
       expiresAt,
     });
 
-    const resetLink = `${process.env["APP_URL"] || "http://localhost:8080"}/reset-password?token=${rawToken}`;
+    const baseUrl = (
+      process.env["APP_URL"] ||
+      process.env["RENDER_EXTERNAL_URL"] ||
+      "http://localhost:8080"
+    ).replace(/\/+$/, "");
+    const resetLink = `${baseUrl}/reset-password?token=${rawToken}`;
     const emailData = renderPasswordResetEmail({
       name: user.name || "Customer",
       resetLink,
@@ -364,7 +407,7 @@ export async function requestPasswordResetCore(data: {
       template: "PASSWORD_RESET",
       html: emailData.html,
       text: emailData.text,
-    }).catch(() => {});
+    }).catch(() => { });
 
     if (process.env["NODE_ENV"] !== "production") {
       console.log(`[AUTH] Password reset token generated for ${user.email}: ${rawToken}`);

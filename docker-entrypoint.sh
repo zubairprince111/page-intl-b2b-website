@@ -19,9 +19,9 @@ if [ -n "$DATABASE_URL" ]; then
   echo "PostgreSQL is connected and healthy."
 fi
 
-# 2. Run Database Migrations & Initial Seed
+# 2. Run Database Migrations & Idempotent Initial Seed
 echo "Synchronizing database schema & initial seed data..."
-npx vite-node src/db/seed.ts || echo "Seed completed or skipped."
+npx vite-node src/db/seed.ts
 
 # 3. Start Nitro Production Web Server
 echo "Starting application server on port ${PORT:-8080}..."

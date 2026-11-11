@@ -25,9 +25,14 @@ export async function runMigrations() {
 }
 
 // Execute migrations only when invoked directly via CLI (e.g. npm run db:migrate)
-const isDirectExecution = Boolean(
-  process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url)),
-);
+const normalizeForCompare = (p: string) =>
+  process.platform === "win32" ? path.resolve(p).toLowerCase() : path.resolve(p);
+const thisMigrateFile = normalizeForCompare(fileURLToPath(import.meta.url));
+const isMigrateScriptFile = /^migrate\.(ts|mjs|js)$/i.test(path.basename(thisMigrateFile));
+const isDirectExecution =
+isMigrateScriptFile &&
+  (process.argv.some((arg) => normalizeForCompare(arg) === thisMigrateFile) ||
+    Boolean(process.env["npm_lifecycle_script"]?.includes("migrate.ts")));
 
 if (isDirectExecution) {
   runMigrations()

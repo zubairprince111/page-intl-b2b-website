@@ -24,6 +24,9 @@ import {
   saveBannerServerFn,
   deleteBannerServerFn,
   reorderBannersServerFn,
+  getShopBannerVideoPublicServerFn,
+  getShopBannerVideoAdminServerFn,
+  saveShopBannerVideoServerFn,
   listUpdatesServerFn,
   getUpdateBySlugServerFn,
   saveUpdateServerFn,
@@ -34,6 +37,8 @@ import {
   getSettingsServerFn,
   updateSettingsServerFn,
   getAdminStatsServerFn,
+  getAdminDatabaseOverviewServerFn,
+  getAdminDatabaseTableRowsServerFn,
 } from "./server-functions";
 import type {
   CreateQuoteInput,
@@ -43,6 +48,8 @@ import type {
   UpdateInventoryItemInput,
 } from "./data.server";
 import type { Product } from "./data";
+import type { ShopBannerVideoConfig, ShopBannerVideoItem } from "./shop-banner-video";
+export type { ShopBannerVideoConfig, ShopBannerVideoItem } from "./shop-banner-video";
 
 // =============================================================================
 // 1. DASHBOARD STATS HOOK
@@ -389,6 +396,41 @@ export function useReorderBanners() {
   });
 }
 
+export function useShopBannerVideo(initialData?: { activeVideoUrl: string }) {
+  return useQuery({
+    queryKey: ["shop-banner-video"],
+    queryFn: async () => {
+      return await getShopBannerVideoPublicServerFn();
+    },
+    ...(initialData ? { initialData } : {}),
+  });
+}
+
+export function useAdminShopBannerVideo() {
+  return useQuery<ShopBannerVideoConfig>({
+    queryKey: ["shop-banner-video", "admin"],
+    queryFn: async () => {
+      return await getShopBannerVideoAdminServerFn();
+    },
+  });
+}
+
+export function useSaveShopBannerVideo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      activeVideoUrl: string;
+      videos?: ShopBannerVideoItem[] | undefined;
+    }) => {
+      return await saveShopBannerVideoServerFn({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-banner-video"] });
+      queryClient.invalidateQueries({ queryKey: ["shop-banner-video", "admin"] });
+    },
+  });
+}
+
 // =============================================================================
 // 7. UPDATES HOOKS
 // =============================================================================
@@ -510,5 +552,35 @@ export function useUpdateSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
     },
+  });
+}
+
+// =============================================================================
+// 10. ADMIN DATABASE TABLE INSPECTOR HOOKS
+// =============================================================================
+
+export function useAdminDatabaseOverview() {
+  return useQuery({
+    queryKey: ["admin", "database", "overview"],
+    queryFn: async () => {
+      return await getAdminDatabaseOverviewServerFn();
+    },
+  });
+}
+
+export function useAdminDatabaseTableRows(
+  tableName: string,
+  limit = 50,
+  offset = 0,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: ["admin", "database", "rows", tableName, limit, offset],
+    queryFn: async () => {
+      return await getAdminDatabaseTableRowsServerFn({
+        data: { tableName, limit, offset },
+      });
+    },
+    enabled: enabled && Boolean(tableName),
   });
 }

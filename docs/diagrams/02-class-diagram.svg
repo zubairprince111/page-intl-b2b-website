@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1720 1310" width="1720" height="1310" role="img" aria-label="Figure 2 — UML 2.5 Class &amp; Domain Model Diagram">
+  <defs>
+    <style>
+      .sans { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; }
+      .title { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 22px; font-weight: 800; fill: #0F172A; letter-spacing: -0.02em; }
+      .subtitle { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12.5px; font-weight: 500; fill: #475569; }
+      .stereo { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #475569; }
+      .lbl { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #0F172A; }
+      .lbl-sm { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; fill: #334155; }
+      .edge-lbl { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #334155; }
+    </style>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <!-- Filled Solid Arrowhead (Synchronous, Control Flow, Association Navigation) -->
+    <marker id="arrow-filled" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrow-filled-red" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#E11D48"/>
+    </marker>
+    <marker id="arrow-filled-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-filled-emerald" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#059669"/>
+    </marker>
+    <!-- Open V-Arrowhead (UML Dependency, Include/Extend, Async Message, Return) -->
+    <marker id="arrow-open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#1E293B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#2563EB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-purple" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#7C3AED" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <!-- Hollow Triangle Arrowhead (UML Generalization / Realization) -->
+    <marker id="arrow-inherit" viewBox="0 0 14 14" refX="12.5" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 12.5 7 L 1 12.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <!-- Filled Diamond (UML Composition) -->
+    <marker id="diamond-comp" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#1E293B" stroke="#1E293B" stroke-width="1.2"/>
+    </marker>
+    <!-- Hollow Diamond (UML Aggregation) -->
+    <marker id="diamond-agg" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.4"/>
+    </marker>
+    <!-- Crow's Foot Markers (ERD) -->
+    <marker id="erd-one" viewBox="0 0 14 14" refX="12" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <line x1="7" y1="2" x2="7" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+      <line x1="11" y1="2" x2="11" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-zero-one" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <circle cx="5.5" cy="7" r="3.5" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="12" y1="2" x2="12" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-many" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 16 2 L 7 7 L 16 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="5" y1="2" x2="5" y2="12" stroke="#1E293B" stroke-width="1.6"/>
+    </marker>
+    <marker id="erd-zero-many" viewBox="0 0 20 14" refX="18" refY="7" markerWidth="13" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 18 2 L 9.5 7 L 18 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <circle cx="4.5" cy="7" r="3.2" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+    </marker>
+    
+  </defs>
+
+  <!-- Solid White Backdrop for Light & Dark Markdown Readers -->
+  <rect x="0" y="0" width="1720" height="1310" fill="#FFFFFF" rx="12"/>
+  <rect x="1" y="1" width="1718" height="1308" fill="none" stroke="#E2E8F0" stroke-width="1.5" rx="11"/>
+
+  <!-- Header Banner -->
+  <rect x="0" y="0" width="1720" height="74" fill="#F8FAFC" rx="12"/>
+  <rect x="0" y="60" width="1720" height="14" fill="#F8FAFC"/>
+  <line x1="0" y1="74" x2="1720" y2="74" stroke="#E2E8F0" stroke-width="1.2"/>
+  <rect x="24" y="18" width="5" height="38" fill="#E11D48" rx="2.5"/>
+  <text x="40" y="38" class="title">Figure 2 — UML 2.5 Class &amp; Domain Model Diagram</text>
+  <text x="40" y="57" class="subtitle">Domain Entities, Service Classes, Interfaces, Value Objects, Visibilities (+/-), Compositions (◆), Aggregations (◇), Realizations (..|&gt;) &amp; Multiplicities</text>
+  <text x="1696" y="42" text-anchor="end" class="stereo">PAGE International Ltd. · IEEE/UML 2.5</text>
+
+  
+    <g>
+      <rect x="28" y="94" width="235" height="24" rx="4" fill="#ECFDF5" stroke="#059669" stroke-width="1.3"/>
+      <text x="38" y="110" class="mono" font-size="11" font-weight="700" fill="#059669">pkg::Identity &amp; Auth</text>
+      <rect x="28" y="116" width="530" height="538" rx="6" fill="#ECFDF5" fill-opacity="0.35" stroke="#059669" stroke-width="1.3"/>
+    </g>
+
+    <g>
+      <rect x="586" y="94" width="235" height="24" rx="4" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.3"/>
+      <text x="596" y="110" class="mono" font-size="11" font-weight="700" fill="#2563EB">pkg::Catalog, Search &amp; Zoom</text>
+      <rect x="586" y="116" width="1106" height="538" rx="6" fill="#EFF6FF" fill-opacity="0.35" stroke="#2563EB" stroke-width="1.3"/>
+    </g>
+
+    <g>
+      <rect x="28" y="678" width="235" height="24" rx="4" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.3"/>
+      <text x="38" y="694" class="mono" font-size="11" font-weight="700" fill="#E11D48">pkg::Procurement, RFQ &amp; Orders</text>
+      <rect x="28" y="700" width="845" height="582" rx="6" fill="#FFF1F2" fill-opacity="0.35" stroke="#E11D48" stroke-width="1.3"/>
+    </g>
+
+    <g>
+      <rect x="900" y="678" width="235" height="24" rx="4" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.3"/>
+      <text x="910" y="694" class="mono" font-size="11" font-weight="700" fill="#7C3AED">pkg::CMS, Email &amp; Observability</text>
+      <rect x="900" y="700" width="792" height="582" rx="6" fill="#F5F3FF" fill-opacity="0.35" stroke="#7C3AED" stroke-width="1.3"/>
+    </g>
+<rect x="46" y="132" width="235" height="212" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="46" y="132" width="235" height="44" rx="6" fill="#D1FAE5"/>
+<rect x="46" y="170" width="235" height="6" fill="#D1FAE5"/>
+<line x1="46" y1="176" x2="281" y2="176" stroke="#059669" stroke-width="1.3"/>
+<text x="163.5" y="147" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity»</text>
+<text x="163.5" y="165" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">User</text>
+<text x="56" y="191" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="56" y="207" class="mono" font-size="10.5" fill="#1E293B">+ name: string</text>
+<text x="56" y="223" class="mono" font-size="10.5" fill="#1E293B">+ email: string {UK}</text>
+<text x="56" y="239" class="mono" font-size="10.5" fill="#1E293B">- passwordHash: string</text>
+<text x="56" y="255" class="mono" font-size="10.5" fill="#1E293B">+ role: &#39;admin&#39;|&#39;customer&#39;</text>
+<text x="56" y="271" class="mono" font-size="10.5" fill="#1E293B">+ companyName: string</text>
+<text x="56" y="287" class="mono" font-size="10.5" fill="#1E293B">+ isActive: boolean</text>
+<line x1="46" y1="300" x2="281" y2="300" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="56" y="315" class="mono" font-size="10.5" fill="#0F172A">+ sanitize(): SanitizedUser</text>
+<text x="56" y="331" class="mono" font-size="10.5" fill="#0F172A">+ isAdmin(): boolean</text>
+<rect x="46" y="405" width="235" height="148" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="46" y="405" width="235" height="44" rx="6" fill="#D1FAE5"/>
+<rect x="46" y="443" width="235" height="6" fill="#D1FAE5"/>
+<line x1="46" y1="449" x2="281" y2="449" stroke="#059669" stroke-width="1.3"/>
+<text x="163.5" y="420" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity»</text>
+<text x="163.5" y="438" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">Session</text>
+<text x="56" y="464" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="56" y="480" class="mono" font-size="10.5" fill="#1E293B">+ userId: string {FK}</text>
+<text x="56" y="496" class="mono" font-size="10.5" fill="#1E293B">+ token: string {256-bit}</text>
+<text x="56" y="512" class="mono" font-size="10.5" fill="#1E293B">+ expiresAt: timestamptz</text>
+<line x1="46" y1="525" x2="281" y2="525" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="56" y="540" class="mono" font-size="10.5" fill="#0F172A">+ isExpired(): boolean</text>
+<rect x="312" y="132" width="228" height="180" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="312" y="132" width="228" height="44" rx="6" fill="#D1FAE5"/>
+<rect x="312" y="170" width="228" height="6" fill="#D1FAE5"/>
+<line x1="312" y1="176" x2="540" y2="176" stroke="#059669" stroke-width="1.3"/>
+<text x="426" y="147" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«service»</text>
+<text x="426" y="165" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">AuthService</text>
+<text x="322" y="191" class="mono" font-size="10.5" fill="#1E293B">- SESSION_COOKIE = &#39;page_session&#39;</text>
+<text x="322" y="207" class="mono" font-size="10.5" fill="#1E293B">- BCRYPT_COST = 12</text>
+<line x1="312" y1="220" x2="540" y2="220" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="322" y="235" class="mono" font-size="10.5" fill="#0F172A">+ loginUserCore(creds)</text>
+<text x="322" y="251" class="mono" font-size="10.5" fill="#0F172A">+ registerUserCore(input)</text>
+<text x="322" y="267" class="mono" font-size="10.5" fill="#0F172A">+ getSessionUserByToken(tok)</text>
+<text x="322" y="283" class="mono" font-size="10.5" fill="#0F172A">+ resetPasswordWithToken(d)</text>
+<text x="322" y="299" class="mono" font-size="10.5" fill="#0F172A">+ getUserDashboardData()</text>
+<rect x="312" y="405" width="228" height="116" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="312" y="405" width="228" height="44" rx="6" fill="#D1FAE5"/>
+<rect x="312" y="443" width="228" height="6" fill="#D1FAE5"/>
+<line x1="312" y1="449" x2="540" y2="449" stroke="#059669" stroke-width="1.3"/>
+<text x="426" y="420" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«utility»</text>
+<text x="426" y="438" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">RateLimiter</text>
+<text x="322" y="464" class="mono" font-size="10.5" fill="#1E293B">- buckets: Map&lt;string, Bucket&gt;</text>
+<line x1="312" y1="477" x2="540" y2="477" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="322" y="492" class="mono" font-size="10.5" fill="#0F172A">+ checkRateLimit(id,lim,win)</text>
+<text x="322" y="508" class="mono" font-size="10.5" fill="#0F172A">+ resetRateLimits(): void</text>
+<rect x="606" y="132" width="325" height="356" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="606" y="132" width="325" height="44" rx="6" fill="#DBEAFE"/>
+<rect x="606" y="170" width="325" height="6" fill="#DBEAFE"/>
+<line x1="606" y1="176" x2="931" y2="176" stroke="#2563EB" stroke-width="1.3"/>
+<text x="768.5" y="147" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity / domain»</text>
+<text x="768.5" y="165" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">Product</text>
+<text x="616" y="191" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="616" y="207" class="mono" font-size="10.5" fill="#1E293B">+ slug: string {UK}</text>
+<text x="616" y="223" class="mono" font-size="10.5" fill="#1E293B">+ sku: string</text>
+<text x="616" y="239" class="mono" font-size="10.5" fill="#1E293B">+ name: string</text>
+<text x="616" y="255" class="mono" font-size="10.5" fill="#1E293B">+ brand: string</text>
+<text x="616" y="271" class="mono" font-size="10.5" fill="#1E293B">+ category: string</text>
+<text x="616" y="287" class="mono" font-size="10.5" fill="#1E293B">+ mobility: MobilityType[]</text>
+<text x="616" y="303" class="mono" font-size="10.5" fill="#1E293B">+ isEquipment: boolean</text>
+<text x="616" y="319" class="mono" font-size="10.5" fill="#1E293B">+ priceBdt: int {server-only}</text>
+<text x="616" y="335" class="mono" font-size="10.5" fill="#1E293B">+ warehouseQty: int</text>
+<text x="616" y="351" class="mono" font-size="10.5" fill="#1E293B">+ specs: SpecTuple[]</text>
+<text x="616" y="367" class="mono" font-size="10.5" fill="#1E293B">+ highlights: SpecTuple[]</text>
+<text x="616" y="383" class="mono" font-size="10.5" fill="#1E293B">+ variantOptions: VariantGroup[]</text>
+<text x="616" y="399" class="mono" font-size="10.5" fill="#1E293B">+ guarantees: GuaranteeBadge[]</text>
+<text x="616" y="415" class="mono" font-size="10.5" fill="#1E293B">+ priceLabel: string</text>
+<line x1="606" y1="428" x2="931" y2="428" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="616" y="443" class="mono" font-size="10.5" fill="#0F172A">+ mapDbProductToProduct(row)</text>
+<text x="616" y="459" class="mono" font-size="10.5" fill="#0F172A">+ buildProductJsonLdOffers()</text>
+<text x="616" y="475" class="mono" font-size="10.5" fill="#0F172A">+ deriveProductStockStatus()</text>
+<rect x="985" y="132" width="290" height="116" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="985" y="132" width="290" height="44" rx="6" fill="#DBEAFE"/>
+<rect x="985" y="170" width="290" height="6" fill="#DBEAFE"/>
+<line x1="985" y1="176" x2="1275" y2="176" stroke="#2563EB" stroke-width="1.3"/>
+<text x="1130" y="147" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«valueObject»</text>
+<text x="1130" y="165" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">ProductVariantGroup</text>
+<text x="995" y="191" class="mono" font-size="10.5" fill="#1E293B">+ name: string</text>
+<text x="995" y="207" class="mono" font-size="10.5" fill="#1E293B">+ options: string[]</text>
+<line x1="985" y1="220" x2="1275" y2="220" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="995" y="235" class="mono" font-size="10.5" fill="#0F172A">+ sanitizeVariantGroups(g)</text>
+<rect x="985" y="270" width="290" height="132" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="985" y="270" width="290" height="44" rx="6" fill="#DBEAFE"/>
+<rect x="985" y="308" width="290" height="6" fill="#DBEAFE"/>
+<line x1="985" y1="314" x2="1275" y2="314" stroke="#2563EB" stroke-width="1.3"/>
+<text x="1130" y="285" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«valueObject»</text>
+<text x="1130" y="303" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">ProductGuaranteeBadge</text>
+<text x="995" y="329" class="mono" font-size="10.5" fill="#1E293B">+ title: string</text>
+<text x="995" y="345" class="mono" font-size="10.5" fill="#1E293B">+ subtitle: string</text>
+<line x1="985" y1="358" x2="1275" y2="358" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="995" y="373" class="mono" font-size="10.5" fill="#0F172A">+ sanitizeGuaranteeBadges()</text>
+<text x="995" y="389" class="mono" font-size="10.5" fill="#0F172A">+ parseGuaranteeFromWarranty()</text>
+<rect x="985" y="425" width="325" height="164" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="985" y="425" width="325" height="44" rx="6" fill="#DBEAFE"/>
+<rect x="985" y="463" width="325" height="6" fill="#DBEAFE"/>
+<line x1="985" y1="469" x2="1310" y2="469" stroke="#2563EB" stroke-width="1.3"/>
+<text x="1147.5" y="440" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«service»</text>
+<text x="1147.5" y="458" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">ProductSearchEngine</text>
+<text x="995" y="484" class="mono" font-size="10.5" fill="#1E293B">- STOP_WORDS: Set&lt;string&gt;</text>
+<text x="995" y="500" class="mono" font-size="10.5" fill="#1E293B">+ searchCandidateTerms: string[]</text>
+<line x1="985" y1="513" x2="1310" y2="513" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="995" y="528" class="mono" font-size="10.5" fill="#0F172A">+ buildProductSearchIndex(cat)</text>
+<text x="995" y="544" class="mono" font-size="10.5" fill="#0F172A">+ searchIndexedProducts(idx, q)</text>
+<text x="995" y="560" class="mono" font-size="10.5" fill="#0F172A">+ buildShopSearchSuggestions()</text>
+<text x="995" y="576" class="mono" font-size="10.5" fill="#0F172A">+ splitHighlightSegments(t, q)</text>
+<rect x="1350" y="132" width="320" height="164" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="1350" y="132" width="320" height="44" rx="6" fill="#DBEAFE"/>
+<rect x="1350" y="170" width="320" height="6" fill="#DBEAFE"/>
+<line x1="1350" y1="176" x2="1670" y2="176" stroke="#2563EB" stroke-width="1.3"/>
+<text x="1510" y="147" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«service»</text>
+<text x="1510" y="165" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">ImageZoomMath</text>
+<text x="1360" y="191" class="mono" font-size="10.5" fill="#1E293B">+ MIN_ZOOM_SCALE = 1</text>
+<text x="1360" y="207" class="mono" font-size="10.5" fill="#1E293B">+ MAX_ZOOM_SCALE = 4</text>
+<line x1="1350" y1="220" x2="1670" y2="220" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="1360" y="235" class="mono" font-size="10.5" fill="#0F172A">+ normalizeProductGalleryImages()</text>
+<text x="1360" y="251" class="mono" font-size="10.5" fill="#0F172A">+ computeZoomAroundPoint(p)</text>
+<text x="1360" y="267" class="mono" font-size="10.5" fill="#0F172A">+ clampPanOffset(offset, scale)</text>
+<text x="1360" y="283" class="mono" font-size="10.5" fill="#0F172A">+ computeHoverOriginPercent()</text>
+<rect x="1350" y="425" width="320" height="196" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="1350" y="425" width="320" height="44" rx="6" fill="#DBEAFE"/>
+<rect x="1350" y="463" width="320" height="6" fill="#DBEAFE"/>
+<line x1="1350" y1="469" x2="1670" y2="469" stroke="#2563EB" stroke-width="1.3"/>
+<text x="1510" y="440" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity / service»</text>
+<text x="1510" y="458" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">MediaAsset</text>
+<text x="1360" y="484" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="1360" y="500" class="mono" font-size="10.5" fill="#1E293B">+ url: string {UK}</text>
+<text x="1360" y="516" class="mono" font-size="10.5" fill="#1E293B">+ mimeType: string</text>
+<text x="1360" y="532" class="mono" font-size="10.5" fill="#1E293B">+ sizeBytes: int</text>
+<text x="1360" y="548" class="mono" font-size="10.5" fill="#1E293B">+ category: MediaCategory</text>
+<line x1="1350" y1="561" x2="1670" y2="561" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="1360" y="576" class="mono" font-size="10.5" fill="#0F172A">+ validateMediaMagicBytes(buf)</text>
+<text x="1360" y="592" class="mono" font-size="10.5" fill="#0F172A">+ saveAdminMediaBufferCore()</text>
+<text x="1360" y="608" class="mono" font-size="10.5" fill="#0F172A">+ serveUploadedFile(req, url)</text>
+<rect x="46" y="718" width="255" height="260" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="46" y="718" width="255" height="44" rx="6" fill="#FFE4E6"/>
+<rect x="46" y="756" width="255" height="6" fill="#FFE4E6"/>
+<line x1="46" y1="762" x2="301" y2="762" stroke="#E11D48" stroke-width="1.3"/>
+<text x="173.5" y="733" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity»</text>
+<text x="173.5" y="751" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">Quote</text>
+<text x="56" y="777" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="56" y="793" class="mono" font-size="10.5" fill="#1E293B">+ quoteNumber: string</text>
+<text x="56" y="809" class="mono" font-size="10.5" fill="#1E293B">+ userId: string? {FK}</text>
+<text x="56" y="825" class="mono" font-size="10.5" fill="#1E293B">+ companyName: string</text>
+<text x="56" y="841" class="mono" font-size="10.5" fill="#1E293B">+ productSlug: string</text>
+<text x="56" y="857" class="mono" font-size="10.5" fill="#1E293B">+ qty: int</text>
+<text x="56" y="873" class="mono" font-size="10.5" fill="#1E293B">+ status: QuoteStatus</text>
+<text x="56" y="889" class="mono" font-size="10.5" fill="#1E293B">+ quotedPrice: int?</text>
+<text x="56" y="905" class="mono" font-size="10.5" fill="#1E293B">+ itemsJson: QuoteItem[]?</text>
+<line x1="46" y1="918" x2="301" y2="918" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="56" y="933" class="mono" font-size="10.5" fill="#0F172A">+ createQuoteCore(input)</text>
+<text x="56" y="949" class="mono" font-size="10.5" fill="#0F172A">+ updateQuoteCore(patch)</text>
+<text x="56" y="965" class="mono" font-size="10.5" fill="#0F172A">+ openGmailQuotationDraft()</text>
+<rect x="330" y="718" width="250" height="180" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="330" y="718" width="250" height="44" rx="6" fill="#FFE4E6"/>
+<rect x="330" y="756" width="250" height="6" fill="#FFE4E6"/>
+<line x1="330" y1="762" x2="580" y2="762" stroke="#E11D48" stroke-width="1.3"/>
+<text x="455" y="733" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«service»</text>
+<text x="455" y="751" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">QuoteOtpService</text>
+<text x="340" y="777" class="mono" font-size="10.5" fill="#1E293B">- quoteOtpStore: Map&lt;string,Otp&gt;</text>
+<text x="340" y="793" class="mono" font-size="10.5" fill="#1E293B">- MAX_ATTEMPTS = 5</text>
+<text x="340" y="809" class="mono" font-size="10.5" fill="#1E293B">- TTL_MINUTES = 10</text>
+<line x1="330" y1="822" x2="580" y2="822" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="340" y="837" class="mono" font-size="10.5" fill="#0F172A">+ isQuoteEmailOtpRequired()</text>
+<text x="340" y="853" class="mono" font-size="10.5" fill="#0F172A">+ sendQuoteOtpCore(email)</text>
+<text x="340" y="869" class="mono" font-size="10.5" fill="#0F172A">+ verifyQuoteOtpCore(e, otp)</text>
+<text x="340" y="885" class="mono" font-size="10.5" fill="#0F172A">+ verifyQuoteOtpAndCreateCore()</text>
+<rect x="46" y="1035" width="255" height="212" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="46" y="1035" width="255" height="44" rx="6" fill="#FFE4E6"/>
+<rect x="46" y="1073" width="255" height="6" fill="#FFE4E6"/>
+<line x1="46" y1="1079" x2="301" y2="1079" stroke="#E11D48" stroke-width="1.3"/>
+<text x="173.5" y="1050" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity»</text>
+<text x="173.5" y="1068" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">Booking</text>
+<text x="56" y="1094" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="56" y="1110" class="mono" font-size="10.5" fill="#1E293B">+ bookingNumber: string</text>
+<text x="56" y="1126" class="mono" font-size="10.5" fill="#1E293B">+ userId: string? {FK}</text>
+<text x="56" y="1142" class="mono" font-size="10.5" fill="#1E293B">+ serviceType: string</text>
+<text x="56" y="1158" class="mono" font-size="10.5" fill="#1E293B">+ bookingDate: string</text>
+<text x="56" y="1174" class="mono" font-size="10.5" fill="#1E293B">+ timeSlot: string</text>
+<text x="56" y="1190" class="mono" font-size="10.5" fill="#1E293B">+ status: BookingStatus</text>
+<line x1="46" y1="1203" x2="301" y2="1203" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="56" y="1218" class="mono" font-size="10.5" fill="#0F172A">+ createBookingCore(input)</text>
+<text x="56" y="1234" class="mono" font-size="10.5" fill="#0F172A">+ updateBookingCore(patch)</text>
+<rect x="330" y="975" width="242" height="228" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="330" y="975" width="242" height="44" rx="6" fill="#FFE4E6"/>
+<rect x="330" y="1013" width="242" height="6" fill="#FFE4E6"/>
+<line x1="330" y1="1019" x2="572" y2="1019" stroke="#E11D48" stroke-width="1.3"/>
+<text x="451" y="990" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«aggregateRoot»</text>
+<text x="451" y="1008" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">Order</text>
+<text x="340" y="1034" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="340" y="1050" class="mono" font-size="10.5" fill="#1E293B">+ orderNumber: string {UK}</text>
+<text x="340" y="1066" class="mono" font-size="10.5" fill="#1E293B">+ userId: string? {FK}</text>
+<text x="340" y="1082" class="mono" font-size="10.5" fill="#1E293B">+ subtotal: int {server-calc}</text>
+<text x="340" y="1098" class="mono" font-size="10.5" fill="#1E293B">+ shippingFee: int</text>
+<text x="340" y="1114" class="mono" font-size="10.5" fill="#1E293B">+ total: int</text>
+<text x="340" y="1130" class="mono" font-size="10.5" fill="#1E293B">+ status: OrderStatus</text>
+<text x="340" y="1146" class="mono" font-size="10.5" fill="#1E293B">+ paymentStatus: PaymentStat</text>
+<line x1="330" y1="1159" x2="572" y2="1159" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="340" y="1174" class="mono" font-size="10.5" fill="#0F172A">+ createOrderCore(input)</text>
+<text x="340" y="1190" class="mono" font-size="10.5" fill="#0F172A">+ updateOrderStatusCore()</text>
+<rect x="618" y="995" width="238" height="196" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="618" y="995" width="238" height="44" rx="6" fill="#FFE4E6"/>
+<rect x="618" y="1033" width="238" height="6" fill="#FFE4E6"/>
+<line x1="618" y1="1039" x2="856" y2="1039" stroke="#E11D48" stroke-width="1.3"/>
+<text x="737" y="1010" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity»</text>
+<text x="737" y="1028" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">OrderItem</text>
+<text x="628" y="1054" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="628" y="1070" class="mono" font-size="10.5" fill="#1E293B">+ orderId: string {FK}</text>
+<text x="628" y="1086" class="mono" font-size="10.5" fill="#1E293B">+ productId: string? {FK}</text>
+<text x="628" y="1102" class="mono" font-size="10.5" fill="#1E293B">+ productSlug: string</text>
+<text x="628" y="1118" class="mono" font-size="10.5" fill="#1E293B">+ unitPrice: int</text>
+<text x="628" y="1134" class="mono" font-size="10.5" fill="#1E293B">+ quantity: int</text>
+<text x="628" y="1150" class="mono" font-size="10.5" fill="#1E293B">+ subtotal: int</text>
+<line x1="618" y1="1163" x2="856" y2="1163" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="628" y="1178" class="mono" font-size="10.5" fill="#0F172A">+ computeLineSubtotal()</text>
+<rect x="610" y="718" width="245" height="180" rx="6" fill="#FFFFFF" stroke="#E11D48" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="610" y="718" width="245" height="44" rx="6" fill="#FFE4E6"/>
+<rect x="610" y="756" width="245" height="6" fill="#FFE4E6"/>
+<line x1="610" y1="762" x2="855" y2="762" stroke="#E11D48" stroke-width="1.3"/>
+<text x="732.5" y="733" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«context»</text>
+<text x="732.5" y="751" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">CartProvider</text>
+<text x="620" y="777" class="mono" font-size="10.5" fill="#1E293B">+ lines: CartLine[]</text>
+<text x="620" y="793" class="mono" font-size="10.5" fill="#1E293B">+ vehicle: GarageVehicle</text>
+<text x="620" y="809" class="mono" font-size="10.5" fill="#1E293B">+ count: int</text>
+<line x1="610" y1="822" x2="855" y2="822" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="620" y="837" class="mono" font-size="10.5" fill="#0F172A">+ add(slug, qty)</text>
+<text x="620" y="853" class="mono" font-size="10.5" fill="#0F172A">+ setQty(slug, qty)</text>
+<text x="620" y="869" class="mono" font-size="10.5" fill="#0F172A">+ remove(slug)</text>
+<text x="620" y="885" class="mono" font-size="10.5" fill="#0F172A">+ setVehicle(v)</text>
+<rect x="920" y="718" width="245" height="100" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="920" y="718" width="245" height="44" rx="6" fill="#EDE9FE"/>
+<rect x="920" y="756" width="245" height="6" fill="#EDE9FE"/>
+<line x1="920" y1="762" x2="1165" y2="762" stroke="#7C3AED" stroke-width="1.3"/>
+<text x="1042.5" y="733" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«interface»</text>
+<text x="1042.5" y="751" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">EmailProvider</text>
+<text x="930" y="777" class="mono" font-size="10.5" fill="#1E293B">+ name: string</text>
+<line x1="920" y1="790" x2="1165" y2="790" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="930" y="805" class="mono" font-size="10.5" fill="#0F172A">+ send(p: EmailPayload)</text>
+<rect x="920" y="925" width="245" height="132" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="920" y="925" width="245" height="44" rx="6" fill="#EDE9FE"/>
+<rect x="920" y="963" width="245" height="6" fill="#EDE9FE"/>
+<line x1="920" y1="969" x2="1165" y2="969" stroke="#7C3AED" stroke-width="1.3"/>
+<text x="1042.5" y="940" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«implementation»</text>
+<text x="1042.5" y="958" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">SmtpEmailProvider</text>
+<text x="930" y="984" class="mono" font-size="10.5" fill="#1E293B">- transporter: Transporter</text>
+<text x="930" y="1000" class="mono" font-size="10.5" fill="#1E293B">- from: string</text>
+<line x1="920" y1="1013" x2="1165" y2="1013" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="930" y="1028" class="mono" font-size="10.5" fill="#0F172A">+ verifyConnection()</text>
+<text x="930" y="1044" class="mono" font-size="10.5" fill="#0F172A">+ send(payload)</text>
+<rect x="1195" y="925" width="245" height="116" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="1195" y="925" width="245" height="44" rx="6" fill="#EDE9FE"/>
+<rect x="1195" y="963" width="245" height="6" fill="#EDE9FE"/>
+<line x1="1195" y1="969" x2="1440" y2="969" stroke="#7C3AED" stroke-width="1.3"/>
+<text x="1317.5" y="940" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«implementation»</text>
+<text x="1317.5" y="958" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">ResendEmailProvider</text>
+<text x="1205" y="984" class="mono" font-size="10.5" fill="#1E293B">- apiKey: string</text>
+<text x="1205" y="1000" class="mono" font-size="10.5" fill="#1E293B">- from: string</text>
+<line x1="1195" y1="1013" x2="1440" y2="1013" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="1205" y="1028" class="mono" font-size="10.5" fill="#0F172A">+ send(payload)</text>
+<rect x="1195" y="718" width="245" height="132" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="1195" y="718" width="245" height="44" rx="6" fill="#EDE9FE"/>
+<rect x="1195" y="756" width="245" height="6" fill="#EDE9FE"/>
+<line x1="1195" y1="762" x2="1440" y2="762" stroke="#7C3AED" stroke-width="1.3"/>
+<text x="1317.5" y="733" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«valueObject / setting»</text>
+<text x="1317.5" y="751" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">ShopBannerVideoConfig</text>
+<text x="1205" y="777" class="mono" font-size="10.5" fill="#1E293B">+ activeVideoUrl: string</text>
+<text x="1205" y="793" class="mono" font-size="10.5" fill="#1E293B">+ videos: ShopBannerVideoItem[]</text>
+<line x1="1195" y1="806" x2="1440" y2="806" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="1205" y="821" class="mono" font-size="10.5" fill="#0F172A">+ normalizeShopBannerVideoConfig()</text>
+<text x="1205" y="837" class="mono" font-size="10.5" fill="#0F172A">+ applyActiveShopBannerVideo()</text>
+<rect x="1465" y="718" width="205" height="180" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="1465" y="718" width="205" height="44" rx="6" fill="#EDE9FE"/>
+<rect x="1465" y="756" width="205" height="6" fill="#EDE9FE"/>
+<line x1="1465" y1="762" x2="1670" y2="762" stroke="#7C3AED" stroke-width="1.3"/>
+<text x="1567.5" y="733" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity»</text>
+<text x="1567.5" y="751" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">Banner &amp; Update</text>
+<text x="1475" y="777" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="1475" y="793" class="mono" font-size="10.5" fill="#1E293B">+ title: string</text>
+<text x="1475" y="809" class="mono" font-size="10.5" fill="#1E293B">+ imageUrl: string</text>
+<text x="1475" y="825" class="mono" font-size="10.5" fill="#1E293B">+ isActive: boolean</text>
+<text x="1475" y="841" class="mono" font-size="10.5" fill="#1E293B">+ sortOrder: int</text>
+<line x1="1465" y1="854" x2="1670" y2="854" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="1475" y="869" class="mono" font-size="10.5" fill="#0F172A">+ saveBannerCore()</text>
+<text x="1475" y="885" class="mono" font-size="10.5" fill="#0F172A">+ reorderBannersCore()</text>
+<rect x="1465" y="925" width="205" height="180" rx="6" fill="#FFFFFF" stroke="#475569" stroke-width="1.7" filter="url(#shadow-sm)"/>
+<rect x="1465" y="925" width="205" height="44" rx="6" fill="#F1F5F9"/>
+<rect x="1465" y="963" width="205" height="6" fill="#F1F5F9"/>
+<line x1="1465" y1="969" x2="1670" y2="969" stroke="#475569" stroke-width="1.3"/>
+<text x="1567.5" y="940" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#475569">«entity»</text>
+<text x="1567.5" y="958" text-anchor="middle" class="sans" font-size="13" font-weight="700" fill="#0F172A">AuditLog &amp; EmailLog</text>
+<text x="1475" y="984" class="mono" font-size="10.5" fill="#1E293B">+ id: string {PK}</text>
+<text x="1475" y="1000" class="mono" font-size="10.5" fill="#1E293B">+ actorId: string? {FK}</text>
+<text x="1475" y="1016" class="mono" font-size="10.5" fill="#1E293B">+ action / template: string</text>
+<text x="1475" y="1032" class="mono" font-size="10.5" fill="#1E293B">+ entityType: string</text>
+<text x="1475" y="1048" class="mono" font-size="10.5" fill="#1E293B">+ status: string</text>
+<line x1="1465" y1="1061" x2="1670" y2="1061" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="1475" y="1076" class="mono" font-size="10.5" fill="#0F172A">+ persistEmailLog()</text>
+<text x="1475" y="1092" class="mono" font-size="10.5" fill="#0F172A">+ recordAuditEntry()</text>
+<line x1="163" y1="344" x2="163" y2="405" stroke="#1E293B" stroke-width="1.6" marker-start="url(#diamond-comp)"/>
+<text x="172" y="360" class="mono" font-size="10.5" fill="#0F172A">1</text>
+<text x="172" y="397" class="mono" font-size="10.5" fill="#0F172A">0..*</text>
+<line x1="312" y1="220" x2="281" y2="220" stroke="#475569" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arrow-open)"/>
+<line x1="426" y1="312" x2="426" y2="405" stroke="#475569" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arrow-open)"/>
+
+  <g transform="translate(426, 360)">
+    <rect x="-25.6" y="-9.5" width="51.2" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#334155">«uses»</text>
+  </g>
+<line x1="931" y1="190" x2="985" y2="190" stroke="#1E293B" stroke-width="1.6" marker-start="url(#diamond-comp)"/>
+<text x="938" y="182" class="mono" font-size="10">1</text><text x="960" y="182" class="mono" font-size="10">0..*</text>
+<path d="M 931 320 L 985 320" stroke="#1E293B" stroke-width="1.6" marker-start="url(#diamond-comp)"/>
+<text x="938" y="312" class="mono" font-size="10">1</text><text x="960" y="312" class="mono" font-size="10">0..*</text>
+<path d="M 985 470 L 931 470" stroke="#2563EB" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arrow-open-blue)"/>
+<text x="958" y="460" text-anchor="middle" class="mono" font-size="9.5" fill="#2563EB">indexes</text>
+<line x1="572" y1="1085" x2="618" y2="1085" stroke="#1E293B" stroke-width="1.7" marker-start="url(#diamond-comp)"/>
+<text x="577" y="1075" class="mono" font-size="10">1</text><text x="595" y="1102" class="mono" font-size="10">1..*</text>
+<line x1="330" y1="795" x2="301" y2="795" stroke="#E11D48" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arrow-open)"/>
+<path d="M 730 718 L 730 488" stroke="#1E293B" stroke-width="1.5" marker-start="url(#diamond-agg)" marker-end="url(#arrow-open)"/>
+<text x="739" y="508" class="mono" font-size="10">0..*</text>
+<path d="M 46 310 L 14 310 L 14 820 L 46 820" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#arrow-open)"/>
+<text x="19" y="590" class="mono" font-size="10" transform="rotate(-90 19 590)">places 0..* Quotes / Bookings</text>
+<line x1="1015" y1="925" x2="1015" y2="818" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-inherit)"/>
+<path d="M 1317 925 L 1317 886 L 1095 886 L 1095 818" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-inherit)"/>
+
+  <g transform="translate(1206, 886)">
+    <rect x="-34.900000000000006" y="-9.5" width="69.80000000000001" height="19" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#6D28D9">«realize»</text>
+  </g>
+<path d="M 550 898 L 550 936 L 885 936 L 885 758 L 920 758" fill="none" stroke="#7C3AED" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arrow-open-purple)"/>
+
+  <g transform="translate(730, 936)">
+    <rect x="-44.2" y="-9.5" width="88.4" height="19" rx="4" fill="#FFFFFF" stroke="#C4B5FD" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="10" font-weight="600" fill="#6D28D9">«dispatches»</text>
+  </g>
+</svg>

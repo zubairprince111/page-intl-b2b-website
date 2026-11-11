@@ -47,6 +47,13 @@ import {
   type SpecTuple,
   type SpecsInput,
 } from "./product-utils";
+import {
+  normalizeShopBannerVideoConfig,
+  sanitizeShopBannerVideoUrl,
+  SHOP_BANNER_VIDEO_SETTING_KEY,
+  type ShopBannerVideoConfig,
+  type ShopBannerVideoItem,
+} from "./shop-banner-video";
 
 // -----------------------------------------------------------------------------
 // HELPER: Require Admin Privileges
@@ -1261,6 +1268,101 @@ export async function updateSettingsCore(settingsMap: Record<string, unknown>) {
   }
 
   return { success: true, settings: await getSettingsCore() };
+}
+
+export async function getShopBannerVideoPublicCore(): Promise<{ activeVideoUrl: string }> {
+  const rows = await db
+    .select({ value: settings.value })
+    .from(settings)
+    .where(eq(settings.key, SHOP_BANNER_VIDEO_SETTING_KEY))
+    .limit(1);
+  const config = normalizeShopBannerVideoConfig(rows[0]?.value);
+  return { activeVideoUrl: config.activeVideoUrl };
+}
+
+export async function getShopBannerVideoAdminCore(): Promise<ShopBannerVideoConfig> {
+  await requireAdmin();
+  const rows = await db
+    .select({ value: settings.value })
+    .from(settings)
+    .where(eq(settings.key, SHOP_BANNER_VIDEO_SETTING_KEY))
+    .limit(1);
+  return normalizeShopBannerVideoConfig(rows[0]?.value);
+}
+
+export async function saveShopBannerVideoCore(input: {
+  activeVideoUrl: string;
+  videos?: ShopBannerVideoItem[] | undefined;
+}): Promise<{ success: true; config: ShopBannerVideoConfig }> {
+  const admin = await requireAdmin();
+  const safeActiveUrl = sanitizeShopBannerVideoUrl(input.activeVideoUrl);
+
+  const sanitizedList: ShopBannerVideoItem[] = [];
+  if (Array.isArray(input.videos)) {
+    for (const item of input.videos) {
+      if (!item || typeof item.url !== "string") continue;
+      const safeItemUrl = sanitizeShopBannerVideoUrl(item.url);
+      sanitizedList.push({
+        id: String(item.id || `shop-vid-${Date.now().toString(36)}`).trim(),
+        title: String(item.title || safeItemUrl.split("/").pop() || "Shop Banner Video").trim(),
+        url: safeItemUrl,
+        createdAt:
+          typeof item.createdAt === "string" && item.createdAt.trim()
+            ? item.createdAt
+            : new Date().toISOString(),
+      });
+    }
+  }
+
+  const config = normalizeShopBannerVideoConfig({
+    activeVideoUrl: safeActiveUrl,
+    videos: sanitizedList,
+  });
+
+  const existing = await db
+    .select({ key: settings.key })
+    .from(settings)
+    .where(eq(settings.key, SHOP_BANNER_VIDEO_SETTING_KEY))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db
+      .update(settings)
+      .set({
+        value: config,
+        description: "Shop page hero banner video selection (single active video)",
+        updatedBy: admin.id,
+        updatedAt: new Date(),
+      })
+      .where(eq(settings.key, SHOP_BANNER_VIDEO_SETTING_KEY));
+  } else {
+    await db.insert(settings).values({
+      key: SHOP_BANNER_VIDEO_SETTING_KEY,
+      value: config,
+      description: "Shop page hero banner video selection (single active video)",
+      updatedBy: admin.id,
+    });
+  }
+
+  try {
+    await db.insert(auditLog).values({
+      id: `audit-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
+      actorId: admin.id,
+      actorEmail: admin.email,
+      action: "shop_banner_video.update",
+      entityType: "setting",
+      entityId: SHOP_BANNER_VIDEO_SETTING_KEY,
+      metadata: {
+        activeVideoUrl: config.activeVideoUrl,
+        savedVideoCount: config.videos.length,
+      },
+      ipAddress: getClientIp(),
+    });
+  } catch {
+    // Non-blocking
+  }
+
+  return { success: true, config };
 }
 
 // =============================================================================

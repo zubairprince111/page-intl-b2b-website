@@ -211,6 +211,7 @@ export const media = pgTable(
     sizeBytes: integer("size_bytes").notNull(),
     url: text("url").notNull().unique(),
     category: text("category").notNull().default("products"), // "products" | "banners" | "documents" | "general"
+    storageData: text("storage_data"), // Optional base64 payload for ephemeral containers (e.g. Render Free)
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("idx_media_category").on(table.category)],

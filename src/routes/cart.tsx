@@ -213,7 +213,7 @@ export function Cart() {
   };
 
   return (
-    <div className="bg-background text-foreground min-h-screen pt-24 lg:pt-32 pb-20">
+    <div className="bg-background text-foreground min-h-screen pt-16 lg:pt-[4.25rem] pb-20">
       {/* Breadcrumb */}
       <div className="border-b border-border bg-secondary/40 py-3">
         <nav

@@ -31,7 +31,7 @@ async function checkStatus() {
     db.select().from(productsTable),
     db.select().from(banners),
     db.select().from(reviews),
-    db.select().from(media),
+    db.select({ id: media.id }).from(media),
     db.select().from(quotes),
     db.select().from(bookings),
     db.select().from(orders),

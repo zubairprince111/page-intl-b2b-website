@@ -5,6 +5,7 @@ ensureServerEnvLoaded();
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { serveUploadedFile } from "./lib/uploads.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -94,6 +95,27 @@ export default {
           },
         );
       }
+    }
+
+    // Multipart media upload endpoint (supports large MP4/WebM videos without base64 bloat)
+    if (url.pathname === "/api/media/upload") {
+      const { handleMediaUploadHttpRequest } = await import("./lib/media-http.server");
+      return await handleMediaUploadHttpRequest(request);
+    }
+
+    // Dynamically serve uploaded assets from public/uploads in both Vite dev & Nitro prod
+    // (hydrating from PostgreSQL storage_data if an ephemeral container disk missed the file)
+    const uploadedAssetResponse = await serveUploadedFile(
+      request,
+      url,
+      undefined,
+      async (uploadPathname) => {
+        const { hydrateMediaBufferByUrlCore } = await import("./lib/media.server");
+        return await hydrateMediaBufferByUrlCore(uploadPathname);
+      },
+    );
+    if (uploadedAssetResponse) {
+      return uploadedAssetResponse;
     }
 
     try {

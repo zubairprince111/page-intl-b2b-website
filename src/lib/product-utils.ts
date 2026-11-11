@@ -354,7 +354,31 @@ export function getDefaultProductPresentation(opts: {
     variantOptions,
     guarantees,
     dispatchHub: "Dhaka Central Hub",
-    priceLabel: opts.requiresQuote ? "Pro-Forma B2B" : "B2B Unit Price",
+    priceLabel: "Pro-Forma B2B",
+  };
+}
+
+export function normalizeStorefrontPriceLabel(rawPriceLabel: string | null | undefined): string {
+  const trimmed = String(rawPriceLabel ?? "").trim();
+  if (/^b2b unit price$/i.test(trimmed)) {
+    return "Pro-Forma B2B";
+  }
+  return trimmed;
+}
+
+export function buildProductJsonLdOffers(product: {
+  slug: string;
+  stock: string;
+}): Record<string, unknown> {
+  return {
+    "@type": "Offer",
+    url: `https://page-bd.com/shop/${product.slug}`,
+    availability:
+      product.stock === "In stock" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    seller: {
+      "@type": "Organization",
+      name: "PAGE International Ltd.",
+    },
   };
 }
 

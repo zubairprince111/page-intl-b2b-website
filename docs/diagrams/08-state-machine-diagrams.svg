@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 1040" width="1520" height="1040" role="img" aria-label="Figure 8 — UML 2.5 State Machine Diagrams: Entity Lifecycle Transitions">
+  <defs>
+    <style>
+      .sans { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; }
+      .title { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 22px; font-weight: 800; fill: #0F172A; letter-spacing: -0.02em; }
+      .subtitle { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12.5px; font-weight: 500; fill: #475569; }
+      .stereo { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #475569; }
+      .lbl { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #0F172A; }
+      .lbl-sm { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 500; fill: #334155; }
+      .edge-lbl { font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace; font-size: 10.5px; font-weight: 600; fill: #334155; }
+    </style>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <!-- Filled Solid Arrowhead (Synchronous, Control Flow, Association Navigation) -->
+    <marker id="arrow-filled" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#1E293B"/>
+    </marker>
+    <marker id="arrow-filled-red" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#E11D48"/>
+    </marker>
+    <marker id="arrow-filled-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-filled-emerald" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 11 6 L 1 10.5 z" fill="#059669"/>
+    </marker>
+    <!-- Open V-Arrowhead (UML Dependency, Include/Extend, Async Message, Return) -->
+    <marker id="arrow-open" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#1E293B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-blue" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#2563EB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-open-purple" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="8.5" markerHeight="8.5" orient="auto-start-reverse">
+      <path d="M 1.5 1.5 L 10.5 6 L 1.5 10.5" fill="none" stroke="#7C3AED" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <!-- Hollow Triangle Arrowhead (UML Generalization / Realization) -->
+    <marker id="arrow-inherit" viewBox="0 0 14 14" refX="12.5" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 1 1.5 L 12.5 7 L 1 12.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <!-- Filled Diamond (UML Composition) -->
+    <marker id="diamond-comp" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#1E293B" stroke="#1E293B" stroke-width="1.2"/>
+    </marker>
+    <!-- Hollow Diamond (UML Aggregation) -->
+    <marker id="diamond-agg" viewBox="0 0 18 12" refX="1" refY="6" markerWidth="12" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 1 6 L 8.5 1.5 L 16 6 L 8.5 10.5 z" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.4"/>
+    </marker>
+    <!-- Crow's Foot Markers (ERD) -->
+    <marker id="erd-one" viewBox="0 0 14 14" refX="12" refY="7" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <line x1="7" y1="2" x2="7" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+      <line x1="11" y1="2" x2="11" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-zero-one" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <circle cx="5.5" cy="7" r="3.5" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="12" y1="2" x2="12" y2="12" stroke="#1E293B" stroke-width="1.7"/>
+    </marker>
+    <marker id="erd-many" viewBox="0 0 18 14" refX="16" refY="7" markerWidth="12" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 16 2 L 7 7 L 16 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <line x1="5" y1="2" x2="5" y2="12" stroke="#1E293B" stroke-width="1.6"/>
+    </marker>
+    <marker id="erd-zero-many" viewBox="0 0 20 14" refX="18" refY="7" markerWidth="13" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 18 2 L 9.5 7 L 18 12" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+      <circle cx="4.5" cy="7" r="3.2" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5"/>
+    </marker>
+    
+  </defs>
+
+  <!-- Solid White Backdrop for Light & Dark Markdown Readers -->
+  <rect x="0" y="0" width="1520" height="1040" fill="#FFFFFF" rx="12"/>
+  <rect x="1" y="1" width="1518" height="1038" fill="none" stroke="#E2E8F0" stroke-width="1.5" rx="11"/>
+
+  <!-- Header Banner -->
+  <rect x="0" y="0" width="1520" height="74" fill="#F8FAFC" rx="12"/>
+  <rect x="0" y="60" width="1520" height="14" fill="#F8FAFC"/>
+  <line x1="0" y1="74" x2="1520" y2="74" stroke="#E2E8F0" stroke-width="1.2"/>
+  <rect x="24" y="18" width="5" height="38" fill="#E11D48" rx="2.5"/>
+  <text x="40" y="38" class="title">Figure 8 — UML 2.5 State Machine Diagrams: Entity Lifecycle Transitions</text>
+  <text x="40" y="57" class="subtitle">Composite &amp; Orthogonal Behavioral State Machines for Quote, Booking, Order (+ PaymentStatus), EmailLog, and Ephemeral OTP Verification Slots</text>
+  <text x="1496" y="42" text-anchor="end" class="stereo">PAGE International Ltd. · IEEE/UML 2.5</text>
+
+  
+    <g>
+      <rect x="28" y="94" width="725" height="440" rx="10" fill="#FFF1F2" fill-opacity="0.25" stroke="#E11D48" stroke-width="1.6"/>
+      <polygon points="28,94 338,94 338,118 323,126 28,126" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.5"/>
+      <text x="40" y="115" class="mono" font-size="11.5" font-weight="700" fill="#E11D48">stm Quote::status (RFQ Lifecycle)</text>
+    </g>
+<circle cx="78" cy="225" r="10" fill="#0F172A"/>
+<path d="M 88 225 L 138 225" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="140" y="197" width="150" height="56" rx="14" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/>
+      <line x1="140" y1="221" x2="290" y2="221" stroke="#D97706" stroke-width="1"/>
+      <text x="215" y="214" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">PENDING</text>
+      <text x="215" y="239" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / createQuoteCore()</text>
+    </g>
+<path d="M 290 225 L 365 225" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(327, 206)">
+    <rect x="-33.504999999999995" y="-9.5" width="67.00999999999999" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">adminCall</text>
+  </g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="367" y="197" width="150" height="56" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.8"/>
+      <line x1="367" y1="221" x2="517" y2="221" stroke="#2563EB" stroke-width="1"/>
+      <text x="442" y="214" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">CONTACTED</text>
+      <text x="442" y="239" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">do / inspect bay reqs</text>
+    </g>
+<path d="M 517 225 L 580 225" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="582" y="197" width="140" height="56" rx="14" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.8"/>
+      <line x1="582" y1="221" x2="722" y2="221" stroke="#7C3AED" stroke-width="1"/>
+      <text x="652" y="214" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">QUOTED</text>
+      <text x="652" y="239" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / save quotedPrice</text>
+    </g>
+<path d="M 652 253 L 652 340" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(652, 295)">
+    <rect x="-36.45" y="-9.5" width="72.9" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">poAccepted</text>
+  </g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="579.5" y="344" width="145" height="56" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="1.8"/>
+      <line x1="579.5" y1="368" x2="724.5" y2="368" stroke="#059669" stroke-width="1"/>
+      <text x="652" y="361" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">COMPLETED</text>
+      <text x="652" y="386" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / archive order</text>
+    </g>
+<path d="M 580 372 L 500 372" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g><circle cx="488" cy="372" r="12" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/><circle cx="488" cy="372" r="7" fill="#0F172A"/></g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="212.5" y="344" width="155" height="56" rx="14" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.8"/>
+      <line x1="212.5" y1="368" x2="367.5" y2="368" stroke="#E11D48" stroke-width="1"/>
+      <text x="290" y="361" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">CANCELLED</text>
+      <text x="290" y="386" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / record reason</text>
+    </g>
+<path d="M 215 253 L 250 344" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 442 253 L 330 344" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(300, 298)">
+    <rect x="-57.065" y="-9.5" width="114.13" height="19" rx="4" fill="#FFFFFF" stroke="#FDA4AF" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#BE123C">withdraw / reject</text>
+  </g>
+<path d="M 368 372 L 476 372" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g>
+      <rect x="775" y="94" width="718" height="440" rx="10" fill="#EFF6FF" fill-opacity="0.25" stroke="#2563EB" stroke-width="1.6"/>
+      <polygon points="775,94 1085,94 1085,118 1070,126 775,126" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.5"/>
+      <text x="787" y="115" class="mono" font-size="11.5" font-weight="700" fill="#2563EB">stm Booking::status (Demo &amp; Consultation)</text>
+    </g>
+<circle cx="825" cy="225" r="10" fill="#0F172A"/>
+<path d="M 835 225 L 885 225" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="887" y="197" width="150" height="56" rx="14" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/>
+      <line x1="887" y1="221" x2="1037" y2="221" stroke="#D97706" stroke-width="1"/>
+      <text x="962" y="214" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">PENDING</text>
+      <text x="962" y="239" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / sendBookEmail()</text>
+    </g>
+<path d="M 1037 225 L 1110 225" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(1073, 206)">
+    <rect x="-39.394999999999996" y="-9.5" width="78.78999999999999" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">confirmSlot</text>
+  </g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1113" y="197" width="150" height="56" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.8"/>
+      <line x1="1113" y1="221" x2="1263" y2="221" stroke="#2563EB" stroke-width="1"/>
+      <text x="1188" y="214" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">CONFIRMED</text>
+      <text x="1188" y="239" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / assign Engineer</text>
+    </g>
+<path d="M 1263 225 L 1335 225" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1339" y="197" width="138" height="56" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="1.8"/>
+      <line x1="1339" y1="221" x2="1477" y2="221" stroke="#059669" stroke-width="1"/>
+      <text x="1408" y="214" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">COMPLETED</text>
+      <text x="1408" y="239" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">do / live bay demo</text>
+    </g>
+<path d="M 1408 253 L 1408 355" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g><circle cx="1408" cy="372" r="12" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/><circle cx="1408" cy="372" r="7" fill="#0F172A"/></g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1000" y="344" width="160" height="56" rx="14" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.8"/>
+      <line x1="1000" y1="368" x2="1160" y2="368" stroke="#E11D48" stroke-width="1"/>
+      <text x="1080" y="361" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">CANCELLED</text>
+      <text x="1080" y="386" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / adminNotes</text>
+    </g>
+<path d="M 962 253 L 1035 344" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 1188 253 L 1125 344" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 1160 372 L 1395 372" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(1080, 295)">
+    <rect x="-36.45" y="-9.5" width="72.9" height="19" rx="4" fill="#FFFFFF" stroke="#FDA4AF" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#BE123C">cancelSlot</text>
+  </g>
+
+    <g>
+      <rect x="28" y="560" width="860" height="448" rx="10" fill="#ECFDF5" fill-opacity="0.25" stroke="#059669" stroke-width="1.6"/>
+      <polygon points="28,560 338,560 338,584 323,592 28,592" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+      <text x="40" y="581" class="mono" font-size="11.5" font-weight="700" fill="#059669">stm Order::status &amp; PaymentStatus (Fulfillment)</text>
+    </g>
+<circle cx="72" cy="675" r="10" fill="#0F172A"/>
+<path d="M 82 675 L 112 675" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="114" y="648" width="140" height="54" rx="14" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/>
+      <line x1="114" y1="672" x2="254" y2="672" stroke="#D97706" stroke-width="1"/>
+      <text x="184" y="665" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">PENDING</text>
+      <text x="184" y="689" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / serverTotals</text>
+    </g>
+<path d="M 254 675 L 296 675" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="298" y="648" width="140" height="54" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.8"/>
+      <line x1="298" y1="672" x2="438" y2="672" stroke="#2563EB" stroke-width="1"/>
+      <text x="368" y="665" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">CONFIRMED</text>
+      <text x="368" y="689" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">do / PO verify</text>
+    </g>
+<path d="M 438 675 L 480 675" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="483" y="648" width="142" height="54" rx="14" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.8"/>
+      <line x1="483" y1="672" x2="625" y2="672" stroke="#7C3AED" stroke-width="1"/>
+      <text x="554" y="665" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">PROCESSING</text>
+      <text x="554" y="689" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">do / rig &amp; pack</text>
+    </g>
+<path d="M 625 675 L 668 675" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="671" y="648" width="138" height="54" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.8"/>
+      <line x1="671" y1="672" x2="809" y2="672" stroke="#2563EB" stroke-width="1"/>
+      <text x="740" y="665" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">SHIPPED</text>
+      <text x="740" y="689" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">do / fleet dispatch</text>
+    </g>
+<path d="M 740 702 L 740 780" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="668" y="783" width="144" height="54" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="1.8"/>
+      <line x1="668" y1="807" x2="812" y2="807" stroke="#059669" stroke-width="1"/>
+      <text x="740" y="800" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">DELIVERED</text>
+      <text x="740" y="824" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / tax invoice</text>
+    </g>
+<path d="M 668 810 L 602 810" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g><circle cx="588" cy="810" r="12" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/><circle cx="588" cy="810" r="7" fill="#0F172A"/></g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="290.5" y="783" width="155" height="54" rx="14" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.8"/>
+      <line x1="290.5" y1="807" x2="445.5" y2="807" stroke="#E11D48" stroke-width="1"/>
+      <text x="368" y="800" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">CANCELLED</text>
+      <text x="368" y="824" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / restock note</text>
+    </g>
+<path d="M 184 702 L 290 792" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 368 702 L 368 783" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<path d="M 446 810 L 574 810" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<line x1="48" y1="876" x2="868" y2="876" stroke="#059669" stroke-width="1.2" stroke-dasharray="6,4"/>
+<text x="58" y="896" class="mono" font-size="10.5" font-weight="700" fill="#047857">Orthogonal Region: Order::paymentStatus</text>
+<circle cx="90" cy="945" r="10" fill="#0F172A"/>
+<path d="M 100 945 L 152 945" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="154.5" y="921" width="175" height="48" rx="14" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8"/>
+      <line x1="154.5" y1="945" x2="329.5" y2="945" stroke="#D97706" stroke-width="1"/>
+      <text x="242" y="938" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">UNPAID</text>
+      <text x="242" y="959" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">method: COD / Bank / PO</text>
+    </g>
+<path d="M 330 945 L 448 945" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(388, 928)">
+    <rect x="-45.285" y="-9.5" width="90.57" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">settlePayment</text>
+  </g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="450.5" y="921" width="175" height="48" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="1.8"/>
+      <line x1="450.5" y1="945" x2="625.5" y2="945" stroke="#059669" stroke-width="1"/>
+      <text x="538" y="938" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">PAID</text>
+      <text x="538" y="959" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / updateOrderStatus()</text>
+    </g>
+<path d="M 626 945 L 680 945" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+<g><circle cx="694" cy="945" r="12" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/><circle cx="694" cy="945" r="7" fill="#0F172A"/></g>
+
+    <g>
+      <rect x="912" y="560" width="581" height="448" rx="10" fill="#FFFBEB" fill-opacity="0.25" stroke="#D97706" stroke-width="1.6"/>
+      <polygon points="912,560 1222,560 1222,584 1207,592 912,592" fill="#FFFBEB" stroke="#D97706" stroke-width="1.5"/>
+      <text x="924" y="581" class="mono" font-size="11.5" font-weight="700" fill="#D97706">stm EmailLog::status &amp; QuoteOtpSlot</text>
+    </g>
+<circle cx="960" cy="675" r="10" fill="#0F172A"/>
+<path d="M 970 675 L 1015 675" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1017.5" y="649" width="145" height="52" rx="14" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/>
+      <line x1="1017.5" y1="673" x2="1162.5" y2="673" stroke="#64748B" stroke-width="1"/>
+      <text x="1090" y="666" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">QUEUED</text>
+      <text x="1090" y="689" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / persistLog()</text>
+    </g>
+<path d="M 1162 675 L 1255 642" fill="none" stroke="#059669" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(1210, 640)">
+    <rect x="-22" y="-9.5" width="44" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[ok]</text>
+  </g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1272.5" y="617" width="165" height="50" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="1.8"/>
+      <line x1="1272.5" y1="641" x2="1437.5" y2="641" stroke="#059669" stroke-width="1"/>
+      <text x="1355" y="634" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">SENT</text>
+      <text x="1355" y="656" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / set sentAt</text>
+    </g>
+<path d="M 1162 688 L 1255 725" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+  <g transform="translate(1210, 725)">
+    <rect x="-22" y="-9.5" width="44" height="19" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.9"/>
+    <text x="0" y="3.5" text-anchor="middle" class="mono" font-size="9.5" font-weight="600" fill="#334155">[err]</text>
+  </g>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1272.5" y="700" width="165" height="50" rx="14" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.8"/>
+      <line x1="1272.5" y1="724" x2="1437.5" y2="724" stroke="#E11D48" stroke-width="1"/>
+      <text x="1355" y="717" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">FAILED</text>
+      <text x="1355" y="739" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / sanitizeError()</text>
+    </g>
+<line x1="932" y1="785" x2="1473" y2="785" stroke="#D97706" stroke-width="1.2" stroke-dasharray="6,4"/>
+<text x="942" y="805" class="mono" font-size="10.5" font-weight="700" fill="#B45309">In-Memory Ephemeral State: QuoteOtpSlot</text>
+<circle cx="960" cy="880" r="10" fill="#0F172A"/>
+<path d="M 970 880 L 1012 880" fill="none" stroke="#1E293B" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1015" y="853" width="190" height="54" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.8"/>
+      <line x1="1015" y1="877" x2="1205" y2="877" stroke="#2563EB" stroke-width="1"/>
+      <text x="1110" y="870" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">ACTIVE_OTP</text>
+      <text x="1110" y="894" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">TTL=10m | attempts=0..4</text>
+    </g>
+<path d="M 1205 868 L 1295 850" fill="none" stroke="#059669" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1297.5" y="826" width="165" height="48" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="1.8"/>
+      <line x1="1297.5" y1="850" x2="1462.5" y2="850" stroke="#059669" stroke-width="1"/>
+      <text x="1380" y="843" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">CONSUMED</text>
+      <text x="1380" y="864" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">entry / createQuote</text>
+    </g>
+<path d="M 1205 894 L 1295 935" fill="none" stroke="#E11D48" stroke-width="1.7" marker-end="url(#arrow-filled)"/>
+
+    <g filter="url(#shadow-sm)">
+      <rect x="1292.5" y="911" width="175" height="48" rx="14" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.8"/>
+      <line x1="1292.5" y1="935" x2="1467.5" y2="935" stroke="#E11D48" stroke-width="1"/>
+      <text x="1380" y="928" text-anchor="middle" class="mono" font-size="12" font-weight="800" fill="#0F172A">EVICTED / LOCKED</text>
+      <text x="1380" y="949" text-anchor="middle" class="sans" font-size="10.5" fill="#475569">TTL exp | att&gt;=5 | mailFail</text>
+    </g>
+</svg>

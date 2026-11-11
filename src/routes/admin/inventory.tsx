@@ -135,7 +135,6 @@ interface ProductFormState {
   brand: string;
   category: string;
   isEquipment: boolean;
-  requiresQuote: boolean;
   priceLabel: string;
   dispatchHub: string;
   mobility: MobilityType[];
@@ -163,7 +162,6 @@ function createEmptyProductForm(): ProductFormState {
     brand: "",
     category: defaultCategory,
     isEquipment: defaultEquip,
-    requiresQuote: defaultEquip,
     priceLabel: "",
     dispatchHub: "",
     mobility: ["4-Wheeler"],
@@ -196,12 +194,14 @@ function AdminInventory() {
   const [productModalMode, setProductModalMode] = useState<"create" | "edit" | null>(null);
   const [productForm, setProductForm] = useState<ProductFormState>(() => createEmptyProductForm());
   const [isEquipmentManual, setIsEquipmentManual] = useState(false);
-  const [isPricingManual, setIsPricingManual] = useState(false);
   const [showBulkSpecs, setShowBulkSpecs] = useState(false);
   const [bulkSpecsText, setBulkSpecsText] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<"presets" | "upload" | "url">("presets");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const [imagePreviewError, setImagePreviewError] = useState(false);
   const [updatingQtySlug, setUpdatingQtySlug] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -274,10 +274,12 @@ function AdminInventory() {
   function openAddModal() {
     setProductForm(createEmptyProductForm());
     setIsEquipmentManual(false);
-    setIsPricingManual(false);
     setShowBulkSpecs(false);
     setBulkSpecsText("");
     setFormError(null);
+    setImageUploadError(null);
+    setImagePreviewError(false);
+    setIsDraggingImage(false);
     setImageTab("presets");
     setProductModalMode("create");
   }
@@ -315,7 +317,6 @@ function AdminInventory() {
       brand: item.brand || "",
       category: item.category || categories[0] || "Garage Equipment",
       isEquipment: Boolean(item.isEquipment),
-      requiresQuote: Boolean(item.requiresQuote),
       priceLabel: item.priceLabel ?? "",
       dispatchHub: item.dispatchHub ?? "",
       mobility:
@@ -334,10 +335,12 @@ function AdminInventory() {
       fitsText: Array.isArray(item.fits) ? item.fits.join(", ") : "",
     });
     setIsEquipmentManual(true);
-    setIsPricingManual(true);
     setShowBulkSpecs(false);
     setBulkSpecsText("");
     setFormError(null);
+    setImageUploadError(null);
+    setImagePreviewError(false);
+    setIsDraggingImage(false);
     setImageTab("presets");
     setProductModalMode("edit");
   }
@@ -345,6 +348,9 @@ function AdminInventory() {
   function closeProductModal() {
     setProductModalMode(null);
     setFormError(null);
+    setImageUploadError(null);
+    setImagePreviewError(false);
+    setIsDraggingImage(false);
     setShowBulkSpecs(false);
     setBulkSpecsText("");
   }
@@ -610,7 +616,7 @@ function AdminInventory() {
           brand: productForm.brand.trim() || "PAGE Genuine",
           category: productForm.category,
           isEquipment: productForm.isEquipment,
-          requiresQuote: productForm.requiresQuote,
+          requiresQuote: true,
           priceLabel: productForm.priceLabel.trim(),
           dispatchHub: productForm.dispatchHub.trim(),
           mobility: productForm.mobility,
@@ -641,7 +647,7 @@ function AdminInventory() {
           brand: productForm.brand.trim() || "PAGE Genuine",
           category: productForm.category,
           isEquipment: productForm.isEquipment,
-          requiresQuote: productForm.requiresQuote,
+          requiresQuote: true,
           priceLabel: productForm.priceLabel.trim(),
           dispatchHub: productForm.dispatchHub.trim(),
           mobility: productForm.mobility,
@@ -696,25 +702,49 @@ function AdminInventory() {
     }
   }
 
+  async function uploadProductImageFile(file: File) {
+    if (file.size > 20 * 1024 * 1024) {
+      const msg = "Please select an image smaller than 20MB.";
+      setImageUploadError(msg);
+      setFormError(msg);
+      return;
+    }
+    try {
+      setImageUploadError(null);
+      setFormError(null);
+      setIsUploadingImage(true);
+      const res = await uploadMediaFile(file, "products");
+      if (!res.success || !res.url) {
+        throw new Error("Server did not return an uploaded image URL.");
+      }
+      setImagePreviewError(false);
+      setProductForm((prev) => ({ ...prev, image: res.url }));
+    } catch (err: any) {
+      console.error("Product media upload error:", err);
+      const msg = err?.message || "Failed to upload product image to server storage.";
+      setImageUploadError(msg);
+      setFormError(msg);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
   async function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
-      if (file.size > 20 * 1024 * 1024) {
-        setFormError("Please select an image smaller than 20MB.");
-        return;
-      }
-      try {
-        setIsUploadingImage(true);
-        const res = await uploadMediaFile(file, "products");
-        if (res.success) {
-          setProductForm((prev) => ({ ...prev, image: res.url }));
-        }
-      } catch (err: any) {
-        console.error("Product media upload error:", err);
-        setFormError(err?.message || "Failed to upload product image to server storage.");
-      } finally {
-        setIsUploadingImage(false);
-      }
+      await uploadProductImageFile(file);
+    }
+  }
+
+  function handleImageDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(false);
+    if (isUploadingImage) return;
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      void uploadProductImageFile(file);
     }
   }
 
@@ -930,7 +960,7 @@ function AdminInventory() {
                       onClick={() => toggleSort("price")}
                       className="flex items-center gap-1 ml-auto hover:text-zinc-300 transition-colors"
                     >
-                      Price
+                      Ref. Price
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
@@ -994,9 +1024,7 @@ function AdminInventory() {
                         <span className="text-[12px] text-zinc-200 font-medium block">
                           {taka(item.price)}
                         </span>
-                        <span className="text-[10px] text-zinc-500">
-                          {item.requiresQuote ? "Quote mode" : "Fixed price"}
-                        </span>
+                        <span className="text-[10px] text-zinc-500">Internal ref · Quote mode</span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center justify-end gap-1.5">
@@ -1120,8 +1148,7 @@ function AdminInventory() {
                       {productModalMode === "edit" ? "Edit Product Details" : "Add New Product"}
                     </h3>
                     <p className="text-[11px] text-zinc-400">
-                      Configure pricing mode, specs, highlights, variant options, warranty badges
-                      &amp; overview
+                      Configure specs, highlights, variant options, warranty badges &amp; overview
                     </p>
                   </div>
                 </div>
@@ -1221,7 +1248,6 @@ function AdminInventory() {
                             ...prev,
                             category: cat,
                             isEquipment: isEquipmentManual ? prev.isEquipment : inferredEquip,
-                            requiresQuote: isPricingManual ? prev.requiresQuote : inferredEquip,
                           }));
                         }}
                         className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -1235,7 +1261,7 @@ function AdminInventory() {
                     </div>
                     <div>
                       <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                        Price (BDT) *
+                        Internal Ref. Price (BDT) *
                       </label>
                       <input
                         type="number"
@@ -1316,48 +1342,14 @@ function AdminInventory() {
                     </div>
                   </div>
 
-                  {/* Storefront Pricing Display Mode, Sub-Label & Fulfillment Hub */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  {/* Storefront Quote Label & Fulfillment Hub */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div>
                       <label className="text-[11px] font-medium text-zinc-400 block mb-1.5">
-                        Storefront Pricing Display
-                      </label>
-                      <div className="grid grid-cols-2 gap-1.5 bg-[#232323] p-1 rounded-lg border border-white/[0.06]">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsPricingManual(true);
-                            setProductForm((prev) => ({ ...prev, requiresQuote: true }));
-                          }}
-                          className={`py-1.5 px-2 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                            productForm.requiresQuote
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                              : "text-zinc-400 hover:text-zinc-200"
-                          }`}
-                        >
-                          Quote on Request
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsPricingManual(true);
-                            setProductForm((prev) => ({ ...prev, requiresQuote: false }));
-                          }}
-                          className={`py-1.5 px-2 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                            !productForm.requiresQuote
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                              : "text-zinc-400 hover:text-zinc-200"
-                          }`}
-                        >
-                          Show Unit Price
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-[11px] font-medium text-zinc-400 block mb-1.5">
-                        Price Sub-Label{" "}
-                        <span className="text-zinc-500 font-normal">(Optional)</span>
+                        Quote Sub-Label{" "}
+                        <span className="text-zinc-500 font-normal">
+                          (Optional · Storefront hides BDT prices)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -2024,7 +2016,7 @@ function AdminInventory() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
                     onChange={handleImageFileChange}
                     className="hidden"
                   />
@@ -2072,19 +2064,27 @@ function AdminInventory() {
 
                   {/* Active Preview */}
                   <div className="flex items-center gap-3 bg-[#232323] p-2.5 rounded-lg border border-white/[0.04]">
-                    <div className="relative h-14 w-14 rounded-lg bg-zinc-900 overflow-hidden border border-white/[0.08] shrink-0">
-                      <img
-                        src={productForm.image || images.lift}
-                        alt="Preview"
-                        className="h-full w-full object-cover"
-                      />
+                    <div className="relative h-14 w-14 rounded-lg bg-zinc-900 overflow-hidden border border-white/[0.08] shrink-0 flex items-center justify-center">
+                      {imagePreviewError ? (
+                        <AlertTriangle className="h-5 w-5 text-amber-400" />
+                      ) : (
+                        <img
+                          src={productForm.image || images.lift}
+                          alt="Preview"
+                          onLoad={() => setImagePreviewError(false)}
+                          onError={() => setImagePreviewError(true)}
+                          className="h-full w-full object-cover"
+                        />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[12px] font-medium text-white truncate">Selected Image</p>
-                      <p className="text-[10px] text-zinc-500 truncate mt-0.5">
+                      <p className="text-[12px] font-medium text-white truncate">
+                        {imagePreviewError ? "Preview Failed to Load" : "Selected Image"}
+                      </p>
+                      <p className="text-[10px] text-zinc-500 truncate mt-0.5 font-mono">
                         {productForm.image?.startsWith("data:")
                           ? "Custom Uploaded File (Base64)"
-                          : productForm.image?.slice(0, 60)}
+                          : productForm.image || images.lift}
                       </p>
                     </div>
                     <button
@@ -2099,6 +2099,13 @@ function AdminInventory() {
                     </button>
                   </div>
 
+                  {imageUploadError && (
+                    <div className="rounded-lg bg-red-500/10 border border-red-500/25 px-3 py-2 text-[11px] text-red-300 flex items-center gap-2">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-red-400" />
+                      <span>{imageUploadError}</span>
+                    </div>
+                  )}
+
                   {/* Tab 1: Presets Gallery */}
                   {imageTab === "presets" && (
                     <div className="space-y-1.5">
@@ -2112,7 +2119,11 @@ function AdminInventory() {
                             <button
                               key={idx}
                               type="button"
-                              onClick={() => setProductForm({ ...productForm, image: item.src })}
+                              onClick={() => {
+                                setImageUploadError(null);
+                                setImagePreviewError(false);
+                                setProductForm({ ...productForm, image: item.src });
+                              }}
                               className={`group relative rounded-lg overflow-hidden border transition-all aspect-square bg-zinc-900 cursor-pointer ${
                                 isSelected
                                   ? "border-emerald-500 ring-2 ring-emerald-500/30"
@@ -2146,10 +2157,23 @@ function AdminInventory() {
                     <div>
                       <div
                         onClick={() => !isUploadingImage && fileInputRef.current?.click()}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!isUploadingImage) setIsDraggingImage(true);
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsDraggingImage(false);
+                        }}
+                        onDrop={handleImageDrop}
                         className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors bg-white/[0.01] ${
                           isUploadingImage
                             ? "border-emerald-500/50 bg-emerald-500/[0.04] cursor-wait"
-                            : "border-white/[0.12] hover:border-emerald-500/50 hover:bg-emerald-500/[0.02]"
+                            : isDraggingImage
+                              ? "border-emerald-400 bg-emerald-500/[0.08]"
+                              : "border-white/[0.12] hover:border-emerald-500/50 hover:bg-emerald-500/[0.02]"
                         }`}
                       >
                         {isUploadingImage ? (
@@ -2169,7 +2193,8 @@ function AdminInventory() {
                               Click to browse image or drag and drop
                             </p>
                             <p className="text-[10px] text-zinc-500 mt-0.5">
-                              Supports PNG, JPG, WEBP, or SVG (Saved to /uploads/products/ on disk)
+                              Supports PNG, JPG, WEBP, or GIF (max 20MB, saved to
+                              /uploads/products/)
                             </p>
                           </>
                         )}
@@ -2183,17 +2208,19 @@ function AdminInventory() {
                       <div className="relative">
                         <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
                         <input
-                          type="url"
-                          placeholder="https://example.com/images/workshop-equipment.jpg"
+                          type="text"
+                          placeholder="/uploads/products/... or https://example.com/workshop-equipment.jpg"
                           value={productForm.image?.startsWith("data:") ? "" : productForm.image}
-                          onChange={(e) =>
-                            setProductForm({ ...productForm, image: e.target.value })
-                          }
+                          onChange={(e) => {
+                            setImageUploadError(null);
+                            setImagePreviewError(false);
+                            setProductForm({ ...productForm, image: e.target.value });
+                          }}
                           className="w-full bg-[#232323] border border-white/[0.08] rounded-lg pl-9 pr-3 py-2 text-[12px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </div>
                       <p className="text-[10px] text-zinc-500">
-                        Paste any public image URL or cloud asset link
+                        Paste any public image URL or `/uploads/...` path
                       </p>
                     </div>
                   )}

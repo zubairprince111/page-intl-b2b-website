@@ -9,6 +9,7 @@ import postgres from "postgres";
 import { PGlite } from "@electric-sql/pglite";
 import * as path from "node:path";
 import * as fs from "node:fs";
+import { buildPostgresOptions } from "./pg-options";
 
 const databaseUrl = process.env["DATABASE_URL"];
 export const isPostgres = Boolean(databaseUrl && databaseUrl.trim().length > 0);
@@ -16,7 +17,7 @@ export const isPostgres = Boolean(databaseUrl && databaseUrl.trim().length > 0);
 const globalForDb = globalThis as unknown as {
   __pageRawClient?: ReturnType<typeof postgres> | PGlite | null;
   __pageDb?:
-    ReturnType<typeof drizzlePg<typeof schema>> | ReturnType<typeof drizzlePglite<typeof schema>>;
+  ReturnType<typeof drizzlePg<typeof schema>> | ReturnType<typeof drizzlePglite<typeof schema>>;
 };
 
 let rawClient: ReturnType<typeof postgres> | PGlite | null = globalForDb.__pageRawClient ?? null;
@@ -27,18 +28,17 @@ function initDb() {
   }
 
   if (isPostgres) {
-    const pgClient = postgres(databaseUrl!, {
-      max: 10,
-      idle_timeout: 20,
-      connect_timeout: 10,
-    });
+    const pgClient = postgres(databaseUrl!, buildPostgresOptions(databaseUrl!, process.env));
     rawClient = pgClient;
     const instance = drizzlePg(pgClient, { schema });
     globalForDb.__pageRawClient = pgClient;
     globalForDb.__pageDb = instance;
     return instance;
   } else {
-    const dataDir = path.resolve(process.cwd(), ".data", "postgres");
+    const customPgliteDir = process.env["PGLITE_DATA_DIR"]?.trim();
+    const dataDir = customPgliteDir
+      ? path.resolve(customPgliteDir)
+      : path.resolve(process.cwd(), ".data", "postgres");
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }

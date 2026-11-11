@@ -29,7 +29,7 @@ import {
 import { ProductCard } from "@/components/site/ProductCard";
 import { QuoteModal } from "@/components/site/QuoteModal";
 import { getPublishedReviews, addPublishedReview, type Review } from "@/lib/reviews";
-import { images, products, taka, type Product } from "@/lib/data";
+import { images, products, type Product } from "@/lib/data";
 
 export const Route = createFileRoute("/")({
   head: () => ({

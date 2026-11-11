@@ -1,0 +1,56 @@
+# ==============================================================================
+# Render Free Tier Blueprint — PAGE International B2B Platform
+# ==============================================================================
+# Notes for Render Free Tier (`plan: free`):
+# - Disks (`disk:`) and `preDeployCommand:` are excluded because Render Free Web
+#   Services use ephemeral disks. Uploaded assets (<= 15 MB) are persisted inside
+#   PostgreSQL (`STORAGE_DRIVER=database`) and lazily re-hydrated after restarts.
+# - Point `DATABASE_URL` to a permanently free PostgreSQL provider (Neon or
+#   Supabase free tier) or Render Postgres (note: Render Free Postgres expires
+#   after 30 days). SSL & PgBouncer poolers (`-pooler.` / `:6543`) are handled
+#   automatically by `buildPostgresOptions`.
+# ==============================================================================
+
+services:
+  - type: web
+    name: page-international-b2b
+    runtime: node
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start:render
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RENDER
+        value: "true"
+      - key: STORAGE_DRIVER
+        value: database
+      - key: MAIL_PROVIDER
+        value: auto
+      - key: REQUIRE_QUOTE_EMAIL_OTP
+        value: auto
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        value: admin@pageintl.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+

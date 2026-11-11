@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  buildProductJsonLdOffers,
   deriveProductStockStatus,
   getDefaultProductPresentation,
   getDistinctProductFeatures,
   hasProductWarranty,
   inferIsEquipment,
   normalizeSpecsToTuples,
+  normalizeStorefrontPriceLabel,
   parseFitsText,
   parseSpecsText,
   resolveOrderedSpecs,
@@ -333,7 +335,39 @@ describe("Product Technical Specifications & Overview Utilities", () => {
     expect(fluidDefaults.variantOptions).toEqual([]);
     expect(fluidDefaults.guarantees.some((g) => /warranty/i.test(g.subtitle))).toBe(false);
     expect(hasProductWarranty({ guarantees: fluidDefaults.guarantees, specs: [] })).toBe(false);
-    expect(fluidDefaults.priceLabel).toBe("B2B Unit Price");
+    expect(fluidDefaults.priceLabel).toBe("Pro-Forma B2B");
+  });
+
+  it("normalizes legacy unit-price labels and keeps public JSON-LD offers free of unit prices", () => {
+    expect(normalizeStorefrontPriceLabel("B2B Unit Price")).toBe("Pro-Forma B2B");
+    expect(normalizeStorefrontPriceLabel("  b2b unit price  ")).toBe("Pro-Forma B2B");
+    expect(normalizeStorefrontPriceLabel("Case of 12")).toBe("Case of 12");
+    expect(normalizeStorefrontPriceLabel("")).toBe("");
+
+    const mappedLegacy = mapDbProductToProduct({
+      slug: "synthetic-engine-oil-5w30-4l",
+      name: "Full Synthetic Motor Oil 5W-30 (4L)",
+      brand: "Torq",
+      category: "Lubricants & Fluids",
+      isEquipment: false,
+      requiresQuote: false,
+      priceBdt: 3800,
+      description: "API SP synthetic fleet lubricant.",
+      priceLabel: "B2B Unit Price",
+    });
+    expect(mappedLegacy.priceLabel).toBe("Pro-Forma B2B");
+
+    const jsonLdOffers = buildProductJsonLdOffers({
+      slug: "synthetic-engine-oil-5w30-4l",
+      stock: "In stock",
+    });
+    expect(jsonLdOffers).not.toHaveProperty("price");
+    expect(jsonLdOffers).not.toHaveProperty("priceCurrency");
+    expect(jsonLdOffers).toMatchObject({
+      "@type": "Offer",
+      url: "https://page-bd.com/shop/synthetic-engine-oil-5w30-4l",
+      availability: "https://schema.org/InStock",
+    });
   });
 
   it("preserves explicit empty presentation overrides in mapDbProductToProduct", () => {

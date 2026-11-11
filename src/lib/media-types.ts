@@ -11,6 +11,18 @@ export interface UploadResult {
   filename: string;
   sizeBytes: number;
   mimeType: string;
+  persistedToDatabase?: boolean | undefined;
+}
+
+export interface MediaListItem {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
+  category: string;
+  createdAt: Date;
 }
 
 export interface MediaStats {

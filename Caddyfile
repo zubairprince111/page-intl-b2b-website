@@ -26,11 +26,11 @@
         -Server
     }
 
-    # Long cache for hashed static assets and uploads
-    @static {
-        path /assets/* /uploads/* *.css *.js *.jpg *.png *.webp *.svg *.mp4 *.ico *.woff2
+    # Long cache for content-hashed Vite bundle assets; uploaded assets use node ETag revalidation
+    @immutable {
+        path /assets/*
     }
-    header @static {
+    header @immutable {
         Cache-Control "public, max-age=31536000, immutable"
     }
 
