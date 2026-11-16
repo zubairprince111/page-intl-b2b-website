@@ -10,7 +10,7 @@ import {
   Plus,
   ZoomIn,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ProductImageZoomModal } from "@/components/site/ProductImageZoomModal";
 import { QuoteModal } from "@/components/site/QuoteModal";
@@ -193,6 +193,24 @@ export function ProductPage() {
 
   const activeImage = galleryViews[activeImageIndex]?.img || p.image;
 
+  const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
+  const mainImageRef = useRef<HTMLImageElement>(null);
+
+  // Synchronize aspect ratio on image change or initial load if cached
+  useEffect(() => {
+    if (
+      mainImageRef.current?.complete &&
+      mainImageRef.current.naturalWidth &&
+      mainImageRef.current.naturalHeight
+    ) {
+      setImageAspectRatio(
+        mainImageRef.current.naturalWidth / mainImageRef.current.naturalHeight,
+      );
+    } else {
+      setImageAspectRatio(null);
+    }
+  }, [activeImage, p.slug]);
+
   // Distinct key engineering advantages/features for the Overview section
   const distinctFeatures = useMemo(
     () => getDistinctProductFeatures(p.features, p.fits),
@@ -293,8 +311,15 @@ export function ProductPage() {
           {/* LEFT COLUMN: Clean Minimal Product Gallery Stage     */}
           {/* ==================================================== */}
           <div className="lg:col-span-6 space-y-4">
-            {/* Main Image Stage - Edge-to-Edge Border Cover with Hover Inspect & Zoom View */}
-            <div className="relative aspect-square w-full rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-xs group">
+            {/* Main Image Stage - Adaptive Natural Aspect Ratio with Hover Inspect & Zoom View */}
+            <div
+              className="relative w-full rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-xs group flex items-center justify-center transition-[aspect-ratio] duration-200"
+              style={
+                imageAspectRatio
+                  ? { aspectRatio: `${imageAspectRatio}`, maxHeight: "680px" }
+                  : { minHeight: "360px", maxHeight: "680px" }
+              }
+            >
               {/* Clickable Product Image with Desktop Cursor-Tracked Hover Zoom */}
               <button
                 type="button"
@@ -330,13 +355,20 @@ export function ProductPage() {
                 }}
                 onPointerLeave={() => setIsInlineZooming(false)}
                 aria-label={`Inspect and zoom ${p.name}`}
-                className="block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="relative flex items-center justify-center h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary overflow-hidden"
               >
                 <img
+                  ref={mainImageRef}
                   src={activeImage}
                   alt={p.name}
                   width={700}
                   height={700}
+                  onLoad={(e) => {
+                    const { naturalWidth, naturalHeight } = e.currentTarget;
+                    if (naturalWidth && naturalHeight) {
+                      setImageAspectRatio(naturalWidth / naturalHeight);
+                    }
+                  }}
                   onError={(e) => {
                     const target = e.currentTarget;
                     if (!target.src.includes("retry=")) {
@@ -352,7 +384,7 @@ export function ProductPage() {
                         }
                       : undefined
                   }
-                  className="h-full w-full object-cover object-center transition-transform duration-150 ease-out will-change-transform"
+                  className="h-full w-full object-contain object-center transition-transform duration-150 ease-out will-change-transform"
                 />
               </button>
 
@@ -377,7 +409,7 @@ export function ProductPage() {
                       key={item.id}
                       type="button"
                       onClick={() => setActiveImageIndex(idx)}
-                      className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer ${
+                      className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer p-1.5 ${
                         isActive
                           ? "border-primary ring-2 ring-primary/20 shadow-xs"
                           : "border-zinc-200 hover:border-zinc-400"
@@ -386,7 +418,7 @@ export function ProductPage() {
                       <img
                         src={item.img}
                         alt={item.label}
-                        className="h-full w-full object-cover object-center"
+                        className="h-full w-full object-contain object-center"
                       />
                       <span className="sr-only">{item.label}</span>
                     </button>

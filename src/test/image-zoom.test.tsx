@@ -186,4 +186,22 @@ describe("ProductImageZoomModal interactive UI", () => {
     fireEvent.click(dialogBackdrop);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
+
+  it("renders image using object-contain to prevent clipping across arbitrary aspect ratios", () => {
+    const onOpenChange = vi.fn();
+    const wideImage = [{ id: "view-0", label: "Wide Lift", img: "/wide-lift.png" }];
+
+    render(
+      <ProductImageZoomModal
+        open={true}
+        onOpenChange={onOpenChange}
+        productName="ATS ELGI Two Wheeler Lift"
+        images={wideImage}
+      />,
+    );
+
+    const img = screen.getByTestId("zoom-stage-image");
+    expect(img).toBeInTheDocument();
+    expect(img.className).toContain("object-contain");
+  });
 });
