@@ -109,23 +109,23 @@ export async function deleteMediaFile(target: { url?: string; id?: string }): Pr
 /**
  * List media records from PostgreSQL
  */
-  export async function fetchMediaList(category?: string): Promise<MediaListItem[]> {
-    const payload = category ? { category } : {};
-    const list = await listMediaServerFn({ data: payload });
-    return list as unknown as MediaListItem[];
-  }
+export async function fetchMediaList(category?: string): Promise<MediaListItem[]> {
+  const payload = category ? { category } : {};
+  const list = await listMediaServerFn({ data: payload });
+  return list as unknown as MediaListItem[];
+}
 
-  /**
-   * Fetch storage usage statistics
-   */
-  export async function fetchMediaStats(): Promise<MediaStats> {
-    return await getMediaStatsServerFn();
-  }
+/**
+ * Fetch storage usage statistics
+ */
+export async function fetchMediaStats(): Promise<MediaStats> {
+  return await getMediaStatsServerFn();
+}
 
-  /**
-   * Scan public/uploads disk directory and index any uncataloged files into PostgreSQL
-   */
-  export async function syncDiskFiles(): Promise<{ addedCount: number }> {
-    const res = await syncExistingMediaServerFn();
-    return { addedCount: res.addedCount };
-  }
+/**
+ * Scan public/uploads disk directory and index any uncataloged files into PostgreSQL
+ */
+export async function syncDiskFiles(): Promise<{ addedCount: number }> {
+  const res = await syncExistingMediaServerFn();
+  return { addedCount: res.addedCount };
+}

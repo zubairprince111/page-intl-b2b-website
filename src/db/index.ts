@@ -17,7 +17,7 @@ export const isPostgres = Boolean(databaseUrl && databaseUrl.trim().length > 0);
 const globalForDb = globalThis as unknown as {
   __pageRawClient?: ReturnType<typeof postgres> | PGlite | null;
   __pageDb?:
-  ReturnType<typeof drizzlePg<typeof schema>> | ReturnType<typeof drizzlePglite<typeof schema>>;
+    ReturnType<typeof drizzlePg<typeof schema>> | ReturnType<typeof drizzlePglite<typeof schema>>;
 };
 
 let rawClient: ReturnType<typeof postgres> | PGlite | null = globalForDb.__pageRawClient ?? null;

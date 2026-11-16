@@ -11,6 +11,7 @@ import {
   settings,
   auditLog,
   emailLog,
+  reviews,
   type QuoteRow,
   type BookingRow,
   type OrderRow,
@@ -18,6 +19,7 @@ import {
   type BannerRow,
   type UpdateRow,
   type UserRow,
+  type ReviewRow,
 } from "@/db";
 import { eq, desc, asc, and, or, sql, inArray } from "drizzle-orm";
 import { getSessionUserCore, getClientIp } from "./auth.server";
@@ -36,6 +38,7 @@ import {
 import { ensureServerEnvLoaded } from "./env.server";
 import { mapDbProductToProduct, products as staticProducts, type Product } from "./data";
 import {
+  getDefaultProductPresentation,
   inferIsEquipment,
   normalizeSpecsToTuples,
   sanitizeFeatureLines,
@@ -54,6 +57,7 @@ import {
   type ShopBannerVideoConfig,
   type ShopBannerVideoItem,
 } from "./shop-banner-video";
+import { reviewsData, type Review } from "./reviews";
 
 // -----------------------------------------------------------------------------
 // HELPER: Require Admin Privileges
@@ -258,6 +262,17 @@ export async function updateQuoteCore(data: {
   status?: string | undefined;
   reply?: string | undefined;
   quotedPrice?: number | undefined;
+  notes?: string | undefined;
+  itemsJson?:
+    | { productSlug: string; productName: string; qty: number; unitPrice?: number }[]
+    | undefined;
+  companyName?: string | undefined;
+  contactName?: string | undefined;
+  phone?: string | undefined;
+  email?: string | undefined;
+  qty?: number | undefined;
+  productName?: string | undefined;
+  productSlug?: string | undefined;
 }) {
   const admin = await requireAdmin();
 
@@ -267,6 +282,15 @@ export async function updateQuoteCore(data: {
       ...(data.status ? { status: data.status.toUpperCase() } : {}),
       ...(data.reply !== undefined ? { reply: data.reply } : {}),
       ...(data.quotedPrice !== undefined ? { quotedPrice: data.quotedPrice } : {}),
+      ...(data.notes !== undefined ? { notes: data.notes } : {}),
+      ...(data.itemsJson !== undefined ? { itemsJson: data.itemsJson } : {}),
+      ...(data.companyName !== undefined ? { companyName: data.companyName.trim() } : {}),
+      ...(data.contactName !== undefined ? { contactName: data.contactName.trim() } : {}),
+      ...(data.phone !== undefined ? { phone: data.phone.trim() } : {}),
+      ...(data.email !== undefined ? { email: data.email.trim().toLowerCase() } : {}),
+      ...(data.qty !== undefined ? { qty: Math.max(1, Math.floor(Number(data.qty) || 1)) } : {}),
+      ...(data.productName !== undefined ? { productName: data.productName.trim() } : {}),
+      ...(data.productSlug !== undefined ? { productSlug: data.productSlug.trim() } : {}),
       updatedAt: new Date(),
     })
     .where(eq(quotes.id, data.id))
@@ -328,6 +352,11 @@ export interface CreateBookingInput {
   city?: string | undefined;
   centerId?: string | undefined;
   centerName?: string | undefined;
+  businessType?: string | undefined;
+  bays?: string | undefined;
+  equipmentInterest?: string | undefined;
+  locationType?: string | undefined;
+  onsiteAddress?: string | undefined;
   notes?: string | undefined;
   honeypot?: string | undefined;
 }
@@ -345,6 +374,7 @@ export async function createBookingCore(data: CreateBookingInput) {
     throw new Error(`Too many booking requests. Please wait ${rateCheck.resetInSeconds} seconds.`);
   }
 
+  await ensureDatabaseColumns();
   const user = await getSessionUserCore();
   const id = `bk-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
   const bookingNumber = `BK-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -365,6 +395,11 @@ export async function createBookingCore(data: CreateBookingInput) {
       city: data.city || "Dhaka",
       centerId: data.centerId || null,
       centerName: data.centerName || null,
+      businessType: data.businessType?.trim() || "Workshop / Garage",
+      bays: data.bays?.trim() || null,
+      equipmentInterest: data.equipmentInterest?.trim() || null,
+      locationType: data.locationType?.trim() || "hub",
+      onsiteAddress: data.onsiteAddress?.trim() || null,
       notes: data.notes || null,
       status: "PENDING",
     })
@@ -430,6 +465,11 @@ export async function updateBookingCore(data: {
   id: string;
   status?: string | undefined;
   adminNotes?: string | undefined;
+  notes?: string | undefined;
+  bookingDate?: string | undefined;
+  timeSlot?: string | undefined;
+  centerName?: string | undefined;
+  serviceType?: string | undefined;
 }) {
   const admin = await requireAdmin();
 
@@ -438,6 +478,11 @@ export async function updateBookingCore(data: {
     .set({
       ...(data.status ? { status: data.status.toUpperCase() } : {}),
       ...(data.adminNotes !== undefined ? { adminNotes: data.adminNotes } : {}),
+      ...(data.notes !== undefined ? { notes: data.notes } : {}),
+      ...(data.bookingDate !== undefined ? { bookingDate: data.bookingDate } : {}),
+      ...(data.timeSlot !== undefined ? { timeSlot: data.timeSlot } : {}),
+      ...(data.centerName !== undefined ? { centerName: data.centerName } : {}),
+      ...(data.serviceType !== undefined ? { serviceType: data.serviceType } : {}),
       updatedAt: new Date(),
     })
     .where(eq(bookings.id, data.id))
@@ -493,6 +538,7 @@ export interface CreateOrderInput {
   customerEmail: string;
   customerPhone: string;
   companyName?: string | undefined;
+  vatBin?: string | undefined;
   shippingAddress: string;
   city: string;
   district?: string | undefined;
@@ -523,6 +569,8 @@ export async function createOrderCore(data: CreateOrderInput) {
   if (!rateCheck.allowed) {
     throw new Error(`Too many order attempts. Please wait ${rateCheck.resetInSeconds} seconds.`);
   }
+
+  await ensureDatabaseColumns();
 
   // 1. Fetch products from database to calculate real verified prices
   const slugs = data.items.map((i) => i.productSlug);
@@ -583,6 +631,7 @@ export async function createOrderCore(data: CreateOrderInput) {
       customerEmail: data.customerEmail.trim().toLowerCase(),
       customerPhone: data.customerPhone.trim(),
       companyName: data.companyName?.trim() || null,
+      vatBin: data.vatBin?.trim() || null,
       shippingAddress: data.shippingAddress.trim(),
       city: data.city.trim(),
       district: data.district?.trim() || null,
@@ -754,11 +803,114 @@ export async function updateOrderStatusCore(data: {
 // 4. INVENTORY & PRODUCT CATALOG
 // =============================================================================
 
+let hasEnsuredColumns = false;
+export async function ensureDatabaseColumns() {
+  if (hasEnsuredColumns) return;
+  try {
+    const executableDb = db as unknown as { execute?: (query: unknown) => Promise<unknown> };
+    if (typeof executableDb.execute === "function") {
+      await executableDb.execute(
+        sql`ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "cost_price_bdt" integer DEFAULT 0 NOT NULL`,
+      );
+      await executableDb.execute(
+        sql`ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS "business_type" text DEFAULT 'Workshop / Garage' NOT NULL`,
+      );
+      await executableDb.execute(
+        sql`ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS "bays" text`,
+      );
+      await executableDb.execute(
+        sql`ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS "equipment_interest" text`,
+      );
+      await executableDb.execute(
+        sql`ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS "location_type" text DEFAULT 'hub' NOT NULL`,
+      );
+      await executableDb.execute(
+        sql`ALTER TABLE "bookings" ADD COLUMN IF NOT EXISTS "onsite_address" text`,
+      );
+      await executableDb.execute(
+        sql`ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "vat_bin" text`,
+      );
+    }
+    hasEnsuredColumns = true;
+  } catch (err) {
+    console.warn("Could not ensure database columns:", err);
+  }
+}
+async function ensureCostPriceColumn() {
+  await ensureDatabaseColumns();
+}
+
+const CATALOG_SYNC_VERSION = "20261116-v1";
+let lastSyncedCatalogVersion: string | null = null;
+async function ensureCatalogSynced() {
+  await ensureCostPriceColumn();
+  if (lastSyncedCatalogVersion === CATALOG_SYNC_VERSION) return;
+  try {
+    const existing = await db.select({ slug: productsTable.slug }).from(productsTable);
+    const existingSlugs = new Set(existing.map((r) => r.slug));
+
+    // Never delete admin-created or user-entered products, and never overwrite admin edits.
+    // Only insert initial static catalog items that do not exist yet in the database.
+
+    const missing = staticProducts.filter((p) => !existingSlugs.has(p.slug));
+    if (missing.length > 0) {
+      for (const p of missing) {
+        const specsTuples = normalizeSpecsToTuples(p.specs);
+        const presentation = getDefaultProductPresentation({
+          slug: p.slug,
+          category: p.category,
+          isEquipment: Boolean(p.isEquipment),
+          requiresQuote: Boolean(p.requiresQuote),
+          specs: specsTuples,
+        });
+
+        await db
+          .insert(productsTable)
+          .values({
+            id: `prod-${p.slug}`,
+            slug: p.slug,
+            sku: p.sku,
+            name: p.name,
+            brand: p.brand,
+            category: p.category,
+            subcategory: p.subcategory || null,
+            mobility: p.mobility || ["4-Wheeler"],
+            isEquipment: Boolean(p.isEquipment),
+            requiresQuote: Boolean(p.requiresQuote),
+            priceBdt: p.price || 0,
+            costPriceBdt:
+              p.costPrice || (p.price > 0 ? Math.round(((p.price || 0) * 0.72) / 500) * 500 : 0),
+            inStock: p.stock !== "Out of stock",
+            warehouseQty: p.warehouseQty ?? 10,
+            reorderLevel: p.reorderLevel ?? 2,
+            badge: p.badge || null,
+            description: p.description || p.name,
+            specs: specsTuples,
+            highlights: p.highlights || presentation.highlights,
+            variantOptions: presentation.variantOptions,
+            guarantees: presentation.guarantees,
+            dispatchHub: presentation.dispatchHub,
+            priceLabel: presentation.priceLabel,
+            features: p.features || [],
+            images: p.images || [p.image],
+            fits: p.fits || [],
+          })
+          .onConflictDoNothing();
+      }
+    }
+    lastSyncedCatalogVersion = CATALOG_SYNC_VERSION;
+  } catch (err) {
+    console.warn("Could not sync catalog products:", err);
+  }
+}
+
 export async function listInventoryCore() {
+  await ensureCatalogSynced();
   return await db.select().from(productsTable).orderBy(asc(productsTable.name));
 }
 
 export async function listCatalogProductsCore(): Promise<Product[]> {
+  await ensureCatalogSynced();
   const rows = await db.select().from(productsTable).orderBy(desc(productsTable.createdAt));
   if (rows.length === 0) {
     return staticProducts;
@@ -777,6 +929,7 @@ export async function listCatalogProductsCore(): Promise<Product[]> {
 }
 
 export async function getProductBySlugCore(slug: string): Promise<Product | null> {
+  await ensureCatalogSynced();
   const rows = await db.select().from(productsTable).where(eq(productsTable.slug, slug)).limit(1);
   if (rows[0]) {
     return mapDbProductToProduct(rows[0]);
@@ -796,6 +949,7 @@ export interface UpdateInventoryItemInput {
   isEquipment?: boolean | undefined;
   requiresQuote?: boolean | undefined;
   priceBdt?: number | undefined;
+  costPriceBdt?: number | undefined;
   inStock?: boolean | undefined;
   warehouseQty?: number | undefined;
   reorderLevel?: number | undefined;
@@ -814,6 +968,7 @@ export interface UpdateInventoryItemInput {
 
 export async function updateInventoryItemCore(data: UpdateInventoryItemInput) {
   const admin = await requireAdmin();
+  await ensureCostPriceColumn();
 
   const normalizedSpecs = data.specs !== undefined ? normalizeSpecsToTuples(data.specs) : undefined;
   const normalizedHighlights =
@@ -838,6 +993,9 @@ export async function updateInventoryItemCore(data: UpdateInventoryItemInput) {
       ...(data.isEquipment !== undefined ? { isEquipment: data.isEquipment } : {}),
       ...(data.requiresQuote !== undefined ? { requiresQuote: data.requiresQuote } : {}),
       ...(data.priceBdt !== undefined ? { priceBdt: Math.max(0, Number(data.priceBdt) || 0) } : {}),
+      ...(data.costPriceBdt !== undefined
+        ? { costPriceBdt: Math.max(0, Number(data.costPriceBdt) || 0) }
+        : {}),
       ...(data.inStock !== undefined ? { inStock: data.inStock } : {}),
       ...(data.warehouseQty !== undefined
         ? { warehouseQty: Math.max(0, Math.floor(Number(data.warehouseQty) || 0)) }
@@ -900,6 +1058,7 @@ export interface CreateInventoryItemInput {
   isEquipment?: boolean | undefined;
   requiresQuote?: boolean | undefined;
   priceBdt: number;
+  costPriceBdt?: number | undefined;
   inStock?: boolean | undefined;
   warehouseQty?: number | undefined;
   reorderLevel?: number | undefined;
@@ -918,6 +1077,7 @@ export interface CreateInventoryItemInput {
 
 export async function createInventoryItemCore(data: CreateInventoryItemInput) {
   const admin = await requireAdmin();
+  await ensureCostPriceColumn();
   const slug = data.slug.trim();
   const id = `prod-${slug}`;
   const normalizedSpecs = normalizeSpecsToTuples(data.specs);
@@ -929,6 +1089,7 @@ export async function createInventoryItemCore(data: CreateInventoryItemInput) {
   const isEquipment =
     data.isEquipment !== undefined ? data.isEquipment : inferIsEquipment(data.category);
   const priceBdt = Math.max(0, Number(data.priceBdt) || 0);
+  const costPriceBdt = Math.max(0, Number(data.costPriceBdt) || 0);
   const warehouseQty =
     data.warehouseQty !== undefined ? Math.max(0, Math.floor(Number(data.warehouseQty) || 0)) : 10;
   const reorderLevel =
@@ -950,6 +1111,7 @@ export async function createInventoryItemCore(data: CreateInventoryItemInput) {
       requiresQuote:
         data.requiresQuote !== undefined ? data.requiresQuote : isEquipment || priceBdt >= 50000,
       priceBdt,
+      costPriceBdt,
       inStock: data.inStock !== undefined ? data.inStock : warehouseQty > 0,
       warehouseQty,
       reorderLevel,
@@ -1372,7 +1534,7 @@ export async function saveShopBannerVideoCore(input: {
 export async function getAdminStatsCore() {
   await requireAdmin();
 
-  const [allQuotes, allBookings, allOrders, allProducts, allUsersList, allBanners] =
+  const [allQuotes, allBookings, allOrders, allProducts, allUsersList, allBanners, allReviews] =
     await Promise.all([
       db.select().from(quotes).orderBy(desc(quotes.createdAt)),
       db.select().from(bookings).orderBy(desc(bookings.createdAt)),
@@ -1380,6 +1542,7 @@ export async function getAdminStatsCore() {
       db.select().from(productsTable).orderBy(asc(productsTable.name)),
       db.select({ id: users.id, role: users.role }).from(users),
       db.select().from(banners),
+      db.select().from(reviews).orderBy(desc(reviews.createdAt)),
     ]);
 
   const activeBanners = allBanners.filter((b) => b.isActive).length;
@@ -1387,6 +1550,7 @@ export async function getAdminStatsCore() {
   const pendingQuotes = allQuotes.filter((q) => q.status.toUpperCase() === "PENDING").length;
   const pendingBookings = allBookings.filter((b) => b.status.toUpperCase() === "PENDING").length;
   const pendingOrders = allOrders.filter((o) => o.status.toUpperCase() === "PENDING").length;
+  const pendingReviews = allReviews.filter((r) => !r.isPublished).length;
 
   const totalRevenue = allOrders.reduce((sum, o) => {
     return sum + (o.status !== "CANCELLED" ? o.total : 0);
@@ -1416,6 +1580,8 @@ export async function getAdminStatsCore() {
     totalProducts: allProducts.length,
     lowStockCount: lowStockProducts.length,
     activeBanners,
+    totalReviews: allReviews.length,
+    pendingReviews,
     totalUsers: allUsersList.length,
     customerCount: allUsersList.filter((u) => u.role === "customer").length,
     recentQuotes: allQuotes.slice(0, 5),
@@ -1424,4 +1590,252 @@ export async function getAdminStatsCore() {
     lowStockItems: lowStockProducts.slice(0, 5),
     categoryDistribution,
   };
+}
+
+// =============================================================================
+// 10. REVIEWS & TESTIMONIALS (STOREFRONT & ADMIN MANAGEMENT)
+// =============================================================================
+
+export interface SubmitPublicReviewInput {
+  name: string;
+  role?: string | undefined;
+  workshop: string;
+  equipment?: string | undefined;
+  comment: string;
+  title?: string | undefined;
+  rating?: number | undefined;
+}
+
+export interface SaveReviewAdminInput {
+  id?: string | undefined;
+  name: string;
+  role: string;
+  workshop: string;
+  equipment: string;
+  comment: string;
+  title?: string | undefined;
+  rating?: number | undefined;
+  isPublished?: boolean | undefined;
+}
+
+export function mapDbReviewToReview(row: ReviewRow): Review {
+  const fallback = reviewsData.find((r) => r.id === row.id);
+  const initials =
+    row.name
+      .split(" ")
+      .map((n) => n[0])
+      .filter(Boolean)
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "VR";
+
+  return {
+    id: row.id,
+    name: row.name,
+    role: row.role,
+    workshop: row.workshop,
+    equipment: row.equipment,
+    comment: row.comment,
+    title:
+      row.title || (row.equipment ? `Review on ${row.equipment}` : "Verified Workshop Experience"),
+    rating: row.rating ?? 5,
+    date: row.createdAt
+      ? new Date(row.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+      : fallback?.date || "Recent",
+    verifiedBuyer: fallback?.verifiedBuyer ?? true,
+    location: fallback?.location || "Dhaka, Bangladesh",
+    badge: fallback?.badge || "Verified Workshop",
+    avatarInitials: fallback?.avatarInitials || initials,
+    avatarColor: fallback?.avatarColor || "from-red-600 to-rose-700",
+    highlights: fallback?.highlights || [row.equipment],
+    installationTag: fallback?.installationTag || "Verified Installation",
+    helpfulCount: fallback?.helpfulCount || 12,
+    operationalMetric: fallback?.operationalMetric || "Verified Operation",
+  };
+}
+
+let reviewsTableSynced = false;
+async function ensureReviewsSeeded() {
+  if (reviewsTableSynced) return;
+  try {
+    const existing = await db.select({ id: reviews.id }).from(reviews).limit(1);
+    if (existing.length === 0) {
+      for (const r of reviewsData) {
+        await db
+          .insert(reviews)
+          .values({
+            id: r.id,
+            name: r.name,
+            role: r.role,
+            workshop: r.workshop,
+            equipment: r.equipment || "Commercial Equipment",
+            comment: r.comment,
+            title: r.title || null,
+            rating: r.rating || 5,
+            isPublished: true,
+          })
+          .onConflictDoNothing();
+      }
+    }
+    reviewsTableSynced = true;
+  } catch (err) {
+    console.warn("Could not auto-seed reviews:", err);
+  }
+}
+
+export async function listReviewsCore(onlyPublished = false): Promise<Review[]> {
+  await ensureReviewsSeeded();
+  const rows = onlyPublished
+    ? await db
+        .select()
+        .from(reviews)
+        .where(eq(reviews.isPublished, true))
+        .orderBy(desc(reviews.createdAt))
+    : await db.select().from(reviews).orderBy(desc(reviews.createdAt));
+
+  return rows.map(mapDbReviewToReview);
+}
+
+export async function listAdminReviewsCore(): Promise<ReviewRow[]> {
+  await requireAdmin();
+  await ensureReviewsSeeded();
+  return await db.select().from(reviews).orderBy(desc(reviews.createdAt));
+}
+
+export async function submitPublicReviewCore(data: SubmitPublicReviewInput): Promise<ReviewRow> {
+  const name = (data.name || "").trim();
+  const workshop = (data.workshop || "").trim();
+  const comment = (data.comment || "").trim();
+  if (!name) throw new Error("Full name is required");
+  if (!workshop) throw new Error("Workshop or business name is required");
+  if (!comment) throw new Error("Review comment is required");
+
+  const rating = Math.max(1, Math.min(5, Math.round(Number(data.rating) || 5)));
+  const role = (data.role || "").trim() || "Workshop Managing Director";
+  const equipment = (data.equipment || "").trim() || "Commercial Workshop Equipment";
+  const title = (data.title || "").trim() || `Review on ${equipment}`;
+
+  const id = `rev-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+  const [created] = await db
+    .insert(reviews)
+    .values({
+      id,
+      name,
+      role,
+      workshop,
+      equipment,
+      comment,
+      title,
+      rating,
+      isPublished: true,
+    })
+    .returning();
+
+  if (!created) {
+    throw new Error("Failed to create review");
+  }
+
+  return created;
+}
+
+export async function saveReviewAdminCore(data: SaveReviewAdminInput): Promise<ReviewRow> {
+  await requireAdmin();
+  const name = (data.name || "").trim();
+  const workshop = (data.workshop || "").trim();
+  const comment = (data.comment || "").trim();
+  if (!name) throw new Error("Full name is required");
+  if (!workshop) throw new Error("Workshop or business name is required");
+  if (!comment) throw new Error("Review comment is required");
+
+  const rating = Math.max(1, Math.min(5, Math.round(Number(data.rating) || 5)));
+  const role = (data.role || "").trim() || "Workshop Managing Director";
+  const equipment = (data.equipment || "").trim() || "Commercial Machinery";
+  const title =
+    (data.title || "").trim() || (equipment ? `Review on ${equipment}` : "Verified Review");
+  const isPublished = data.isPublished !== undefined ? Boolean(data.isPublished) : true;
+
+  if (data.id) {
+    const [updated] = await db
+      .update(reviews)
+      .set({
+        name,
+        role,
+        workshop,
+        equipment,
+        comment,
+        title,
+        rating,
+        isPublished,
+      })
+      .where(eq(reviews.id, data.id))
+      .returning();
+    if (!updated) throw new Error(`Review ${data.id} not found`);
+    return updated;
+  }
+
+  const id = `rev-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+  const [created] = await db
+    .insert(reviews)
+    .values({
+      id,
+      name,
+      role,
+      workshop,
+      equipment,
+      comment,
+      title,
+      rating,
+      isPublished,
+    })
+    .returning();
+
+  if (!created) {
+    throw new Error("Failed to create review");
+  }
+
+  return created;
+}
+
+export async function toggleReviewPublishAdminCore(data: {
+  id: string;
+  isPublished: boolean;
+}): Promise<ReviewRow> {
+  await requireAdmin();
+  const [updated] = await db
+    .update(reviews)
+    .set({ isPublished: data.isPublished })
+    .where(eq(reviews.id, data.id))
+    .returning();
+  if (!updated) throw new Error(`Review ${data.id} not found`);
+  return updated;
+}
+
+export async function deleteReviewAdminCore(id: string): Promise<{ success: boolean; id: string }> {
+  await requireAdmin();
+  await db.delete(reviews).where(eq(reviews.id, id));
+  return { success: true, id };
+}
+
+export async function seedDefaultReviewsCore(): Promise<{ count: number }> {
+  await requireAdmin();
+  let count = 0;
+  for (const r of reviewsData) {
+    const res = await db
+      .insert(reviews)
+      .values({
+        id: r.id,
+        name: r.name,
+        role: r.role,
+        workshop: r.workshop,
+        equipment: r.equipment || "Commercial Equipment",
+        comment: r.comment,
+        title: r.title || null,
+        rating: r.rating || 5,
+        isPublished: true,
+      })
+      .onConflictDoNothing()
+      .returning();
+    if (res.length > 0) count++;
+  }
+  return { count };
 }

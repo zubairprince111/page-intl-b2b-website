@@ -28,8 +28,10 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { uploadMediaFile } from "@/lib/client-media";
+import { requireAdminBeforeLoad } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/updates")({
+  beforeLoad: requireAdminBeforeLoad,
   component: AdminUpdates,
   head: () => ({
     meta: [{ title: "Field Updates & Dispatches — PAGE Admin" }],

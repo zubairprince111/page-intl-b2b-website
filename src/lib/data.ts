@@ -32,6 +32,8 @@ import {
   type ProductLikeRow,
   type ProductVariantGroup,
 } from "./product-utils";
+import { launchProducts } from "./launch-products";
+import { atsElgiProducts } from "./ats-elgi-products";
 
 export const images = {
   brakes,
@@ -66,6 +68,7 @@ export type Product = {
   subcategory?: string | undefined;
   mobility: MobilityType[];
   price: number;
+  costPrice?: number | undefined;
   oldPrice?: number | undefined;
   rating: number;
   reviews: number;
@@ -90,13 +93,10 @@ export type Product = {
 };
 
 export const categories = [
-  "Garage Equipment",
-  "Tyre & Wheel",
   "Diagnostic Equipment",
   "EV Equipment",
-  "Brakes",
-  "Batteries",
-  "Lubricants & Fluids",
+  "Tyre & Wheel",
+  "Garage Equipment",
 ];
 
 export const mobilitySegments = [
@@ -479,767 +479,9 @@ export const guides = [
   },
 ];
 
-export const products: Product[] = [
-  // Commercial Garage Equipment & Lifts
-  {
-    slug: "heavy-duty-2-post-lift-4t",
-    name: "Heavy-Duty 2-Post Electro-Hydraulic Lift 4.0T",
-    brand: "Torq",
-    category: "Garage Equipment",
-    mobility: ["4-Wheeler", "EV"],
-    price: 285000,
-    oldPrice: 310000,
-    rating: 4.9,
-    reviews: 34,
-    stock: "In stock",
-    image: lift,
-    fits: ["Commercial Workshop Bay", "Passenger Cars, SUVs & Light Vans"],
-    sku: "TQ-LIFT-4000",
-    description:
-      "Clear-floor electro-hydraulic 2-post lift with 4,000 kg capacity. Features automatic arm restraint locks, dual hydraulic synchronization cylinders, and CE-certified electromagnetic release safety latches for heavy commercial workshop use.",
-    specs: [
-      ["Lifting Capacity", "4,000 kg (4.0 Ton)"],
-      ["Max Lifting Height", "1,900 mm"],
-      ["Min Lifting Height", "100 mm"],
-      ["Overall Height", "3,840 mm"],
-      ["Motor Power", "2.2 kW / 3.0 HP"],
-      ["Power Supply", "380V 3-Phase / 50Hz"],
-      ["Lifting Time", "50 seconds"],
-      ["Warranty", "24 months commercial warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "motorcycle-hydraulic-scissor-lift-500kg",
-    name: "Motorcycle & Scooter Hydraulic Scissor Lift 500kg",
-    brand: "Torq",
-    category: "Garage Equipment",
-    mobility: ["2-Wheeler", "EV"],
-    price: 68000,
-    oldPrice: 75000,
-    rating: 4.8,
-    reviews: 19,
-    stock: "In stock",
-    image: motoLift,
-    fits: ["Two-Wheeler Garages", "Motorcycles, Scooters & E-Bikes"],
-    sku: "TQ-ML-500",
-    description:
-      "Heavy-duty 2-wheeler workshop scissor lift table with pneumatic foot pedal control, integrated mechanical wheel vise, and drop-out tail plate for rear wheel servicing on motorcycles and scooters.",
-    specs: [
-      ["Lifting Capacity", "500 kg"],
-      ["Max Lifting Height", "1,200 mm"],
-      ["Platform Dimensions", "2,200 mm × 680 mm"],
-      ["Drive System", "Pneumatic-Hydraulic Foot Pedal"],
-      ["Safety Mechanism", "Multi-position mechanical lock bar"],
-      ["Wheel Clamp", "Heavy-duty rubber-lined vise clamp included"],
-      ["Warranty", "18 months commercial warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: false,
-  },
-  {
-    slug: "pro-tyre-changer-assist-arm",
-    name: "Pro Automatic Tyre Changer with Dual Assist Arm",
-    brand: "Torq",
-    category: "Tyre & Wheel",
-    mobility: ["4-Wheeler", "3-Wheeler", "EV"],
-    price: 175000,
-    oldPrice: 195000,
-    rating: 4.8,
-    reviews: 29,
-    stock: "In stock",
-    image: tyreChanger,
-    fits: ["Tyre Service Centers", '10"–24" Passenger & Commercial Rims'],
-    sku: "TQ-TC-9000",
-    description:
-      "Heavy-duty commercial tyre changer equipped with pneumatic tilt-back column and dual power assist arms for effortless demounting of stiff run-flat and ultra-low-profile tyres without rim scratch.",
-    specs: [
-      ["Clamping Range", '10"–24" (Internal/External)'],
-      ["Max Wheel Diameter", "1,040 mm"],
-      ["Max Wheel Width", '355 mm (14")'],
-      ["Working Pressure", "8–10 bar (115–145 psi)"],
-      ["Motor Power", "1.1 kW / 220V or 380V"],
-      ["Bead Breaker Force", "2,500 kg"],
-      ["Warranty", "18 months commercial warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "digital-wheel-balancer-laser",
-    name: "Microprocessor Digital Wheel Balancer with Laser",
-    brand: "Axion",
-    category: "Tyre & Wheel",
-    mobility: ["4-Wheeler", "3-Wheeler", "EV"],
-    price: 145000,
-    rating: 4.9,
-    reviews: 22,
-    stock: "In stock",
-    image: wheelBalancer,
-    fits: ["Automotive Workshop Tyre Bays", "Light Commercial & Passenger Wheels"],
-    sku: "AX-WB-900",
-    description:
-      "High-precision digital wheel balancing system featuring automatic 3D distance and rim diameter sensor input, multi-mode alloy balancing cycles, and laser beam pointer for adhesive weight positioning.",
-    specs: [
-      ["Rim Diameter", '10"–24"'],
-      ["Balancing Accuracy", "±1 g"],
-      ["Cycle Time", "7 seconds"],
-      ["Max Wheel Weight", "65 kg"],
-      ["Shaft Diameter", "40 mm high-grade steel"],
-      ["Display", "Digital LED with interactive wheel graphic"],
-      ["Warranty", "24 months warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "commercial-truck-bus-tyre-changer-56in",
-    name: 'Heavy-Duty Commercial Truck & Bus Tyre Changer 14"–56"',
-    brand: "Axion",
-    category: "Tyre & Wheel",
-    mobility: ["4-Wheeler"],
-    price: 385000,
-    oldPrice: 420000,
-    rating: 4.8,
-    reviews: 17,
-    stock: "In stock",
-    image: tyreChanger,
-    fits: ["Commercial Fleet Depots", "Truck, Bus, Tractor & Earthmover Wheels"],
-    sku: "AX-TC-5600",
-    description:
-      "Universal electro-hydraulic commercial tyre changer designed for demounting and mounting tubed and tubeless truck, bus, agricultural, and industrial wheels up to 56 inches in diameter.",
-    specs: [
-      ["Clamping Rim Capacity", '14"–56" with extension clamps'],
-      ["Max Wheel Weight", "1,500 kg"],
-      ["Max Wheel Diameter", "2,300 mm"],
-      ["Max Wheel Width", "1,050 mm"],
-      ["Hydraulic Motor", "1.5 kW / 380V 3-Phase"],
-      ["Chuck Motor", "2.2 kW dual speed"],
-      ["Warranty", "24 months commercial warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "precision-3d-hd-wheel-alignment-system",
-    name: "High-Definition 3D Optical Wheel Alignment System",
-    brand: "Axion",
-    category: "Tyre & Wheel",
-    mobility: ["4-Wheeler", "EV"],
-    price: 430000,
-    rating: 4.9,
-    reviews: 31,
-    stock: "In stock",
-    image: wheelBalancer,
-    fits: ["Precision Alignment Bays", "All Passenger & Light Commercial Vehicles"],
-    sku: "AX-WA-3DPRO",
-    description:
-      "Industrial high-definition dual-camera 3D wheel alignment system with passive target reflectors, automatic vehicle tracking beam, and comprehensive global OEM vehicle database.",
-    specs: [
-      ["Camera Resolution", "Dual 5.0 Megapixel Industrial CMOS Sensors"],
-      ["Measuring Accuracy", "Camber: ±0.02°, Caster: ±0.04°, Toe: ±0.02°"],
-      ["Target Clamps", 'Non-contact rim-grip target clamps (11"–25")'],
-      ["Database", "Over 45,000 OEM vehicle chassis specifications with annual updates"],
-      ["Software", '3D animated alignment adjustment wizard on 32" LED display'],
-      ["Warranty", "24 months warranty with calibration certificate"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "rotary-screw-air-compressor-10hp",
-    name: "Rotary Screw Air Compressor 10HP / 300L Tank",
-    brand: "Kraftwerk",
-    category: "Garage Equipment",
-    mobility: ["4-Wheeler", "2-Wheeler", "3-Wheeler", "EV"],
-    price: 240000,
-    rating: 4.7,
-    reviews: 18,
-    stock: "In stock",
-    image: compressor,
-    fits: ["Full Workshop Air Line Supply", "Pneumatic Tools, Lifts & Changers"],
-    sku: "KW-SC-10HP",
-    description:
-      "Continuous-duty rotary screw compressor unit mounted on a 300L air receiver vessel with integrated refrigerated dryer and inline filtration. Engineered for 100% duty cycle commercial workshop pneumatic demands.",
-    specs: [
-      ["Motor Power", "7.5 kW / 10 HP"],
-      ["Working Pressure", "10 bar (145 psi)"],
-      ["Air Delivery", "1,050 L/min (37 CFM)"],
-      ["Tank Volume", "300 Litres ASME Certified"],
-      ["Noise Level", "65 dB(A) whisper quiet acoustic cabinet"],
-      ["Warranty", "36 months on screw air end"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "heavy-duty-4-post-alignment-lift-5t",
-    name: "Heavy-Duty 4-Post Wheel Alignment Lift 5.0T",
-    brand: "Torq",
-    category: "Garage Equipment",
-    mobility: ["4-Wheeler", "EV"],
-    price: 360000,
-    oldPrice: 395000,
-    rating: 4.9,
-    reviews: 26,
-    stock: "In stock",
-    image: lift,
-    fits: ["Commercial Alignment Bays", "Passenger Cars, SUVs & Light Trucks"],
-    sku: "TQ-4PL-5000",
-    description:
-      "Precision 4-post commercial vehicle hoist with integrated slip plates, turntable recesses, and secondary pneumatic scissor jack beam for heavy-duty 3D wheel alignment operations.",
-    specs: [
-      ["Lifting Capacity", "5,000 kg (5.0 Ton)"],
-      ["Runway Length", "5,100 mm"],
-      ["Lifting Height", "1,850 mm"],
-      ["Drive System", "Electro-hydraulic with cable synchronization"],
-      ["Safety Locks", "Multi-position pneumatic mechanical ladder locks"],
-      ["Secondary Jacking Beam", "3,000 kg pneumatic rolling jack included"],
-      ["Warranty", "24 months commercial warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
+export const products: Product[] = [...launchProducts, ...atsElgiProducts];
 
-  // EV Equipment & Safety
-  {
-    slug: "ev-1000v-insulated-tool-kit",
-    name: "1000V VDE Insulated EV Safety Tool Kit (42-Piece)",
-    brand: "Kraftwerk",
-    category: "EV Equipment",
-    mobility: ["EV", "2-Wheeler", "3-Wheeler", "4-Wheeler"],
-    price: 48500,
-    oldPrice: 54000,
-    rating: 4.9,
-    reviews: 41,
-    stock: "In stock",
-    image: evTools,
-    fits: ["EV Workshops", "Electric Cars, E-Bikes, E-Rickshaws & Hybrids"],
-    sku: "KW-EV-1000V",
-    description:
-      "Certified IEC 60900 / DIN EN 60900 1000V insulated hand tool set in a heavy-duty IP67 protective case. Crucial safety equipment for mechanics and technicians working on high-voltage battery disconnects, inverters, and EV wiring.",
-    specs: [
-      ["Insulation Rating", "1000V AC / 1500V DC tested"],
-      ["Standard Compliance", "IEC 60900:2018 / VDE GS"],
-      ["Tool Count", "42 precision insulated tools"],
-      ["Case", "Heavy-duty impact-resistant foam cut organizer"],
-      [
-        "Included",
-        "Insulated ratchet, sockets (8-22mm), open wrenches, screwdrivers, pliers, torque wrench",
-      ],
-      ["Warranty", "Lifetime warranty on steel forging"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "ev-battery-pack-diagnostic-analyzer",
-    name: "High-Voltage EV Battery Pack Diagnostic Station",
-    brand: "Diagtek",
-    category: "EV Equipment",
-    mobility: ["EV", "3-Wheeler", "4-Wheeler"],
-    price: 380000,
-    rating: 4.9,
-    reviews: 14,
-    stock: "In stock",
-    image: evBatteryAnalyzer,
-    fits: ["EV Repair Centers", "Lithium-ion Battery Modules & Packs"],
-    sku: "DT-EV-BT950",
-    description:
-      "Mobile commercial testing workstation for high-voltage traction batteries. Measures module State of Health (SOH), individual cell voltage consistency, internal resistance, and automated cell equalization balancing for 4W and 3W electric vehicles.",
-    specs: [
-      ["Voltage Range", "0–800V DC High Voltage"],
-      ["Cell Measurement", "Up to 32S simultaneously with CAN/RS485 logging"],
-      ["Max Current", "100A Charge / Discharge Testing"],
-      ["Interface", '10.1" Rugged Industrial Touchscreen'],
-      ["Protocols", "CAN Bus, OBD2, K-Line, UDS EV Protocol"],
-      ["Safety", "Emergency shutoff, reverse polarity, overtemp interlock"],
-      ["Warranty", "24 months manufacturer warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "ev-traction-battery-cell-balancer",
-    name: "Automated EV Battery Cell Equalizer & Module Balancer",
-    brand: "Voltis",
-    category: "EV Equipment",
-    mobility: ["EV", "3-Wheeler", "4-Wheeler"],
-    price: 295000,
-    rating: 4.8,
-    reviews: 16,
-    stock: "In stock",
-    image: evBatteryAnalyzer,
-    fits: ["EV Battery Service Garages", "NMC, LFP & LTO Lithium Modules"],
-    sku: "VT-EQ-800",
-    description:
-      "Professional high-precision multi-channel battery cell equalizer designed for workshop battery reconditioning, cell replacement matching, and active pack balancing.",
-    specs: [
-      ["Channels", "16 independent bi-directional balancing channels"],
-      ["Equalization Current", "Up to 10A per channel programmable"],
-      ["Voltage Accuracy", "±1 mV high-precision sampling"],
-      ["Cooling", "Intelligent variable-speed forced-air thermal system"],
-      ["Protection", "Overvoltage, undervoltage, reverse polarity, and short-circuit"],
-      ["Warranty", "18 months manufacturer warranty"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "high-voltage-ev-motor-insulation-tester",
-    name: "5000V High-Voltage EV Motor Insulation Tester & Megohmmeter",
-    brand: "Diagtek",
-    category: "EV Equipment",
-    mobility: ["EV", "2-Wheeler", "3-Wheeler", "4-Wheeler"],
-    price: 115000,
-    oldPrice: 128000,
-    rating: 4.9,
-    reviews: 23,
-    stock: "In stock",
-    image: evTools,
-    fits: ["EV Powertrain Diagnostic Bays", "Permanent Magnet AC & Induction Traction Motors"],
-    sku: "DT-HV-5KV",
-    description:
-      "High-voltage diagnostic insulation resistance tester certified for testing stator windings, inverter DC bus isolation, and chassis leak resistance up to 5kV DC.",
-    specs: [
-      ["Test Voltages", "250V, 500V, 1000V, 2500V, 5000V DC"],
-      ["Resistance Range", "0.01 MΩ to 10.0 TΩ"],
-      ["Dielectric Discharge", "Automatic polarization index (PI) and DAR calculation"],
-      ["Safety Rating", "CAT IV 600V / CAT III 1000V EN 61010-1"],
-      ["Display", "Dual backlit analog bargraph & digital LCD display"],
-      ["Warranty", "24 months manufacturer warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-
-  // Diagnostics & Tools
-  {
-    slug: "pro-obd2-diagnostic-scanner",
-    name: "Pro OBD2 / CAN Universal Diagnostic Scanner Tablet",
-    brand: "Diagtek",
-    category: "Diagnostic Equipment",
-    mobility: ["4-Wheeler", "EV"],
-    price: 32500,
-    oldPrice: 36000,
-    rating: 4.7,
-    reviews: 71,
-    stock: "In stock",
-    image: scanner,
-    fits: ["Automotive Workshop Diagnostics", "1996+ OBD2 / CAN / EOBD Vehicles"],
-    sku: "DT-PRO-5",
-    description:
-      'Multi-brand workshop diagnostic tool with 5" touchscreen. Read and clear manufacturer DTCs, live PID data graphing, automated service resets, EPB calibration, battery registration, and bi-directional component actuation.',
-    specs: [
-      ["Screen", '5.0" IPS Color Touchscreen'],
-      ["Coverage", "90+ Global vehicle manufacturers"],
-      ["Updates", "2 Years Free Wi-Fi Software Updates"],
-      ["Protocols", "CAN-FD, DoIP, ISO9141, KWP2000, J1850"],
-      ["Warranty", "12 months commercial warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "bluetooth-obd-dongle",
-    name: "Heavy-Duty Workshop Bluetooth Diagnostic Interface",
-    brand: "Diagtek",
-    category: "Diagnostic Equipment",
-    mobility: ["4-Wheeler", "EV"],
-    price: 3900,
-    rating: 4.4,
-    reviews: 203,
-    stock: "In stock",
-    image: scanner,
-    fits: ["Technicians & Quick Diagnostics", "Universal OBD2 Vehicles"],
-    sku: "DT-BT-1",
-    description:
-      "Pocket wireless adapter connecting vehicle OBD port directly to Android/iOS tablet or smartphone for rapid bay triage, readiness monitors, and fault code scanning.",
-    specs: [
-      ["Connection", "Bluetooth 5.0 Low Energy"],
-      ["Compatibility", "Android / iOS / Windows PC"],
-      ["Supported Protocols", "All standard OBD2 & CAN protocols"],
-      ["Warranty", "12 months warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "commercial-adas-radar-camera-calibration-station",
-    name: "Commercial ADAS Radar & Camera Target Calibration Station",
-    brand: "Diagtek",
-    category: "Diagnostic Equipment",
-    mobility: ["4-Wheeler", "EV"],
-    price: 395000,
-    rating: 4.9,
-    reviews: 19,
-    stock: "In stock",
-    image: scanner,
-    fits: ["Collision Repair Centers & Windshield Replacement Hubs", "Camera & Radar ADAS Systems"],
-    sku: "DT-ADAS-CAL",
-    description:
-      "Multi-target optical and millimeter-wave radar calibration rig for Lane Departure Warning (LDW), Adaptive Cruise Control (ACC), and Around View Monitoring (AVM) sensor calibration.",
-    specs: [
-      ["Target Coverage", "Toyota, Honda, Nissan, Hyundai, VAG, Mercedes, BMW"],
-      ["Laser Alignment", "High-accuracy dual millimeter laser centering"],
-      ["Frame Structure", "Heavy-duty aluminum alloy mobile crossbeam with micro-height adjuster"],
-      ["Compatibility", "Integrates seamlessly with Diagtek Pro diagnostic tablets"],
-      ["Warranty", "24 months commercial warranty with target boards"],
-    ],
-    isEquipment: true,
-    requiresQuote: true,
-  },
-  {
-    slug: "heavy-duty-fleet-commercial-scanner-tablet",
-    name: 'Commercial Fleet Heavy Truck & Bus Diagnostic Scanner 10"',
-    brand: "Diagtek",
-    category: "Diagnostic Equipment",
-    mobility: ["4-Wheeler"],
-    price: 185000,
-    oldPrice: 205000,
-    rating: 4.8,
-    reviews: 35,
-    stock: "In stock",
-    image: scanner,
-    fits: [
-      "Commercial Fleets, Bus Depots & Heavy Transport Garages",
-      "J1939, J1708, OBD Heavy Duty",
-    ],
-    sku: "DT-HD-10",
-    description:
-      "Ruggedized IP65 industrial 10-inch Android diagnostic tablet with full bi-directional actuation, DPF regeneration, SCR/AdBlue reset, cylinder cut-out, and injector coding for commercial diesel engines.",
-    specs: [
-      ["Hardware", '10.1" Sunlight-Readable Gorilla Glass Display, 8-Core CPU'],
-      ["Protocols", "SAE J1939, SAE J1708, J1587, ISO 15765-4, CAN 2.0"],
-      [
-        "Engine Coverage",
-        "Cummins, Isuzu, Hino, Mitsubishi Fuso, Caterpillar, Detroit Diesel, Volvo",
-      ],
-      ["Battery Life", "12,000 mAh rechargeable lithium pack (10+ hours continuous use)"],
-      ["Warranty", "24 months commercial warranty + 2 years free software updates"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-
-  // Parts & Consumables
-  {
-    slug: "ceramic-brake-pad-set-front",
-    name: "Commercial Grade Ceramic Brake Pad Set — Front Axle",
-    brand: "Stopline",
-    category: "Brakes",
-    mobility: ["4-Wheeler"],
-    price: 4850,
-    oldPrice: 5600,
-    rating: 4.8,
-    reviews: 214,
-    stock: "In stock",
-    image: brakepads,
-    fits: ["Toyota Corolla 2014–2022", "Toyota Axio 2015–2023", "Toyota Allion"],
-    sku: "SL-BP-2210",
-    description:
-      "Low-dust, high-temperature ceramic friction compound formulated for long rotor life and consistent coefficient of friction under heavy stop-and-go fleet driving. Chamfered with multi-layer noise damping shims.",
-    specs: [
-      ["Compound", "High-Friction Ceramic Formulation"],
-      ["Position", "Front Axle"],
-      ["Backing Plate", "Anti-Corrosion Powder Coated"],
-      ["Wear Sensor", "Included in pack"],
-      ["Warranty", "12 months / 20,000 km warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "ceramic-brake-pad-set-rear",
-    name: "Commercial Grade Ceramic Brake Pad Set — Rear Axle",
-    brand: "Stopline",
-    category: "Brakes",
-    mobility: ["4-Wheeler"],
-    price: 4200,
-    rating: 4.7,
-    reviews: 132,
-    stock: "In stock",
-    image: brakepads,
-    fits: ["Honda Civic 2016–2021", "Honda CR-V 2017–2022"],
-    sku: "SL-BP-2280",
-    description:
-      "Rear-axle ceramic pads engineered for passenger cars and light commercial applications. Minimum dust and zero rotor scoring.",
-    specs: [
-      ["Compound", "Ceramic Low-Metallic"],
-      ["Position", "Rear Axle"],
-      ["Hardware", "Stainless steel abutment clips included"],
-      ["Warranty", "12 months warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "high-carbon-ventilated-brake-rotors-front",
-    name: "Commercial High-Carbon Ventilated Front Brake Disc Rotors (Pair)",
-    brand: "Stopline",
-    category: "Brakes",
-    mobility: ["4-Wheeler"],
-    price: 9800,
-    oldPrice: 11200,
-    rating: 4.8,
-    reviews: 94,
-    stock: "In stock",
-    image: brakepads,
-    fits: ["Toyota HiAce 2010–2023", "Toyota Premio / Allion", "Nissan NV200"],
-    sku: "SL-DR-4100",
-    description:
-      "High-carbon grey cast iron brake disc pair engineered with directional cooling vanes for thermal warp resistance, noise suppression, and long service life in commercial delivery fleets.",
-    specs: [
-      ["Material", "High-Carbon G3000 Grey Cast Iron"],
-      ["Vane Type", "Curved Directional Ventilation Vanes"],
-      ["Coating", "Geomet anti-rust zinc flake surface treatment"],
-      ["Runout Tolerance", "< 0.02 mm precision balanced"],
-      ["Warranty", "12 months / 30,000 km warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "synthetic-dot4-high-boiling-brake-fluid-12l",
-    name: "Synthetic DOT 4 High-Boiling Brake Fluid (Commercial Case 12×1L)",
-    brand: "Stopline",
-    category: "Brakes",
-    mobility: ["4-Wheeler", "2-Wheeler", "3-Wheeler"],
-    price: 11400,
-    rating: 4.9,
-    reviews: 118,
-    stock: "In stock",
-    image: oil,
-    fits: ["All Hydraulic Disc & Drum Brake Systems", "ABS, ESP & TCS Equipped Fleets"],
-    sku: "SL-BF-DOT4-12",
-    description:
-      "Premium glycol-ether synthetic hydraulic brake fluid with high dry and wet boiling points to prevent vapor lock and pedal fade under severe braking conditions in commercial service.",
-    specs: [
-      ["Standard", "DOT 4 / SAE J1704 / ISO 4925 Class 4"],
-      ["Dry Boiling Point", "265°C (509°F) minimum"],
-      ["Wet Boiling Point", "165°C (329°F) minimum"],
-      ["Packaging", "Workshop case of 12 sealed 1-Litre bottles"],
-      ["Corrosion Inhibitor", "Protects cast iron, steel, copper, and aluminum brake lines"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "agm-battery-70ah",
-    name: "Heavy-Duty AGM Start-Stop Battery 70Ah / 760 CCA",
-    brand: "Voltis",
-    category: "Batteries",
-    mobility: ["4-Wheeler", "EV"],
-    price: 18900,
-    rating: 4.8,
-    reviews: 96,
-    stock: "Low stock",
-    image: battery,
-    fits: ["Honda Vezel Hybrid", "Toyota Premio", "European Start-Stop Models"],
-    sku: "VT-AGM-70",
-    description:
-      "Absorbent Glass Mat (AGM) battery engineered for commercial vehicles, start-stop regenerative braking systems, and high electronic accessory loads.",
-    specs: [
-      ["Capacity", "70 Ah"],
-      ["Cold Cranking Amps (CCA)", "760 A (EN standard)"],
-      ["Chemistry", "VRLA / AGM Sealed Maintenance-Free"],
-      ["Cycle Life", "3x standard flooded battery life"],
-      ["Warranty", "24 months commercial replacement warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "efb-battery-60ah",
-    name: "Enhanced Flooded EFB Battery 60Ah / 560 CCA",
-    brand: "Voltis",
-    category: "Batteries",
-    mobility: ["4-Wheeler", "3-Wheeler"],
-    price: 13400,
-    rating: 4.6,
-    reviews: 58,
-    stock: "In stock",
-    image: battery,
-    fits: ["Toyota Corolla", "Commercial 3-Wheelers", "Passenger Cars"],
-    sku: "VT-EFB-60",
-    description:
-      "Enhanced flooded battery designed for entry-level start-stop vehicles, commercial delivery fleets, and high-temperature operating conditions.",
-    specs: [
-      ["Capacity", "60 Ah"],
-      ["Cold Cranking Amps (CCA)", "560 A"],
-      ["Type", "Enhanced Flooded (EFB)"],
-      ["Warranty", "18 months warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "commercial-fleet-heavy-duty-battery-200ah",
-    name: "Commercial Heavy Fleet & Bus Battery 200Ah / 1200 CCA",
-    brand: "Voltis",
-    category: "Batteries",
-    mobility: ["4-Wheeler"],
-    price: 28500,
-    oldPrice: 31000,
-    rating: 4.8,
-    reviews: 77,
-    stock: "In stock",
-    image: battery,
-    fits: [
-      "Commercial Buses, Heavy Cargo Haulers & Generators",
-      "Hino, Isuzu, Tata, Ashok Leyland",
-    ],
-    sku: "VT-HD-200",
-    description:
-      "Commercial heavy-duty lead-calcium battery with vibration-resistant anchor bonded plates and reinforced labyrinth lid designed for long service life in extreme tropical operating climates.",
-    specs: [
-      ["Capacity", "200 Ah @ 20Hr Rate"],
-      ["Cold Cranking Amps (CCA)", "1,200 A (EN)"],
-      ["Terminal Type", "Standard Heavy Commercial A-Post"],
-      ["Vibration Resistance", "V3 vibration proof certified"],
-      ["Warranty", "18 months commercial warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "lifepo4-auxiliary-lithium-battery-100ah",
-    name: "Deep-Cycle LiFePO4 Lithium Auxiliary Battery 12V 100Ah",
-    brand: "Voltis",
-    category: "Batteries",
-    mobility: ["EV", "3-Wheeler", "4-Wheeler"],
-    price: 38500,
-    rating: 4.9,
-    reviews: 43,
-    stock: "In stock",
-    image: battery,
-    fits: ["Electric 3-Wheelers, Workshop Test Benches & Service Shuttles"],
-    sku: "VT-LFP-100",
-    description:
-      "Grade-A prismatic lithium iron phosphate auxiliary battery with built-in 100A smart Bluetooth BMS for cell monitoring, thermal protection, and 4,000+ deep-discharge cycles.",
-    specs: [
-      ["Nominal Voltage", "12.8V DC"],
-      ["Capacity", "100 Ah (1,280 Wh)"],
-      ["Cycle Life", "4,000+ cycles @ 80% DOD"],
-      ["BMS", "Integrated Smart Bluetooth BMS with mobile telemetry app"],
-      ["Weight", "11.2 kg (60% lighter than equivalent lead-acid)"],
-      ["Warranty", "36 months manufacturer warranty"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "synthetic-engine-oil-5w30-4l",
-    name: "Full Synthetic Engine Oil 5W-30 (4L Commercial Pack)",
-    brand: "Lubrix",
-    category: "Lubricants & Fluids",
-    mobility: ["4-Wheeler", "3-Wheeler"],
-    price: 5200,
-    rating: 4.9,
-    reviews: 388,
-    stock: "In stock",
-    image: oil,
-    fits: ["Petrol & Turbo Diesel Engines", "Toyota, Honda, Nissan, Mitsubishi"],
-    sku: "LX-5W30-4",
-    description:
-      "Advanced PAO full synthetic formulation engineered for thermal stability, anti-wear valve-train protection, and sludge control in commercial service operations.",
-    specs: [
-      ["Viscosity Grade", "SAE 5W-30"],
-      ["Specifications", "API SP / ILSAC GF-6A / ACEA C3"],
-      ["Base Stock", "Full Synthetic Group III / PAO"],
-      ["Volume", "4 Litres (Also available in 208L workshop drums)"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "synthetic-engine-oil-0w20-4l",
-    name: "Hybrid Low-Viscosity Engine Oil 0W-20 (4L Pack)",
-    brand: "Lubrix",
-    category: "Lubricants & Fluids",
-    mobility: ["4-Wheeler", "EV"],
-    price: 5600,
-    rating: 4.8,
-    reviews: 144,
-    stock: "Out of stock",
-    image: oil,
-    fits: ["Toyota Aqua, Prius, Honda Hybrid Platforms"],
-    sku: "LX-0W20-4",
-    description:
-      "Ultra-low viscosity synthetic fluid tailored for hybrid electric powertrains with frequent cold stop-start ignition cycles.",
-    specs: [
-      ["Viscosity Grade", "SAE 0W-20"],
-      ["Standard", "API SP Resource Conserving"],
-      ["Volume", "4 Litres"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "heavy-duty-diesel-engine-oil-15w40-20l",
-    name: "Commercial Heavy-Duty Diesel Engine Oil 15W-40 (20L Pail)",
-    brand: "Lubrix",
-    category: "Lubricants & Fluids",
-    mobility: ["4-Wheeler", "3-Wheeler"],
-    price: 14800,
-    oldPrice: 16500,
-    rating: 4.9,
-    reviews: 162,
-    stock: "In stock",
-    image: oil,
-    fits: ["Commercial Fleet Vans, Light Trucks, Buses & Heavy Equipment"],
-    sku: "LX-15W40-20",
-    description:
-      "Heavy-duty diesel engine oil formulated with high soot-dispersancy additives and shear-stable polymers for extended oil-drain intervals in commercial transport operations.",
-    specs: [
-      ["Viscosity Grade", "SAE 15W-40"],
-      ["Specifications", "API CK-4 / CJ-4 / CI-4 PLUS / ACEA E9"],
-      ["Base Stock", "Hydro-cracked Group II+ Mineral Formulation"],
-      ["Packaging", "20 Litre industrial workshop pail with pour spout"],
-      ["TBN", "10.2 mg KOH/g for acid neutralization"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-  {
-    slug: "universal-full-synthetic-atf-cvt-fluid-4l",
-    name: "Multi-Vehicle Full Synthetic ATF & CVT Transmission Fluid 4L",
-    brand: "Lubrix",
-    category: "Lubricants & Fluids",
-    mobility: ["4-Wheeler", "EV"],
-    price: 6400,
-    rating: 4.8,
-    reviews: 110,
-    stock: "In stock",
-    image: oil,
-    fits: ["Toyota, Honda, Nissan, Mitsubishi Automatic & CVT Transmissions"],
-    sku: "LX-ATFCVT-4",
-    description:
-      "Universal full synthetic transmission fluid engineered with friction-durability modifiers for smooth torque-converter lockup and anti-shudder belt grip in modern automatic and CVT gearboxes.",
-    specs: [
-      ["Compatibility", "Toyota WS/T-IV, Honda ATF-Z1/DW-1, Nissan Matic-D/J/S & CVT NS-2/NS-3"],
-      ["Base Stock", "Full Synthetic Group IV PAO"],
-      ["Volume", "4 Litres"],
-      ["Viscosity Index", "175 high viscosity index for thermal resistance"],
-    ],
-    isEquipment: false,
-    requiresQuote: false,
-  },
-];
-
-export const brands = [
-  "Torq",
-  "Diagtek",
-  "Kraftwerk",
-  "Axion",
-  "Stopline",
-  "Voltis",
-  "Lubrix",
-  "Nordline",
-  "Meridian",
-  "Hexa",
-];
+export const brands = ["LAUNCH", "ATS ELGI"];
 
 export const b2bSolutions = [
   {
@@ -1416,25 +658,52 @@ const STATIC_ASSET_BY_BASENAME: Record<string, string> = {
  * Normalizes seeded `/src/assets/<file>` paths to Vite's active runtime URL
  * (`/assets/<file>-<hash>.<ext>` in production Nitro builds, `/src/assets/...` in dev).
  */
+const LAUNCH_JPEG_FILENAMES = new Set([
+  "launch-creader-professional-919s-359",
+  "launch-how-to-do-dpf-regen-for-cummins-on-an-x-431-scan-tool",
+  "launch-launch-introduces-split-screen-multitasking-on-x-431-tablets",
+  "launch-products",
+  "launch-the-graphical-dpf-regen-is-now-available-on-your-x-431-diagnostic-tablet",
+  "launch-x-431-adas-pro",
+  "launch-x-431-immo-pro",
+  "launch-x-431-pro3-se",
+  "launch-x-431-smartlink-c-hd-lite",
+  "launch-x-prog-3",
+]);
+
 export function normalizeProductAssetUrl(src: string): string {
-  const trimmed = src.trim();
-  if (!trimmed.startsWith("/src/assets/")) {
-    return trimmed;
+  let trimmed = src.trim();
+  if (trimmed.startsWith("/src/assets/")) {
+    const basename = trimmed.slice("/src/assets/".length).split(/[?#]/)[0] || "";
+    return STATIC_ASSET_BY_BASENAME[basename] || trimmed;
   }
-  const basename = trimmed.slice("/src/assets/".length).split(/[?#]/)[0] || "";
-  return STATIC_ASSET_BY_BASENAME[basename] || trimmed;
+  if (trimmed.startsWith("/uploads/products/launch/")) {
+    for (const name of LAUNCH_JPEG_FILENAMES) {
+      if (trimmed.includes(`/uploads/products/launch/${name}.png`)) {
+        trimmed = trimmed.replace(
+          `/uploads/products/launch/${name}.png`,
+          `/uploads/products/launch/${name}.jpg`,
+        );
+      }
+    }
+    if (!trimmed.includes("?v=") && !trimmed.includes("&v=")) {
+      const sep = trimmed.includes("?") ? "&" : "?";
+      return `${trimmed}${sep}v=launch-2`;
+    }
+  }
+  return trimmed;
 }
 
 export function mapDbProductToProduct(row: ProductLikeRow): Product {
   const fallback = products.find((p) => p.slug === row.slug);
   const resolvedImages =
     Array.isArray(row.images) && row.images.length > 0
-        ? row.images
+      ? row.images
           .filter((src): src is string => typeof src === "string" && src.trim().length > 0)
           .map(normalizeProductAssetUrl)
-        : fallback
-          ? [fallback.image]
-          : [lift];
+      : fallback
+        ? [fallback.image]
+        : [lift];
   const primaryImage =
     resolvedImages[0] ||
     (row.image ? normalizeProductAssetUrl(row.image) : undefined) ||
@@ -1458,6 +727,11 @@ export function mapDbProductToProduct(row: ProductLikeRow): Product {
     distinctFeatures.length > 0 ? distinctFeatures : fallback?.features || [];
 
   const price = row.priceBdt ?? row.price ?? fallback?.price ?? 0;
+  const costPrice =
+    row.costPriceBdt ??
+    row.costPrice ??
+    fallback?.costPrice ??
+    (price > 0 ? Math.round((price * 0.72) / 500) * 500 : 0);
   const warehouseQty = row.warehouseQty ?? 10;
   const reorderLevel = row.reorderLevel ?? 2;
   const isEquipment =
@@ -1524,6 +798,7 @@ export function mapDbProductToProduct(row: ProductLikeRow): Product {
     subcategory: row.subcategory || fallback?.subcategory || undefined,
     mobility: resolvedMobility.length > 0 ? resolvedMobility : ["4-Wheeler"],
     price,
+    costPrice,
     oldPrice: fallback?.oldPrice,
     rating: fallback?.rating ?? 4.8,
     reviews: fallback?.reviews ?? 1,

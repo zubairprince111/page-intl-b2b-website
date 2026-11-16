@@ -23,8 +23,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { requireAdminBeforeLoad } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/bookings")({
+  beforeLoad: requireAdminBeforeLoad,
   component: AdminBookings,
   head: () => ({
     meta: [{ title: "Bookings & Consultations — PAGE Admin" }],
@@ -406,6 +408,48 @@ function AdminBookings() {
                       </div>
                     </div>
 
+                    {(b.businessType || b.bays) && (
+                      <div className="flex items-start gap-2.5 sm:col-span-2 border-t border-white/[0.04] pt-2">
+                        <Building2 className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider block">
+                            Workshop Profile & Scale
+                          </span>
+                          <span className="text-zinc-200 font-medium block">
+                            {b.businessType || "Workshop"} {b.bays ? `• Scale: ${b.bays}` : ""}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {b.equipmentInterest && (
+                      <div className="flex items-start gap-2.5 sm:col-span-2 border-t border-white/[0.04] pt-2">
+                        <Sparkles className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider block">
+                            Machinery Interest / Target Equipment
+                          </span>
+                          <span className="text-zinc-200 font-medium block">
+                            {b.equipmentInterest}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {b.onsiteAddress && (
+                      <div className="flex items-start gap-2.5 sm:col-span-2 border-t border-white/[0.04] pt-2">
+                        <MapPin className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider block">
+                            On-Site Workshop Street Address
+                          </span>
+                          <span className="text-zinc-200 font-medium block">
+                            {b.onsiteAddress}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-start gap-2.5 sm:col-span-2 border-t border-white/[0.04] pt-2">
                       <Calendar className="h-4 w-4 text-sky-400 mt-0.5 shrink-0" />
                       <div className="min-w-0 flex-1 flex items-center justify-between">
@@ -497,12 +541,12 @@ function AdminBookings() {
                   {/* Actions & Direct Contact Strip */}
                   <div className="pt-3 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
                     {/* Instant Contact Links */}
-                    <div className="flex items-center gap-1.5">
-                      {b.phone && (
+                    <div className="flex items-center gap-1.5 w-[108px] shrink-0 justify-start">
+                      {b.phone ? (
                         <>
                           <a
                             href={`tel:${b.phone}`}
-                            className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-white/[0.06] flex items-center justify-center transition-colors"
+                            className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-white/[0.06] flex items-center justify-center transition-colors shrink-0"
                             title={`Call ${b.phone}`}
                           >
                             <Phone className="h-3.5 w-3.5" />
@@ -511,18 +555,33 @@ function AdminBookings() {
                             href={formatWhatsAppLink(b.phone, b.companyName, b.serviceName)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-400 border border-white/[0.06] flex items-center justify-center transition-colors"
+                            className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-400 border border-white/[0.06] flex items-center justify-center transition-colors shrink-0"
                             title="Confirm via WhatsApp"
                           >
                             <MessageCircle className="h-3.5 w-3.5" />
                           </a>
+                        </>
+                      ) : (
+                        <>
+                          <span
+                            className="h-8 w-8 rounded-lg bg-white/[0.02] border border-white/[0.03] text-zinc-600 flex items-center justify-center opacity-30 cursor-not-allowed shrink-0"
+                            title="No phone number provided"
+                          >
+                            <Phone className="h-3.5 w-3.5" />
+                          </span>
+                          <span
+                            className="h-8 w-8 rounded-lg bg-white/[0.02] border border-white/[0.03] text-zinc-600 flex items-center justify-center opacity-30 cursor-not-allowed shrink-0"
+                            title="No phone number provided"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                          </span>
                         </>
                       )}
                       <a
                         href={`mailto:${b.email}?subject=${encodeURIComponent(
                           `[PAGE Consultation Confirmation] Appointment #${b.id.toUpperCase()}`,
                         )}`}
-                        className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-sky-500/20 text-zinc-400 hover:text-sky-300 border border-white/[0.06] flex items-center justify-center transition-colors"
+                        className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-sky-500/20 text-zinc-400 hover:text-sky-300 border border-white/[0.06] flex items-center justify-center transition-colors shrink-0"
                         title={`Email ${b.email}`}
                       >
                         <Mail className="h-3.5 w-3.5" />

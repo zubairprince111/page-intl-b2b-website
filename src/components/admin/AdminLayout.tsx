@@ -6,11 +6,9 @@ import {
   Users,
   FileText,
   CalendarCheck,
-  Settings,
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Bell,
   Search,
   Menu,
   X,
@@ -18,7 +16,7 @@ import {
   Image as ImageIcon,
   FolderOpen,
   Newspaper,
-  Database,
+  Star,
 } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/lib/auth-client";
 import { useAdminStats } from "@/lib/data-client";
@@ -29,11 +27,10 @@ const navItems = [
   { to: "/admin/banners", icon: ImageIcon, label: "Banners" },
   { to: "/admin/media", icon: FolderOpen, label: "Media Library" },
   { to: "/admin/updates", icon: Newspaper, label: "Field Updates" },
+  { to: "/admin/reviews", icon: Star, label: "Reviews", badgeKey: "reviews" as const },
   { to: "/admin/users", icon: Users, label: "Users" },
   { to: "/admin/quotes", icon: FileText, label: "Quotations", badgeKey: "quotes" as const },
   { to: "/admin/bookings", icon: CalendarCheck, label: "Bookings", badgeKey: "bookings" as const },
-  { to: "/admin/database", icon: Database, label: "DB Tables" },
-  { to: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
 export function AdminLayout({
@@ -74,7 +71,6 @@ export function AdminLayout({
     );
   }
 
-  const notifCount = (stats?.pendingQuotes ?? 0) + (stats?.pendingBookings ?? 0);
   const initials = user.name
     .split(" ")
     .map((n) => n[0])
@@ -83,7 +79,10 @@ export function AdminLayout({
     .toUpperCase();
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#121212] text-zinc-200 font-[Inter,system-ui,sans-serif]">
+    <div
+      data-admin-scope="true"
+      className="flex h-screen w-screen overflow-hidden bg-[#121212] text-zinc-200 font-[Inter,system-ui,sans-serif]"
+    >
       {/* Mobile Drawer Backdrop */}
       {mobileOpen && (
         <div
@@ -155,7 +154,9 @@ export function AdminLayout({
                 ? (stats?.pendingQuotes ?? 0)
                 : item.badgeKey === "bookings"
                   ? (stats?.pendingBookings ?? 0)
-                  : 0;
+                  : item.badgeKey === "reviews"
+                    ? (stats?.pendingReviews ?? 0)
+                    : 0;
 
             return (
               <Link
@@ -269,16 +270,6 @@ export function AdminLayout({
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
-            {/* Notifications */}
-            <button className="relative grid h-8 w-8 place-items-center rounded-lg hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 transition-colors">
-              <Bell className="h-4 w-4" />
-              {notifCount > 0 && (
-                <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-red-500 text-[9px] font-bold text-white flex items-center justify-center">
-                  {notifCount}
-                </span>
-              )}
-            </button>
-
             {/* User avatar & popover */}
             <div className="flex items-center gap-2.5 pl-2 border-l border-white/[0.06]">
               <div className="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[10px] font-bold text-white shadow-xs">

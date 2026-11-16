@@ -3,6 +3,51 @@ import * as path from "node:path";
 import { Readable } from "node:stream";
 import { getMimeFromExtension } from "./media-types";
 
+export function detectMimeTypeFromBuffer(buf: Buffer | Uint8Array, fallbackExt: string): string {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (
+    buf.length >= 8 &&
+    buf[0] === 0x89 &&
+    buf[1] === 0x50 &&
+    buf[2] === 0x4e &&
+    buf[3] === 0x47 &&
+    buf[4] === 0x0d &&
+    buf[5] === 0x0a &&
+    buf[6] === 0x1a &&
+    buf[7] === 0x0a
+  ) {
+    return "image/png";
+  }
+  if (
+    buf.length >= 12 &&
+    buf[0] === 0x52 &&
+    buf[1] === 0x49 &&
+    buf[2] === 0x46 &&
+    buf[3] === 0x46 &&
+    buf[8] === 0x57 &&
+    buf[9] === 0x45 &&
+    buf[10] === 0x42 &&
+    buf[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+  if (buf.length >= 4 && buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) {
+    return "image/gif";
+  }
+  if (buf.length >= 4 && buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46) {
+    return "application/pdf";
+  }
+  return fallbackExt ? getMimeFromExtension(fallbackExt) : "application/octet-stream";
+}
+
+function getUploadCacheControl(): string {
+  return process.env["NODE_ENV"] === "production"
+    ? "public, max-age=3600"
+    : "no-cache, must-revalidate";
+}
+
 const SAFE_UPLOAD_EXTENSIONS = new Set([
   ".jpg",
   ".jpeg",
@@ -85,13 +130,16 @@ function serveBufferResponse(
   contentType: string,
   etagSeed: number,
 ): Response {
+  const detectedType = detectMimeTypeFromBuffer(buffer, "");
+  const effectiveContentType =
+    detectedType !== "application/octet-stream" ? detectedType : contentType;
   const etag = `W/"${buffer.length}-${etagSeed}"`;
   const headers = new Headers({
-    "content-type": contentType,
+    "content-type": effectiveContentType,
     "content-length": String(buffer.length),
     "accept-ranges": "bytes",
     etag,
-    "cache-control": "public, max-age=3600",
+    "cache-control": getUploadCacheControl(),
     "x-content-type-options": "nosniff",
   });
 
@@ -226,14 +274,30 @@ export async function serveUploadedFile(
     return new Response("Not Found", { status: 404 });
   }
 
+  let detectedContentType = getMimeFromExtension(ext);
+  try {
+    const fd = await fs.promises.open(resolvedFile, "r");
+    try {
+      const headerBuf = Buffer.alloc(16);
+      const { bytesRead } = await fd.read(headerBuf, 0, 16, 0);
+      if (bytesRead > 0) {
+        detectedContentType = detectMimeTypeFromBuffer(headerBuf.subarray(0, bytesRead), ext);
+      }
+    } finally {
+      await fd.close();
+    }
+  } catch {
+    // Keep getMimeFromExtension(ext)
+  }
+
   const etag = `W/"${stat.size}-${Math.trunc(stat.mtimeMs)}"`;
   const headers = new Headers({
-    "content-type": getMimeFromExtension(ext),
+    "content-type": detectedContentType,
     "content-length": String(stat.size),
     "accept-ranges": "bytes",
     etag,
     "last-modified": stat.mtime.toUTCString(),
-    "cache-control": "public, max-age=3600",
+    "cache-control": getUploadCacheControl(),
     "x-content-type-options": "nosniff",
   });
 

@@ -18,7 +18,7 @@ import { checkRateLimit } from "./rate-limiter";
 import { sendTransactionalEmail, renderPasswordResetEmail } from "./email.server";
 
 export const SESSION_COOKIE_NAME = "page_session";
-const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const SESSION_MAX_AGE_SECONDS = 12 * 60 * 60; // 12 hours secure admin & customer session
 
 export interface SanitizedUser {
   id: string;
@@ -407,7 +407,7 @@ export async function requestPasswordResetCore(data: {
       template: "PASSWORD_RESET",
       html: emailData.html,
       text: emailData.text,
-    }).catch(() => { });
+    }).catch(() => {});
 
     if (process.env["NODE_ENV"] !== "production") {
       console.log(`[AUTH] Password reset token generated for ${user.email}: ${rawToken}`);
@@ -483,6 +483,51 @@ export async function changePasswordCore(data: { currentPassword: string; newPas
     .where(eq(users.id, user.id));
 
   return { success: true, message: "Password changed successfully." };
+}
+
+export async function updateProfileCore(
+  data: {
+    name?: string | undefined;
+    phone?: string | undefined;
+    companyName?: string | undefined;
+    businessType?: string | undefined;
+    city?: string | undefined;
+  },
+  actingUser?: SanitizedUser,
+) {
+  const user = actingUser ?? (await getSessionUserCore());
+  if (!user) {
+    throw new Error("Unauthorized. Please log in.");
+  }
+
+  const [updated] = await db
+    .update(users)
+    .set({
+      ...(data.name !== undefined ? { name: data.name.trim() } : {}),
+      ...(data.phone !== undefined ? { phone: data.phone.trim() } : {}),
+      ...(data.companyName !== undefined ? { companyName: data.companyName.trim() } : {}),
+      ...(data.businessType !== undefined ? { businessType: data.businessType.trim() } : {}),
+      ...(data.city !== undefined ? { city: data.city.trim() } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id))
+    .returning();
+
+  return {
+    success: true,
+    user: updated
+      ? {
+          id: updated.id,
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone,
+          companyName: updated.companyName,
+          businessType: updated.businessType,
+          city: updated.city,
+          role: updated.role,
+        }
+      : null,
+  };
 }
 
 export async function getUserDashboardDataCore() {

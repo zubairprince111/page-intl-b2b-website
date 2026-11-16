@@ -66,8 +66,10 @@ import {
   generateQuotationEmailHtml,
   copyQuotationHtmlToClipboard,
 } from "@/components/admin/QuotationEmailModal";
+import { requireAdminBeforeLoad } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/inventory")({
+  beforeLoad: requireAdminBeforeLoad,
   component: AdminInventory,
   head: () => ({
     meta: [{ title: "Inventory Management — PAGE Admin" }],
@@ -139,6 +141,7 @@ interface ProductFormState {
   dispatchHub: string;
   mobility: MobilityType[];
   price: number;
+  costPrice: number;
   warehouseQty: number;
   reorderLevel: number;
   inStock: boolean;
@@ -166,6 +169,7 @@ function createEmptyProductForm(): ProductFormState {
     dispatchHub: "",
     mobility: ["4-Wheeler"],
     price: 0,
+    costPrice: 0,
     warehouseQty: 10,
     reorderLevel: 5,
     inStock: true,
@@ -209,9 +213,18 @@ function AdminInventory() {
   const inventory = useMemo(() => {
     return rawInventory.map((p: any) => {
       const mapped = mapDbProductToProduct(p);
+      const sellingPrice = Number(p.priceBdt ?? mapped.price ?? p.price ?? 0);
+      const costPrice = Number(
+        p.costPriceBdt ??
+          mapped.costPrice ??
+          p.costPrice ??
+          (sellingPrice > 0 ? Math.round((sellingPrice * 0.72) / 500) * 500 : 0),
+      );
       return {
         ...p,
         ...mapped,
+        price: sellingPrice,
+        costPrice,
         warehouseQty: mapped.warehouseQty ?? p.warehouseQty ?? 10,
         reorderLevel: mapped.reorderLevel ?? p.reorderLevel ?? 5,
       };
@@ -234,7 +247,9 @@ function AdminInventory() {
     message: string;
   } | null>(null);
 
-  const [sortField, setSortField] = useState<"name" | "price" | "warehouseQty">("name");
+  const [sortField, setSortField] = useState<"name" | "price" | "costPrice" | "warehouseQty">(
+    "name",
+  );
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const filtered = useMemo(() => {
@@ -264,6 +279,7 @@ function AdminInventory() {
       let cmp = 0;
       if (sortField === "name") cmp = a.name.localeCompare(b.name);
       else if (sortField === "price") cmp = a.price - b.price;
+      else if (sortField === "costPrice") cmp = (a.costPrice || 0) - (b.costPrice || 0);
       else cmp = a.warehouseQty - b.warehouseQty;
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -322,6 +338,7 @@ function AdminInventory() {
       mobility:
         Array.isArray(item.mobility) && item.mobility.length > 0 ? item.mobility : ["4-Wheeler"],
       price: Number(item.price) || 0,
+      costPrice: Number(item.costPrice ?? item.costPriceBdt) || 0,
       warehouseQty: Number(item.warehouseQty ?? 10),
       reorderLevel: Number(item.reorderLevel ?? 5),
       inStock: item.stock !== "Out of stock",
@@ -621,6 +638,7 @@ function AdminInventory() {
           dispatchHub: productForm.dispatchHub.trim(),
           mobility: productForm.mobility,
           priceBdt: Math.max(0, Number(productForm.price) || 0),
+          costPriceBdt: Math.max(0, Number(productForm.costPrice) || 0),
           warehouseQty: Math.max(0, Math.floor(Number(productForm.warehouseQty) || 0)),
           reorderLevel: Math.max(0, Math.floor(Number(productForm.reorderLevel) || 0)),
           inStock: productForm.inStock && Number(productForm.warehouseQty) > 0,
@@ -652,6 +670,7 @@ function AdminInventory() {
           dispatchHub: productForm.dispatchHub.trim(),
           mobility: productForm.mobility,
           priceBdt: Math.max(0, Number(productForm.price) || 0),
+          costPriceBdt: Math.max(0, Number(productForm.costPrice) || 0),
           warehouseQty: Math.max(0, Math.floor(Number(productForm.warehouseQty) || 0)),
           reorderLevel: Math.max(0, Math.floor(Number(productForm.reorderLevel) || 0)),
           inStock: productForm.inStock && Number(productForm.warehouseQty) > 0,
@@ -862,6 +881,15 @@ function AdminInventory() {
   const outCount = inventory.filter((i) => i.warehouseQty === 0).length;
   const pendingQuotesCount = quotes.filter((q) => q.status?.toLowerCase() === "pending").length;
 
+  const totalCostValuation = inventory.reduce(
+    (sum, item) => sum + (item.costPrice || 0) * (item.warehouseQty || 0),
+    0,
+  );
+  const totalRetailValuation = inventory.reduce(
+    (sum, item) => sum + (item.price || 0) * (item.warehouseQty || 0),
+    0,
+  );
+
   return (
     <AdminLayout activeRoute="/admin/inventory">
       <div className="p-6 lg:p-8 space-y-6 max-w-[1440px]">
@@ -869,9 +897,29 @@ function AdminInventory() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Inventory</h1>
-            <p className="text-[13px] text-zinc-500 mt-1">
-              {inventory.length} products • {lowCount} low stock • {outCount} out of stock
-            </p>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-zinc-400 mt-1">
+              <span>
+                <strong className="text-zinc-200">{inventory.length}</strong> products
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span>
+                <strong className="text-amber-400">{lowCount}</strong> low stock
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span>
+                <strong className="text-rose-400">{outCount}</strong> out of stock
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span>
+                Cost:{" "}
+                <strong className="text-zinc-200 font-mono">{taka(totalCostValuation)}</strong>
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span>
+                Retail:{" "}
+                <strong className="text-emerald-400 font-mono">{taka(totalRetailValuation)}</strong>
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
             <button
@@ -956,13 +1004,25 @@ function AdminInventory() {
                     Category
                   </th>
                   <th className="text-right px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    <button
-                      onClick={() => toggleSort("price")}
-                      className="flex items-center gap-1 ml-auto hover:text-zinc-300 transition-colors"
-                    >
-                      Ref. Price
-                      <ArrowUpDown className="h-3 w-3" />
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5 ml-auto">
+                      <button
+                        onClick={() => toggleSort("costPrice")}
+                        className="flex items-center gap-1 hover:text-zinc-300 transition-colors"
+                        title="Sort by Bought Price"
+                      >
+                        Bought
+                        <ArrowUpDown className="h-3 w-3" />
+                      </button>
+                      <span className="text-zinc-600">/</span>
+                      <button
+                        onClick={() => toggleSort("price")}
+                        className="flex items-center gap-1 hover:text-zinc-300 transition-colors"
+                        title="Sort by Selling Price"
+                      >
+                        Selling
+                        <ArrowUpDown className="h-3 w-3" />
+                      </button>
+                    </div>
                   </th>
                   <th className="text-right px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
                     <button
@@ -1021,10 +1081,47 @@ function AdminInventory() {
                       </td>
                       <td className="px-4 py-3 text-[12px] text-zinc-400">{item.category}</td>
                       <td className="px-4 py-3 text-right">
-                        <span className="text-[12px] text-zinc-200 font-medium block">
-                          {taka(item.price)}
-                        </span>
-                        <span className="text-[10px] text-zinc-500">Internal ref · Quote mode</span>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <span className="text-[10px] text-zinc-500 uppercase font-mono">
+                              Sell
+                            </span>
+                            <span className="text-[12px] text-zinc-100 font-semibold font-mono">
+                              {taka(item.price)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <span className="text-[10px] text-zinc-500 uppercase font-mono">
+                              Bought
+                            </span>
+                            <span className="text-[11px] text-zinc-400 font-mono">
+                              {item.costPrice > 0 ? taka(item.costPrice) : "—"}
+                            </span>
+                          </div>
+                          {item.price > 0 && item.costPrice > 0 && (
+                            <div className="flex items-center justify-end pt-0.5">
+                              {item.price >= item.costPrice ? (
+                                <span
+                                  className="inline-flex items-center text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  title={`Gross Profit: ৳${(item.price - item.costPrice).toLocaleString()}`}
+                                >
+                                  +৳{(item.price - item.costPrice).toLocaleString()} (
+                                  {(((item.price - item.costPrice) / item.costPrice) * 100).toFixed(
+                                    0,
+                                  )}
+                                  %)
+                                </span>
+                              ) : (
+                                <span
+                                  className="inline-flex items-center text-[9px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                  title="Selling below cost"
+                                >
+                                  Below Cost
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center justify-end gap-1.5">
@@ -1234,8 +1331,8 @@ function AdminInventory() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="col-span-2 sm:col-span-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
                       <label className="text-[11px] font-medium text-zinc-400 block mb-1">
                         Category
                       </label>
@@ -1259,19 +1356,7 @@ function AdminInventory() {
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="text-[11px] font-medium text-zinc-400 block mb-1">
-                        Internal Ref. Price (BDT) *
-                      </label>
-                      <input
-                        type="number"
-                        value={productForm.price}
-                        onChange={(e) =>
-                          setProductForm({ ...productForm, price: Number(e.target.value) })
-                        }
-                        className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                      />
-                    </div>
+
                     <div>
                       <label className="text-[11px] font-medium text-zinc-400 block mb-1">
                         Warehouse Qty
@@ -1324,6 +1409,7 @@ function AdminInventory() {
                         </button>
                       </div>
                     </div>
+
                     <div>
                       <label className="text-[11px] font-medium text-zinc-400 block mb-1">
                         Reorder Threshold
@@ -1339,6 +1425,108 @@ function AdminInventory() {
                         }
                         className="w-full bg-[#232323] border border-white/[0.08] rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                       />
+                    </div>
+                  </div>
+
+                  {/* Pricing: Bought / Cost Price & Selling Price */}
+                  <div className="p-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] font-semibold text-zinc-200">
+                        Pricing & Unit Profit Margin
+                      </span>
+                      <span className="text-[10px] text-zinc-500 font-mono">
+                        Internal Admin Accounting (BDT)
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[11px] font-medium text-zinc-300">
+                            Bought Price (Purchase / Cost) *
+                          </label>
+                          <span className="text-[10px] text-zinc-500">Unit Cost</span>
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-mono">
+                            ৳
+                          </span>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="e.g. 215000"
+                            value={productForm.costPrice || ""}
+                            onChange={(e) =>
+                              setProductForm({
+                                ...productForm,
+                                costPrice: Math.max(0, Number(e.target.value) || 0),
+                              })
+                            }
+                            className="w-full bg-[#1e1e1e] border border-white/[0.08] rounded-lg pl-7 pr-3 py-2 text-[13px] font-mono text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                        </div>
+                        <p className="text-[10px] text-zinc-500 mt-1">
+                          At what price we bought this unit
+                        </p>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[11px] font-medium text-zinc-300">
+                            Selling Price (Base / Quotation) *
+                          </label>
+                          <span className="text-[10px] text-zinc-500">Target Retail</span>
+                        </div>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-mono">
+                            ৳
+                          </span>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="e.g. 285000"
+                            value={productForm.price || ""}
+                            onChange={(e) =>
+                              setProductForm({
+                                ...productForm,
+                                price: Math.max(0, Number(e.target.value) || 0),
+                              })
+                            }
+                            className="w-full bg-[#1e1e1e] border border-white/[0.08] rounded-lg pl-7 pr-3 py-2 text-[13px] font-mono text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                        </div>
+                        <p className="text-[10px] text-zinc-500 mt-1">
+                          Quotation and commercial sale reference
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Live Margin Calculation Preview */}
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-white/[0.04] text-[11px]">
+                      <span className="text-zinc-400">Unit Profit & Markup:</span>
+                      {productForm.price > 0 && productForm.costPrice > 0 ? (
+                        productForm.price >= productForm.costPrice ? (
+                          <span className="font-mono text-emerald-400 font-semibold">
+                            +৳{(productForm.price - productForm.costPrice).toLocaleString()} profit
+                            (
+                            {(
+                              ((productForm.price - productForm.costPrice) /
+                                productForm.costPrice) *
+                              100
+                            ).toFixed(1)}
+                            % markup)
+                          </span>
+                        ) : (
+                          <span className="font-mono text-rose-400 font-semibold">
+                            -৳{(productForm.costPrice - productForm.price).toLocaleString()} loss
+                            (selling below cost!)
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-zinc-500 italic">
+                          Enter both bought & selling prices to view margin
+                        </span>
+                      )}
                     </div>
                   </div>
 

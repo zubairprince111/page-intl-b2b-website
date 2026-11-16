@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 
 // Real image assets
 import evWorkshopBayImg from "@/assets/ev-workshop-bay.jpg";
-import liftImg from "@/assets/p-lift.jpg";
 import scannerImg from "@/assets/p-scanner.jpg";
 import motoLiftImg from "@/assets/p-moto-lift.jpg";
 import tyreChangerImg from "@/assets/p-tyre-changer.jpg";
@@ -69,7 +68,7 @@ const CURATED_FIELD_POSTS: InstagramPost[] = [
     title: "Inbound Container Arrival: 16 Units of 4.0T Hydraulic Lifts",
     location: "Chittagong Container Terminal (CCT), Port of Chittagong",
     date: "2026-11-08",
-    images: [heroWorkshopImg, liftImg],
+    images: [heroWorkshopImg, targetSectorsWorkshopImg],
     summary:
       "16 certified 4.0T electro-hydraulic two-post lifts cleared through Chittagong Port for Dhaka & Sylhet hubs.",
     caption:

@@ -53,4 +53,3 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
-

@@ -60,8 +60,10 @@ type ClientUser = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
+import { requireAdminBeforeLoad } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/users")({
+  beforeLoad: requireAdminBeforeLoad,
   component: AdminUsers,
   head: () => ({
     meta: [{ title: "User & Client Management — PAGE Admin" }],

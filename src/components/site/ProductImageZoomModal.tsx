@@ -519,6 +519,13 @@ export function ProductImageZoomModal({
               draggable={false}
               data-testid="zoom-stage-image"
               data-zoom-scale={zoom}
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.src.includes("retry=")) {
+                  const sep = target.src.includes("?") ? "&" : "?";
+                  target.src = `${target.src}${sep}retry=${Date.now()}`;
+                }
+              }}
               style={{
                 transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
                 transition: isDragging ? "none" : "transform 180ms cubic-bezier(0.22, 1, 0.36, 1)",

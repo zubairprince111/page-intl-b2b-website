@@ -1,16 +1,17 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
-import {
-  ARCHITECTURE_DIAGRAMS,
-  DATABASE_TABLES,
-} from "@/components/docs/project-report-data";
+import { ARCHITECTURE_DIAGRAMS, DATABASE_TABLES } from "@/components/docs/project-report-data";
 
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (opts: Record<string, unknown>) => ({
     options: opts,
   }),
-  Link: ({ children, to, ...props }: { children: ReactNode; to?: string } & Record<string, unknown>) => (
+  Link: ({
+    children,
+    to,
+    ...props
+  }: { children: ReactNode; to?: string } & Record<string, unknown>) => (
     <a href={typeof to === "string" ? to : "#"} {...props}>
       {children}
     </a>

@@ -84,6 +84,7 @@ export function Checkout() {
         customerEmail: formData.email,
         customerPhone: formData.phone,
         companyName: isBusiness ? formData.companyName : undefined,
+        vatBin: isBusiness ? formData.bin.trim() || undefined : undefined,
         shippingAddress: formData.address,
         city: formData.city,
         district: formData.district || undefined,

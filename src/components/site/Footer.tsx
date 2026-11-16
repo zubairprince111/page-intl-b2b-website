@@ -1,114 +1,71 @@
 import { Link } from "@tanstack/react-router";
-import { cn } from "@/lib/utils";
-import {
-  Facebook,
-  Instagram,
-  Linkedin,
-  Mail,
-  MapPin,
-  Phone,
-  ShieldCheck,
-  Truck,
-  Wrench,
-  Zap,
-} from "lucide-react";
+import { Clock, Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "./Header";
 
-export const socialChannels = [
+const socialChannels = [
   {
     name: "LinkedIn",
     href: "https://www.linkedin.com/company/page-international-ltd/",
     icon: Linkedin,
-    hoverClass: "hover:border-[#0A66C2] hover:text-[#0A66C2] hover:bg-[#0A66C2]/10",
   },
   {
     name: "Facebook",
     href: "https://www.facebook.com/pageinternationalltd/",
     icon: Facebook,
-    hoverClass: "hover:border-[#1877F2] hover:text-[#1877F2] hover:bg-[#1877F2]/10",
   },
   {
     name: "Instagram",
     href: "https://www.instagram.com/pageintl",
     icon: Instagram,
-    hoverClass: "hover:border-[#E4405F] hover:text-[#E4405F] hover:bg-[#E4405F]/10",
   },
 ] as const;
 
-const cols: Array<{
-  title: string;
-  links: Array<{
-    l: string;
-    to: string;
-    search?: Record<string, string>;
-    hash?: string;
-  }>;
-}> = [
+interface FooterLink {
+  label: string;
+  to: string;
+  search?: Record<string, string | undefined>;
+  hash?: string;
+}
+
+const navSections: Array<{ title: string; links: FooterLink[] }> = [
   {
-    title: "Products",
+    title: "Equipment & Tools",
     links: [
-      { l: "Brake Systems & Rotors", to: "/shop", search: { cat: "Brakes" } },
-      { l: "Commercial Batteries", to: "/shop", search: { cat: "Batteries" } },
-      { l: "Synthetic Lubricants & Fluids", to: "/shop", search: { cat: "Lubricants" } },
-      { l: "Air, Oil & Fuel Filters", to: "/shop", search: { cat: "Filters" } },
-      { l: "Workshop Hand Tools", to: "/shop", search: { cat: "Workshop Tools" } },
-      { l: "Suspension & Steering", to: "/shop", search: { cat: "Suspension" } },
-    ],
-  },
-  {
-    title: "Equipment",
-    links: [
-      { l: "2-Post & Scissor Lifts", to: "/shop", search: { cat: "Garage Equipment" } },
-      { l: "Automatic Tyre Changers", to: "/shop", search: { cat: "Tyre & Wheel" } },
-      { l: "Digital Wheel Balancers", to: "/shop", search: { cat: "Tyre & Wheel" } },
-      { l: "Rotary Screw Compressors", to: "/shop", search: { cat: "Garage Equipment" } },
-      { l: "OBD2 Diagnostic Tablets", to: "/shop", search: { cat: "Diagnostic Equipment" } },
-      { l: "Brake Lathes & Testers", to: "/shop", search: { cat: "Garage Equipment" } },
-    ],
-  },
-  {
-    title: "EV",
-    links: [
-      { l: "1000V Insulated Tool Kits", to: "/shop", search: { mobility: "EV" } },
-      { l: "High-Voltage Battery Analyzers", to: "/shop", search: { mobility: "EV" } },
-      { l: "Battery Cell Balancers", to: "/shop", search: { mobility: "EV" } },
-      { l: "Workshop DC Fast Chargers", to: "/shop", search: { mobility: "EV" } },
-      { l: "EV Safety Barriers & PPE", to: "/shop", search: { mobility: "EV" } },
-      { l: "2W / 3W / 4W EV Tooling", to: "/shop", search: { mobility: "EV" } },
+      { label: "Intelligent Diagnostics", to: "/shop", search: { cat: "Diagnostic Equipment" } },
+      { label: "Garage Lifts & Machinery", to: "/shop", search: { cat: "Garage Equipment" } },
+      { label: "Tyre & Wheel Service", to: "/shop", search: { cat: "Tyre & Wheel" } },
+      { label: "EV Workshop Solutions", to: "/shop", search: { mobility: "EV" } },
+      { label: "Battery Analyzers & Tools", to: "/shop", search: { cat: "EV Equipment" } },
     ],
   },
   {
     title: "Solutions",
     links: [
-      { l: "Turnkey Workshop Setup", to: "/solutions" },
-      { l: "Workshop Modernization", to: "/solutions" },
-      { l: "EV Workshop Transition", to: "/solutions" },
-      { l: "Service Center Supply", to: "/solutions" },
-      { l: "Commercial Fleet Depots", to: "/solutions" },
-      { l: "Distributor & Wholesale", to: "/solutions" },
+      { label: "Turnkey Workshop Setup", to: "/solutions" },
+      { label: "Modernization & Retrofit", to: "/solutions" },
+      { label: "Fleet Depots & Dealerships", to: "/solutions" },
+      { label: "Service Center Contracts", to: "/solutions" },
+      { label: "Commercial Consultation", to: "/services/book" },
     ],
   },
   {
     title: "Support",
     links: [
-      { l: "Request Commercial Quote", to: "/support" },
-      { l: "Product Catalogues & Specs", to: "/support" },
-      { l: "Machinery Warranty & Service", to: "/warranty" },
-      { l: "Bay Layout Consultation", to: "/services/book" },
-      { l: "Fitment & Compatibility", to: "/vehicles" },
-      { l: "Equip Your Service Center", to: "/service-centers" },
+      { label: "Request a Quote", to: "/support" },
+      { label: "Service Centers", to: "/service-centers" },
+      { label: "Warranty Policy", to: "/warranty" },
+      { label: "Vehicle Compatibility", to: "/vehicles" },
+      { label: "Book Technical Demo", to: "/services/book" },
     ],
   },
   {
     title: "Company",
     links: [
-      { l: "About PAGE International", to: "/about" },
-      { l: "Updates & Dispatches Feed", to: "/updates" },
-      { l: "Office & Demo Showroom", to: "/service-centers" },
-      { l: "Partner Brands", to: "/#brands" },
-      { l: "Supply Network", to: "/about" },
-      { l: "Commercial Terms of Supply", to: "/terms" },
-      { l: "Contact Commercial Desk", to: "/support" },
+      { label: "About PAGE", to: "/about" },
+      { label: "Dispatches & Updates", to: "/updates" },
+      { label: "Partner Brands", to: "/#brands" },
+      { label: "Contact Desk", to: "/support" },
+      { label: "Client Portal & Account", to: "/account" },
     ],
   },
 ];
@@ -116,157 +73,64 @@ const cols: Array<{
 export function Footer() {
   return (
     <footer className="bg-ink text-ink-foreground border-t border-ink-border">
-      {/* Top Value Propositions */}
-      <div className="border-b border-white/10 bg-black/40 py-7 sm:py-8">
-        <div className="container-page grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {/* 1. Genuine Supply Guarantee */}
-          <div className="flex items-start gap-3.5">
-            <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" strokeWidth={2} />
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
-                Genuine Supply Guarantee
-              </h4>
-              <p className="text-xs text-zinc-400 mt-0.5 leading-snug">
-                Authorized B2B parts provenance
-              </p>
-            </div>
-          </div>
-
-          {/* 2. Workshop Engineering */}
-          <div className="flex items-start gap-3.5">
-            <Wrench className="h-5 w-5 text-primary shrink-0 mt-0.5" strokeWidth={2} />
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
-                Workshop Engineering
-              </h4>
-              <p className="text-xs text-zinc-400 mt-0.5 leading-snug">
-                Installation, calibration & training
-              </p>
-            </div>
-          </div>
-
-          {/* 3. EV Readiness */}
-          <div className="flex items-start gap-3.5">
-            <Zap className="h-5 w-5 text-primary shrink-0 mt-0.5" strokeWidth={2} />
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
-                EV Readiness
-              </h4>
-              <p className="text-xs text-zinc-400 mt-0.5 leading-snug">
-                2W, 3W & 4W EV workshop solutions
-              </p>
-            </div>
-          </div>
-
-          {/* 4. Nationwide B2B Logistics */}
-          <div className="flex items-start gap-3.5">
-            <Truck className="h-5 w-5 text-primary shrink-0 mt-0.5" strokeWidth={2} />
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
-                Nationwide B2B Logistics
-              </h4>
-              <p className="text-xs text-zinc-400 mt-0.5 leading-snug">
-                Express hub dispatch to garages
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Link Columns */}
-      <div className="container-page py-14 lg:py-16">
-        <div className="grid gap-10 xl:grid-cols-[1.3fr_3fr]">
-          {/* Company Brief & Direct Contacts */}
-          <div className="max-w-md">
+      {/* Main Grid: Equal-Height Brand + 4 Nav Columns */}
+      <div className="container-page py-8 lg:py-10">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-12 lg:gap-10 items-start">
+          {/* Brand Info (compact: logo + short line + socials) */}
+          <div className="lg:col-span-4 space-y-3.5">
             <Logo />
-            <p className="mt-4 text-xs leading-relaxed text-ink-muted">
-              PAGE International Ltd. is a specialized B2B supplier and distributor of automotive
-              garage machinery, replacement spare parts, diagnostics, and workshop solutions to
-              professional service centers, workshops, dealerships, fleets, and EV businesses.
+            <p className="text-xs text-ink-muted leading-relaxed max-w-sm">
+              PAGE International Ltd. is an authorized B2B distributor of automotive garage
+              machinery, OE diagnostics, and workshop equipment in Bangladesh.
             </p>
-            <p className="mt-2 text-xs font-bold uppercase tracking-wider text-primary">
-              The Company Behind The Workshop.
-            </p>
-
-            <div className="mt-6 space-y-2.5 text-xs text-ink-muted">
-              <div className="flex items-start gap-2.5">
-                <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <a
-                  href="https://www.google.com/maps?cid=15320172382916100456&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-ink-foreground hover:underline transition-colors"
-                >
-                  Road #18, House # 100, Sector # 14, Uttara Model Town, Dhaka
-                </a>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Mail className="h-4 w-4 text-primary shrink-0" />
-                <a
-                  href="mailto:pageon18@gmail.com"
-                  className="hover:text-ink-foreground hover:underline transition-colors"
-                >
-                  pageon18@gmail.com
-                </a>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Phone className="h-4 w-4 text-primary shrink-0" />
-                <a
-                  href="tel:+8801755502421"
-                  className="hover:text-ink-foreground hover:underline transition-colors"
-                >
-                  +880 1755-502421
-                </a>
-              </div>
+            <div className="flex items-center gap-2 pt-0.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-2.5 py-0.5 text-[10.5px] font-medium text-zinc-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                Authorized B2B Partner
+              </span>
             </div>
-
-            {/* Official Social Media Links */}
-            <div className="mt-6 flex items-center gap-2.5">
+            <div className="flex items-center gap-2 pt-1">
               {socialChannels.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Follow PAGE International on ${item.name}`}
-                  title={`PAGE International on ${item.name}`}
-                  className={cn(
-                    "grid h-8.5 w-8.5 place-items-center rounded-lg border border-ink-border text-ink-muted transition-all duration-200 shadow-xs",
-                    item.hoverClass,
-                  )}
+                  aria-label={`PAGE on ${item.name}`}
+                  className="grid h-7 w-7 place-items-center rounded-md border border-ink-border text-ink-muted hover:border-primary/60 hover:text-primary hover:bg-primary/10 transition-colors"
                 >
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="h-3.5 w-3.5" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* 6 Link Columns: Products, Equipment, EV, Solutions, Support, Company */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-6">
-            {cols.map((col) => (
-              <div key={col.title}>
-                <h3 className="text-xs font-bold uppercase tracking-[0.16em] text-ink-foreground border-b border-ink-border/50 pb-2">
-                  {col.title}
-                </h3>
-                <ul className="mt-3.5 space-y-2 text-xs">
-                  {col.links.map((link) => (
-                    <li key={link.l}>
-                      {"search" in link && link.search ? (
+          {/* 4 Navigation Columns (8 cols on lg -> equal 2-col groups) */}
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-6 lg:gap-8">
+            {navSections.map((section) => (
+              <div key={section.title} className="space-y-2.5">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-foreground">
+                  {section.title}
+                </h4>
+                <ul className="space-y-2 text-xs text-ink-muted">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      {link.search ? (
                         <Link
                           to={link.to}
-                          search={link.search as any}
+                          search={link.search as unknown as Record<string, string | undefined>}
                           {...(link.hash ? { hash: link.hash } : {})}
-                          className="text-ink-muted transition-colors hover:text-primary"
+                          className="hover:text-primary transition-colors block py-0.5"
                         >
-                          {link.l}
+                          {link.label}
                         </Link>
                       ) : (
                         <Link
                           to={link.to}
                           {...(link.hash ? { hash: link.hash } : {})}
-                          className="text-ink-muted transition-colors hover:text-primary"
+                          className="hover:text-primary transition-colors block py-0.5"
                         >
-                          {link.l}
+                          {link.label}
                         </Link>
                       )}
                     </li>
@@ -278,32 +142,58 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar with Payment & Copyright */}
-      <div className="border-t border-ink-border/70 bg-black/40">
-        <div className="container-page flex flex-col gap-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {new Date().getFullYear()} PAGE International Ltd. All rights reserved. B2B Automotive
-            Equipment & Spare Parts Distributor.
-          </p>
-          <div className="flex flex-wrap items-center gap-5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
-              THINK NEXT.
-            </span>
+      {/* Horizontal Contact & Commercial Desk Bar */}
+      <div className="border-t border-ink-border/40 bg-black/25 py-3.5">
+        <div className="container-page flex flex-wrap items-center justify-between gap-y-2 gap-x-6 text-xs text-ink-muted">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>Sector 14, Uttara Model Town, Dhaka</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
+            <a
+              href="mailto:pageon18@gmail.com"
+              className="hover:text-ink-foreground hover:underline transition-colors"
+            >
+              pageon18@gmail.com
+            </a>
+          </div>
+          <div className="flex items-center gap-2">
+            <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+            <a
+              href="tel:+8801755502421"
+              className="hover:text-ink-foreground hover:underline transition-colors"
+            >
+              +880 1755-502421
+            </a>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-zinc-500 font-mono">
+            <Clock className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+            <span>Sat – Thu: 9:00 AM – 7:00 PM</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Clean Bottom Bar */}
+      <div className="border-t border-ink-border/40 py-4 bg-black/40">
+        <div className="container-page flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-ink-muted">
+          <p>© {new Date().getFullYear()} PAGE International Ltd. All rights reserved.</p>
+          <div className="flex items-center gap-4 sm:gap-6">
             <Link to="/privacy" className="hover:text-ink-foreground transition-colors">
-              Privacy Policy
+              Privacy
             </Link>
             <Link to="/terms" className="hover:text-ink-foreground transition-colors">
-              Commercial Terms of Supply
+              Terms
             </Link>
             <Link to="/warranty" className="hover:text-ink-foreground transition-colors">
-              Equipment Warranty Policy
+              Warranty
             </Link>
             <Link
               to="/admin"
-              className="inline-flex items-center gap-1 rounded bg-white/5 px-2 py-0.5 text-[11px] font-medium text-ink-muted hover:bg-primary/20 hover:text-primary transition-colors border border-white/10"
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Admin Portal
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/80" />
+              Admin
             </Link>
           </div>
         </div>

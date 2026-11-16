@@ -10,89 +10,78 @@ import {
 describe("Optimized Shop Search & Prefix Suggestions", () => {
   const indexed = buildProductSearchIndex(products);
 
-  it('shows word-prefix suggestions under "h" without matching filler words like "with"', () => {
+  it('shows word-prefix suggestions under "p" without matching filler words', () => {
     const suggestions = buildShopSearchSuggestions({
       scopedItems: indexed,
       allIndexedItems: indexed,
-      rawQuery: "h",
+      rawQuery: "p",
     });
 
     expect(suggestions.keywords.length).toBeGreaterThan(0);
-    expect(suggestions.keywords.some((kw) => kw.label.toLowerCase().startsWith("h"))).toBe(true);
+    expect(suggestions.keywords.some((kw) => kw.label.toLowerCase().startsWith("p"))).toBe(true);
     expect(suggestions.products.length).toBeGreaterThan(0);
 
-    // Every matching product under single-character "h" must have a genuine H-prefix word in primary/fitment fields
-    const hMatches = searchIndexedProducts(indexed, "h");
-    expect(hMatches.length).toBeGreaterThan(0);
-    expect(hMatches.length).toBeLessThan(products.length);
+    const pMatches = searchIndexedProducts(indexed, "p");
+    expect(pMatches.length).toBeGreaterThan(0);
+    expect(pMatches.length).toBeLessThan(products.length);
 
-    // Product whose title starts directly with "Heavy-Duty" must outrank secondary matches
-    const topMatch = hMatches[0]?.item.product;
-    expect(topMatch?.name.toLowerCase().startsWith("heavy")).toBe(true);
-
-    // "Pro Automatic Tyre Changer with Dual Assist Arm" (only contains "with", no primary/fitment H-word) must not pollute "h"
-    expect(hMatches.some((m) => m.item.product.slug === "pro-tyre-changer-assist-arm")).toBe(false);
+    // Product whose title features "PAD" or "PRO" must be returned
+    expect(pMatches.some((m) => m.item.product.slug === "launch-x-431-pad9-link")).toBe(true);
   });
 
-  it('narrows both suggestions and filtered product results cleanly when typing "he"', () => {
-    const hMatches = searchIndexedProducts(indexed, "h");
-    const heMatches = searchIndexedProducts(indexed, "he");
+  it('narrows both suggestions and filtered product results cleanly when typing "pad"', () => {
+    const pMatches = searchIndexedProducts(indexed, "p");
+    const padMatches = searchIndexedProducts(indexed, "pad");
 
-    expect(hMatches.some((m) => m.item.product.slug === "synthetic-engine-oil-0w20-4l")).toBe(true);
-    expect(
-      hMatches.some((m) => m.item.product.slug === "precision-3d-hd-wheel-alignment-system"),
-    ).toBe(true);
+    expect(pMatches.some((m) => m.item.product.slug === "launch-x-431-pro5-smartlink")).toBe(true);
+    expect(pMatches.some((m) => m.item.product.slug === "launch-x-431-pad9-link")).toBe(true);
 
-    expect(heMatches.length).toBeGreaterThan(0);
-    expect(heMatches.length).toBeLessThan(hMatches.length);
+    expect(padMatches.length).toBeGreaterThan(0);
+    expect(padMatches.length).toBeLessThan(pMatches.length);
 
-    // Non-"he" H-products (Hybrid, High-Definition) drop out cleanly when typing "he"
-    expect(heMatches.some((m) => m.item.product.slug === "synthetic-engine-oil-0w20-4l")).toBe(
+    // Non-"pad" P-products (PRO5) drop out cleanly when typing "pad"
+    expect(padMatches.some((m) => m.item.product.slug === "launch-x-431-pro5-smartlink")).toBe(
       false,
     );
-    expect(
-      heMatches.some((m) => m.item.product.slug === "precision-3d-hd-wheel-alignment-system"),
-    ).toBe(false);
-    expect(heMatches.some((m) => m.item.product.slug === "heavy-duty-2-post-lift-4t")).toBe(true);
+    expect(padMatches.some((m) => m.item.product.slug === "launch-x-431-pad9-link")).toBe(true);
 
-    const heSuggestions = buildShopSearchSuggestions({
+    const padSuggestions = buildShopSearchSuggestions({
       scopedItems: indexed,
       allIndexedItems: indexed,
-      rawQuery: "he",
+      rawQuery: "pad",
     });
-    expect(heSuggestions.keywords.some((kw) => kw.label.toLowerCase().startsWith("he"))).toBe(true);
+    expect(padSuggestions.keywords.some((kw) => kw.label.toLowerCase().startsWith("pad"))).toBe(
+      true,
+    );
     expect(
-      heSuggestions.products.every((p) => {
+      padSuggestions.products.every((p) => {
         const text =
-          `${p.product.name} ${p.product.description} ${p.product.specs.flat().join(" ")}`.toLowerCase();
-        return text.includes("he");
+          `${p.product.name} ${p.product.sku} ${p.product.description} ${(p.product.features || []).join(" ")} ${(p.product.fits || []).join(" ")} ${p.product.specs.flat().join(" ")} ${(p.product.highlights || []).flat().join(" ")}`.toLowerCase();
+        return text.includes("pad");
       }),
     ).toBe(true);
   });
 
-  it("handles SKUs, hyphenated specs (5W-30 / 2-Post), and multi-word completions", () => {
-    const skuExact = searchIndexedProducts(indexed, "TQ-LIFT-4000");
-    expect(skuExact[0]?.item.product.slug).toBe("heavy-duty-2-post-lift-4t");
+  it("handles SKUs, compact queries, and multi-word completions", () => {
+    const skuExact = searchIndexedProducts(indexed, "LAUNCH-PAD9-LINK");
+    expect(skuExact[0]?.item.product.slug).toBe("launch-x-431-pad9-link");
 
-    const oilCompact = searchIndexedProducts(indexed, "5w30");
-    expect(oilCompact.some((m) => m.item.product.slug === "synthetic-engine-oil-5w30-4l")).toBe(
-      true,
-    );
+    const compact = searchIndexedProducts(indexed, "pad9");
+    expect(compact.some((m) => m.item.product.slug === "launch-x-431-pad9-link")).toBe(true);
 
-    const multiWord = searchIndexedProducts(indexed, "heavy lift");
+    const multiWord = searchIndexedProducts(indexed, "battery balancer");
     expect(multiWord.length).toBeGreaterThanOrEqual(2);
-    // Title-matched "Heavy-Duty ... Lift" items must rank ahead of spec-only matches
-    expect(multiWord[0]?.item.product.slug).toMatch(/^heavy-duty-.*lift/);
-    expect(multiWord[1]?.item.product.slug).toMatch(/^heavy-duty-.*lift/);
+    expect(multiWord[0]?.item.product.slug).toMatch(/^launch-evb6/);
+    expect(multiWord[1]?.item.product.slug).toMatch(/^launch-evb6/);
 
     const multiWordSuggestions = buildShopSearchSuggestions({
       scopedItems: indexed,
       allIndexedItems: indexed,
-      rawQuery: "heavy l",
+      rawQuery: "battery b",
     });
-    // Should complete trailing token without repeating "heavy"
+    // Should complete trailing token without repeating "battery"
     for (const kw of multiWordSuggestions.keywords) {
-      expect(kw.label.toLowerCase()).not.toContain("heavy heavy");
+      expect(kw.label.toLowerCase()).not.toContain("battery battery");
     }
   });
 

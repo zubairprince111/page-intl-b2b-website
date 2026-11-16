@@ -158,11 +158,24 @@ function RootComponent() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
 
+  useEffect(() => {
+    if (isAdmin) {
+      document.documentElement.setAttribute("data-admin-route", "true");
+    } else {
+      document.documentElement.removeAttribute("data-admin-route");
+    }
+    return () => {
+      document.documentElement.removeAttribute("data-admin-route");
+    };
+  }, [isAdmin]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         {isAdmin ? (
-          <Outlet />
+          <div data-admin-scope="true" className="w-full h-full min-h-screen">
+            <Outlet />
+          </div>
         ) : (
           <>
             <a

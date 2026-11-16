@@ -130,7 +130,17 @@ export function Shop() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeSuggestionIdx, setActiveSuggestionIdx] = useState(-1);
   const [inStock, setInStock] = useState(false);
-  const [selectedBrand, setSelectedBrand] = useState<string>(searchBrand ?? "");
+  const selectedBrand = searchBrand ?? "";
+  const setSelectedBrand = useCallback(
+    (brand: string) => {
+      void nav({
+        search: (s: S) => ({ ...s, brand: brand || undefined }),
+        replace: true,
+        resetScroll: false,
+      });
+    },
+    [nav],
+  );
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [activeQuoteProduct, setActiveQuoteProduct] = useState<Product | null>(null);
 
@@ -319,11 +329,10 @@ export function Shop() {
     }
 
     if (option.kind === "brand") {
-      setSelectedBrand(option.label);
       lastSyncedQRef.current = "";
       setQuery("");
       void nav({
-        search: (s: S) => ({ ...s, q: undefined }),
+        search: (s: S) => ({ ...s, brand: option.label, q: undefined }),
         replace: true,
         resetScroll: false,
       });
@@ -403,7 +412,6 @@ export function Shop() {
     }
     lastSyncedQRef.current = "";
     setQuery("");
-    setSelectedBrand("");
     setInStock(false);
     setIsSearchOpen(false);
     setActiveSuggestionIdx(-1);

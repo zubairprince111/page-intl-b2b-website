@@ -5,6 +5,7 @@ import * as path from "node:path";
 import crypto from "node:crypto";
 import { getSessionUserCore, type SanitizedUser } from "./auth.server";
 import { validateMediaMagicBytes, MAX_IMAGE_DOCUMENT_BYTES, MAX_VIDEO_BYTES } from "./media-magic";
+import { detectMimeTypeFromBuffer } from "./uploads.server";
 import {
   getMimeFromExtension,
   getExtensionFromMime,
@@ -207,139 +208,163 @@ export async function deleteMediaCore(data: { url?: string | undefined; id?: str
 // -----------------------------------------------------------------------------
 // CORE 3: Query media metadata records from PostgreSQL (excludes blob payloads)
 // -----------------------------------------------------------------------------
-  export async function listMediaCore(data?: {
-    category?: string | undefined;
-  }): Promise<MediaListItem[]> {
-    const all = await db
-      .select({
-        id: media.id,
-        filename: media.filename,
-        originalName: media.originalName,
-        mimeType: media.mimeType,
-        sizeBytes: media.sizeBytes,
-        url: media.url,
-        category: media.category,
-        createdAt: media.createdAt,
-      })
-      .from(media)
-      .orderBy(desc(media.createdAt));
+export async function listMediaCore(data?: {
+  category?: string | undefined;
+}): Promise<MediaListItem[]> {
+  const all = await db
+    .select({
+      id: media.id,
+      filename: media.filename,
+      originalName: media.originalName,
+      mimeType: media.mimeType,
+      sizeBytes: media.sizeBytes,
+      url: media.url,
+      category: media.category,
+      createdAt: media.createdAt,
+    })
+    .from(media)
+    .orderBy(desc(media.createdAt));
 
-    if (data?.category && data.category !== "all") {
-      return all.filter((m) => m.category === data.category);
-    }
-    return all;
+  if (data?.category && data.category !== "all") {
+    return all.filter((m) => m.category === data.category);
   }
+  return all;
+}
 
-  // -----------------------------------------------------------------------------
-  // CORE 4: Sync existing files on disk into PostgreSQL media table
-  // -----------------------------------------------------------------------------
-  export async function syncExistingMediaCore() {
-    const categories: ("products" | "banners" | "documents" | "general")[] = [
-      "products",
-      "banners",
-      "documents",
-      "general",
-    ];
-    let addedCount = 0;
-    const persistToDb = shouldPersistMediaToDatabase();
+function getDirectoryFilesRecursively(dir: string): string[] {
+  let results: string[] = [];
+  if (!fs.existsSync(dir)) return results;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results = results.concat(getDirectoryFilesRecursively(fullPath));
+    } else if (entry.isFile()) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
 
-    for (const cat of categories) {
-      const dirPath = path.resolve(process.cwd(), "public", "uploads", cat);
-      if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-        continue;
-      }
+// -----------------------------------------------------------------------------
+// CORE 4: Sync existing files on disk into PostgreSQL media table
+// -----------------------------------------------------------------------------
+export async function syncExistingMediaCore() {
+  const categories: ("products" | "banners" | "documents" | "general")[] = [
+    "products",
+    "banners",
+    "documents",
+    "general",
+  ];
+  let addedCount = 0;
+  let updatedCount = 0;
 
-      const files = fs.readdirSync(dirPath);
-      for (const file of files) {
-        const fullPath = path.join(dirPath, file);
-        const stats = fs.statSync(fullPath);
-        if (!stats.isFile()) continue;
-
-        const url = `/uploads/${cat}/${file}`;
-        const existing = await db
-          .select({ id: media.id })
-          .from(media)
-          .where(eq(media.url, url))
-          .limit(1);
-
-        if (existing.length === 0) {
-          const ext = path.extname(file);
-          const mimeType = getMimeFromExtension(ext);
-          const id = `media-sync-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
-          let storageData: string | null = null;
-          if (persistToDb && stats.size > 0 && stats.size <= MAX_DB_PERSISTED_MEDIA_BYTES) {
-            storageData = (await fs.promises.readFile(fullPath)).toString("base64");
-          }
-          await db.insert(media).values({
-            id,
-            filename: file,
-            originalName: file,
-            mimeType,
-            sizeBytes: stats.size,
-            url,
-            category: cat,
-            storageData,
-          });
-          addedCount++;
-        }
-      }
+  for (const cat of categories) {
+    const dirPath = path.resolve(process.cwd(), "public", "uploads", cat);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+      continue;
     }
 
-    return { success: true, addedCount };
-  }
+    const filePaths = getDirectoryFilesRecursively(dirPath);
+    for (const fullPath of filePaths) {
+      const stats = fs.statSync(fullPath);
+      if (!stats.isFile()) continue;
 
-  // -----------------------------------------------------------------------------
-  // CORE 5: Get media statistics
-  // -----------------------------------------------------------------------------
-  export async function getMediaStatsCore(): Promise<MediaStats> {
-    const all = await db
-      .select({
-        sizeBytes: media.sizeBytes,
-        category: media.category,
-      })
-      .from(media);
-    const byCategory = {
-      products: 0,
-      banners: 0,
-      documents: 0,
-      general: 0,
-    };
+      const relativeToCat = path.relative(dirPath, fullPath).split(path.sep).join("/");
+      const url = `/uploads/${cat}/${relativeToCat}`;
+      const filename = path.basename(fullPath);
+      const ext = path.extname(fullPath);
+      const buf = await fs.promises.readFile(fullPath);
+      const mimeType = detectMimeTypeFromBuffer(buf, ext);
+      const storageData =
+        buf.length > 0 && buf.length <= MAX_DB_PERSISTED_MEDIA_BYTES
+          ? buf.toString("base64")
+          : null;
 
-    let totalSizeBytes = 0;
-    for (const item of all) {
-      totalSizeBytes += item.sizeBytes || 0;
-      if (item.category in byCategory) {
-        byCategory[item.category as keyof typeof byCategory]++;
-      } else {
-        byCategory.general++;
+      const existing = await db
+        .select({ id: media.id, storageData: media.storageData })
+        .from(media)
+        .where(eq(media.url, url))
+        .limit(1);
+
+      if (existing.length === 0) {
+        const id = `media-sync-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+        await db.insert(media).values({
+          id,
+          filename,
+          originalName: filename,
+          mimeType,
+          sizeBytes: stats.size,
+          url,
+          category: cat,
+          storageData,
+        });
+        addedCount++;
+      } else if (!existing[0]?.storageData && storageData) {
+        await db
+          .update(media)
+          .set({ storageData, sizeBytes: stats.size, mimeType })
+          .where(eq(media.url, url));
+        updatedCount++;
       }
     }
-
-    return {
-      totalCount: all.length,
-      totalSizeBytes,
-      byCategory,
-      dbOnline: true,
-    };
   }
 
-  // -----------------------------------------------------------------------------
-  // CORE 6: Hydrate missing /uploads/* file from PostgreSQL after container reset
-  // -----------------------------------------------------------------------------
-  export async function hydrateMediaBufferByUrlCore(urlPathname: string): Promise<Buffer | null> {
-    if (!urlPathname.startsWith("/uploads/")) {
-      return null;
-    }
-    const rows = await db
-      .select({ storageData: media.storageData })
-      .from(media)
-      .where(eq(media.url, urlPathname))
-      .limit(1);
+  return { success: true, addedCount, updatedCount };
+}
 
-    const encoded = rows[0]?.storageData;
-    if (!encoded || encoded.length === 0) {
-      return null;
+// -----------------------------------------------------------------------------
+// CORE 5: Get media statistics
+// -----------------------------------------------------------------------------
+export async function getMediaStatsCore(): Promise<MediaStats> {
+  const all = await db
+    .select({
+      sizeBytes: media.sizeBytes,
+      category: media.category,
+    })
+    .from(media);
+  const byCategory = {
+    products: 0,
+    banners: 0,
+    documents: 0,
+    general: 0,
+  };
+
+  let totalSizeBytes = 0;
+  for (const item of all) {
+    totalSizeBytes += item.sizeBytes || 0;
+    if (item.category in byCategory) {
+      byCategory[item.category as keyof typeof byCategory]++;
+    } else {
+      byCategory.general++;
     }
-    return Buffer.from(encoded, "base64");
   }
+
+  return {
+    totalCount: all.length,
+    totalSizeBytes,
+    byCategory,
+    dbOnline: true,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// CORE 6: Hydrate missing /uploads/* file from PostgreSQL after container reset
+// -----------------------------------------------------------------------------
+export async function hydrateMediaBufferByUrlCore(urlPathname: string): Promise<Buffer | null> {
+  if (!urlPathname.startsWith("/uploads/")) {
+    return null;
+  }
+  const rows = await db
+    .select({ storageData: media.storageData })
+    .from(media)
+    .where(eq(media.url, urlPathname))
+    .limit(1);
+
+  const encoded = rows[0]?.storageData;
+  if (!encoded || encoded.length === 0) {
+    return null;
+  }
+  return Buffer.from(encoded, "base64");
+}

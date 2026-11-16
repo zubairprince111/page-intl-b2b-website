@@ -39,20 +39,20 @@ function calculateOrderTotals(items: OrderLineInput[]) {
 describe("Zero-Trust Order Price Calculation", () => {
   it("computes accurate subtotal from verified product catalog", () => {
     const result = calculateOrderTotals([
-      { productSlug: "heavy-duty-2-post-lift-4t", quantity: 1 },
-      { productSlug: "ev-1000v-insulated-tool-kit", quantity: 2 },
+      { productSlug: "launch-x-431-pad9-link", quantity: 1 },
+      { productSlug: "launch-evb624-battery-balancer", quantity: 2 },
     ]);
 
-    const lift = products.find((p) => p.slug === "heavy-duty-2-post-lift-4t")!;
-    const tools = products.find((p) => p.slug === "ev-1000v-insulated-tool-kit")!;
+    const scanner = products.find((p) => p.slug === "launch-x-431-pad9-link")!;
+    const balancer = products.find((p) => p.slug === "launch-evb624-battery-balancer")!;
 
-    expect(result.subtotal).toBe(lift.price * 1 + tools.price * 2);
+    expect(result.subtotal).toBe(scanner.price * 1 + balancer.price * 2);
     expect(result.shippingFee).toBe(0); // Subtotal exceeds 50,000 BDT
     expect(result.total).toBe(result.subtotal);
   });
 
   it("applies shipping fee for low value orders below threshold", () => {
-    const result = calculateOrderTotals([{ productSlug: "bluetooth-obd-dongle", quantity: 1 }]);
+    const result = calculateOrderTotals([{ productSlug: "launch-tsensor-05", quantity: 1 }]);
 
     expect(result.subtotal).toBeLessThan(50000);
     expect(result.shippingFee).toBe(500);
@@ -67,7 +67,7 @@ describe("Zero-Trust Order Price Calculation", () => {
 
   it("normalizes negative or decimal quantities to at least 1 unit", () => {
     const result = calculateOrderTotals([
-      { productSlug: "ev-1000v-insulated-tool-kit", quantity: -5 },
+      { productSlug: "launch-evb624-battery-balancer", quantity: -5 },
     ]);
     expect(result.verifiedLines[0]!.quantity).toBe(1);
   });

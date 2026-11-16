@@ -24,6 +24,8 @@ export interface ProductLikeRow {
   requiresQuote?: boolean | null | undefined;
   priceBdt?: number | null | undefined;
   price?: number | null | undefined;
+  costPriceBdt?: number | null | undefined;
+  costPrice?: number | null | undefined;
   inStock?: boolean | null | undefined;
   warehouseQty?: number | null | undefined;
   reorderLevel?: number | null | undefined;
@@ -319,7 +321,9 @@ export function getDefaultProductPresentation(opts: {
   const specJoined = opts.specs.map(([k, v]) => `${k} ${v}`).join(" ");
   const hasDualVoltage =
     opts.isEquipment &&
-    (/220v\s*(or|\/)\s*380v/i.test(specJoined) || opts.slug === "heavy-duty-2-post-lift-4t");
+    (/220v\s*(or|\/)\s*380v/i.test(specJoined) ||
+      opts.slug === "heavy-duty-2-post-lift-4t" ||
+      opts.slug === "launch-twc-921-tire-changer");
   if (hasDualVoltage) {
     variantOptions.push({
       name: "Power & Voltage Supply",
@@ -330,6 +334,12 @@ export function getDefaultProductPresentation(opts: {
     variantOptions.push({
       name: "Lifting Arm Configuration",
       options: ["Symmetric Telescopic Arms", "Asymmetric + EV Bay Arms"],
+    });
+  }
+  if (opts.isEquipment && opts.slug === "launch-twc-921-tire-changer") {
+    variantOptions.push({
+      name: "Turntable Configuration",
+      options: ["Standard Clamping", "Dual Assist Power Arm Kit"],
     });
   }
 

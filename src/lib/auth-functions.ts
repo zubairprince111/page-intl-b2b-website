@@ -113,3 +113,21 @@ export const changePasswordServerFn = createServerFn({ method: "POST" })
     const { changePasswordCore } = await import("./auth.server");
     return await changePasswordCore(data);
   });
+
+// -----------------------------------------------------------------------------
+// 8. UPDATE WORKSHOP PROFILE
+// -----------------------------------------------------------------------------
+const UpdateProfileSchema = z.object({
+  name: z.string().min(2, "Full name must be at least 2 characters").optional(),
+  phone: z.string().min(6, "Valid phone number is required").optional(),
+  companyName: z.string().min(2, "Company or Workshop name is required").optional(),
+  businessType: z.string().optional(),
+  city: z.string().optional(),
+});
+
+export const updateProfileServerFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => UpdateProfileSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { updateProfileCore } = await import("./auth.server");
+    return await updateProfileCore(data);
+  });

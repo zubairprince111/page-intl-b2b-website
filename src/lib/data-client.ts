@@ -39,7 +39,15 @@ import {
   getAdminStatsServerFn,
   getAdminDatabaseOverviewServerFn,
   getAdminDatabaseTableRowsServerFn,
+  listReviewsServerFn,
+  listAdminReviewsServerFn,
+  submitPublicReviewServerFn,
+  saveReviewAdminServerFn,
+  toggleReviewPublishAdminServerFn,
+  deleteReviewAdminServerFn,
+  seedDefaultReviewsServerFn,
 } from "./server-functions";
+import type { Review } from "./reviews";
 import type {
   CreateQuoteInput,
   CreateBookingInput,
@@ -55,11 +63,33 @@ export type { ShopBannerVideoConfig, ShopBannerVideoItem } from "./shop-banner-v
 // 1. DASHBOARD STATS HOOK
 // =============================================================================
 
+export interface AdminStats {
+  totalQuotes: number;
+  pendingQuotes: number;
+  totalBookings: number;
+  pendingBookings: number;
+  totalOrders: number;
+  pendingOrders: number;
+  totalRevenue: number;
+  totalProducts: number;
+  lowStockCount: number;
+  activeBanners: number;
+  totalReviews: number;
+  pendingReviews: number;
+  totalUsers: number;
+  customerCount: number;
+  recentQuotes: any[];
+  recentBookings: any[];
+  recentOrders: any[];
+  lowStockItems: any[];
+  categoryDistribution: { name: string; count: number }[];
+}
+
 export function useAdminStats() {
-  return useQuery({
+  return useQuery<AdminStats>({
     queryKey: ["admin", "stats"],
     queryFn: async () => {
-      return await getAdminStatsServerFn();
+      return (await getAdminStatsServerFn()) as AdminStats;
     },
     refetchInterval: 15000, // Auto-refresh every 15s for live dashboard
   });
@@ -135,6 +165,17 @@ export function useUpdateQuote() {
       status?: string | undefined;
       reply?: string | undefined;
       quotedPrice?: number | undefined;
+      notes?: string | undefined;
+      itemsJson?:
+        | { productSlug: string; productName: string; qty: number; unitPrice?: number }[]
+        | undefined;
+      companyName?: string | undefined;
+      contactName?: string | undefined;
+      phone?: string | undefined;
+      email?: string | undefined;
+      qty?: number | undefined;
+      productName?: string | undefined;
+      productSlug?: string | undefined;
     }) => {
       return await updateQuoteServerFn({ data });
     },
@@ -191,6 +232,11 @@ export function useUpdateBooking() {
       id: string;
       status?: string | undefined;
       adminNotes?: string | undefined;
+      notes?: string | undefined;
+      bookingDate?: string | undefined;
+      timeSlot?: string | undefined;
+      centerName?: string | undefined;
+      serviceType?: string | undefined;
     }) => {
       return await updateBookingServerFn({ data });
     },
@@ -582,5 +628,118 @@ export function useAdminDatabaseTableRows(
       });
     },
     enabled: enabled && Boolean(tableName),
+  });
+}
+
+// =============================================================================
+// REVIEWS & TESTIMONIALS HOOKS
+// =============================================================================
+
+export function useReviews(onlyPublished = false, initialData?: Review[]) {
+  return useQuery({
+    queryKey: ["reviews", onlyPublished],
+    queryFn: async () => {
+      return (await listReviewsServerFn({
+        data: { onlyPublished },
+      })) as Review[];
+    },
+    initialData,
+  });
+}
+
+export function useAdminReviews() {
+  return useQuery({
+    queryKey: ["admin", "reviews"],
+    queryFn: async () => {
+      return await listAdminReviewsServerFn();
+    },
+  });
+}
+
+export function useSubmitPublicReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      name: string;
+      role?: string | undefined;
+      workshop: string;
+      equipment?: string | undefined;
+      comment: string;
+      title?: string | undefined;
+      rating?: number | undefined;
+    }) => {
+      return await submitPublicReviewServerFn({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+}
+
+export function useSaveReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      id?: string | undefined;
+      name: string;
+      role: string;
+      workshop: string;
+      equipment: string;
+      comment: string;
+      title?: string | undefined;
+      rating?: number | undefined;
+      isPublished?: boolean | undefined;
+    }) => {
+      return await saveReviewAdminServerFn({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+}
+
+export function useToggleReviewPublish() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { id: string; isPublished: boolean }) => {
+      return await toggleReviewPublishAdminServerFn({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+}
+
+export function useDeleteReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { id: string }) => {
+      return await deleteReviewAdminServerFn({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+}
+
+export function useSeedDefaultReviews() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      return await seedDefaultReviewsServerFn();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
   });
 }

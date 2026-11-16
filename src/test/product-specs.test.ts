@@ -18,7 +18,7 @@ import {
   sanitizeSpecRows,
   sanitizeVariantGroups,
 } from "@/lib/product-utils";
-import { mapDbProductToProduct } from "@/lib/data";
+import { mapDbProductToProduct, products } from "@/lib/data";
 import { createInventoryItemCore, updateInventoryItemCore } from "@/lib/data.server";
 
 const { insertedProducts, updatedPayloads, auditRows, mockSessionUser, insertMock, updateMock } =
@@ -422,6 +422,7 @@ describe("Admin Inventory Create & Update Persistence", () => {
       mobility: ["4-Wheeler", "EV"],
       isEquipment: true,
       priceBdt: 950000,
+      costPriceBdt: 680000,
       warehouseQty: 3,
       reorderLevel: 1,
       description: "Flush-mount electro-hydraulic 5.0T scissor alignment lift.",
@@ -441,6 +442,8 @@ describe("Admin Inventory Create & Update Persistence", () => {
       slug: "heavy-duty-scissor-lift-5t",
       sku: "PG-LIFT-5000",
       brand: "launch",
+      priceBdt: 950000,
+      costPriceBdt: 680000,
       isEquipment: true,
       requiresQuote: true,
       description: "Flush-mount electro-hydraulic 5.0T scissor alignment lift.",
@@ -464,6 +467,8 @@ describe("Admin Inventory Create & Update Persistence", () => {
     const res = await updateInventoryItemCore({
       slug: "test-lift",
       sku: "PG-REV-2",
+      priceBdt: 890000,
+      costPriceBdt: 620000,
       requiresQuote: false,
       priceLabel: "Per Set Ex-Depot",
       dispatchHub: "Uttara Equipment Hub",
@@ -488,6 +493,8 @@ describe("Admin Inventory Create & Update Persistence", () => {
     expect(updatedPayloads).toHaveLength(1);
     expect(updatedPayloads[0]).toMatchObject({
       sku: "PG-REV-2",
+      priceBdt: 890000,
+      costPriceBdt: 620000,
       requiresQuote: false,
       priceLabel: "Per Set Ex-Depot",
       dispatchHub: "Uttara Equipment Hub",
@@ -523,5 +530,51 @@ describe("Admin Inventory Create & Update Persistence", () => {
         description: "Test",
       }),
     ).rejects.toThrow("Unauthorized");
+  });
+
+  it("maps database row with costPriceBdt and priceBdt to product costPrice and selling price", () => {
+    const mapped = mapDbProductToProduct({
+      slug: "hydraulic-2-post-lift",
+      name: "Hydraulic 2-Post Lift 4T",
+      brand: "PAGE Genuine",
+      category: "Garage Equipment",
+      description: "Heavy duty workshop lift",
+      priceBdt: 285000,
+      costPriceBdt: 215000,
+      warehouseQty: 6,
+      reorderLevel: 2,
+    });
+
+    expect(mapped.price).toBe(285000);
+    expect(mapped.costPrice).toBe(215000);
+  });
+
+  it("includes scraped LAUNCH catalog products with cost prices, selling prices, and specs", () => {
+    const launchItems = products.filter((p) => p.brand === "LAUNCH");
+    expect(launchItems.length).toBeGreaterThanOrEqual(70);
+
+    const categoriesFound = new Set(launchItems.map((p) => p.category));
+    expect(categoriesFound.has("Diagnostic Equipment")).toBe(true);
+    expect(categoriesFound.has("EV Equipment")).toBe(true);
+    expect(categoriesFound.has("Tyre & Wheel")).toBe(true);
+    expect(categoriesFound.has("Garage Equipment")).toBe(true);
+
+    for (const item of launchItems) {
+      expect(item.price).toBeGreaterThan(0);
+      expect(item.costPrice).toBeGreaterThan(0);
+      expect(item.costPrice!).toBeLessThanOrEqual(item.price);
+      expect(item.image).toMatch(/^\/uploads\/products\/launch\//);
+      expect(item.isEquipment).toBe(true);
+      expect(item.requiresQuote).toBe(true);
+      expect(item.specs.length).toBeGreaterThan(0);
+    }
+
+    // Verify key flagship and benchmark products exist
+    expect(launchItems.some((p) => p.slug === "launch-x-431-pad9-link")).toBe(true);
+    expect(launchItems.some((p) => p.slug === "launch-evb624-battery-balancer")).toBe(true);
+    expect(launchItems.some((p) => p.slug === "launch-twc-921-tire-changer")).toBe(true);
+    expect(launchItems.some((p) => p.slug === "launch-tth-338-tools-cart")).toBe(true);
+    expect(launchItems.some((p) => p.slug === "launch-x-939-adas-wheel-aligner")).toBe(true);
+    expect(launchItems.some((p) => p.slug === "launch-aiobd-wireless-scanner")).toBe(true);
   });
 });

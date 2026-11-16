@@ -39,8 +39,10 @@ import {
   removeShopBannerVideo,
   sanitizeShopBannerVideoUrl,
 } from "@/lib/shop-banner-video";
+import { requireAdminBeforeLoad } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/banners")({
+  beforeLoad: requireAdminBeforeLoad,
   component: AdminBanners,
   head: () => ({
     meta: [{ title: "Banners Management — PAGE Admin" }],

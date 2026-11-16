@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { requireAdminBeforeLoad } from "@/lib/admin-auth";
 import { useAdminStats } from "@/lib/data-client";
 import {
   Package,
@@ -8,10 +9,13 @@ import {
   CalendarCheck,
   CheckCircle2,
   Image as ImageIcon,
+  Star,
+  ShoppingBag,
 } from "lucide-react";
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 export const Route = createFileRoute("/admin/")({
+  beforeLoad: requireAdminBeforeLoad,
   component: AdminDashboard,
   head: () => ({
     meta: [{ title: "Admin Dashboard — PAGE International" }],
@@ -26,18 +30,20 @@ function StatCard({
   value,
   sub,
   color,
+  to,
 }: {
   icon: any;
   label: string;
   value: string | number;
   sub?: string;
   color: string;
+  to?: string;
 }) {
-  return (
-    <div className="bg-[#232323] border border-white/[0.06] rounded-xl p-5 hover:border-white/[0.1] transition-all duration-200 group">
+  const content = (
+    <div className="bg-[#232323] border border-white/[0.06] rounded-xl p-5 hover:border-white/[0.15] transition-all duration-200 group h-full">
       <div className="flex items-start justify-between mb-4">
         <div
-          className="h-9 w-9 rounded-lg flex items-center justify-center"
+          className="h-9 w-9 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
           style={{ backgroundColor: `${color}15` }}
         >
           <Icon className="h-4.5 w-4.5" style={{ color }} />
@@ -48,6 +54,15 @@ function StatCard({
       {sub && <p className="text-[11px] text-zinc-600 mt-0.5">{sub}</p>}
     </div>
   );
+
+  if (to) {
+    return (
+      <Link to={to} className="block">
+        {content}
+      </Link>
+    );
+  }
+  return content;
 }
 
 export function AdminDashboard() {
@@ -81,6 +96,7 @@ export function AdminDashboard() {
   const recentQuotes = stats.recentQuotes || [];
   const recentBookings = stats.recentBookings || [];
   const lowStockItems = stats.lowStockItems || [];
+  const recentOrders = stats.recentOrders || [];
 
   return (
     <AdminLayout activeRoute="/admin">
@@ -94,13 +110,14 @@ export function AdminDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <StatCard
             icon={Package}
             label="Total Products"
             value={stats.totalProducts}
             sub={`${stats.lowStockCount} low stock`}
             color="#10b981"
+            to="/admin/inventory"
           />
           <StatCard
             icon={AlertTriangle}
@@ -108,6 +125,7 @@ export function AdminDashboard() {
             value={stats.lowStockCount}
             sub="At or below reorder threshold"
             color="#ef4444"
+            to="/admin/inventory"
           />
           <StatCard
             icon={FileText}
@@ -115,6 +133,7 @@ export function AdminDashboard() {
             value={stats.pendingQuotes}
             sub={`${stats.totalQuotes} total requests`}
             color="#f59e0b"
+            to="/admin/quotes"
           />
           <StatCard
             icon={CalendarCheck}
@@ -122,6 +141,15 @@ export function AdminDashboard() {
             value={Math.max(0, stats.totalBookings - stats.pendingBookings)}
             sub={`${stats.pendingBookings} awaiting confirmation`}
             color="#8b5cf6"
+            to="/admin/bookings"
+          />
+          <StatCard
+            icon={Star}
+            label="Customer Reviews"
+            value={stats.totalReviews ?? 9}
+            sub={`${stats.pendingReviews ?? 0} hidden / pending`}
+            color="#eab308"
+            to="/admin/reviews"
           />
         </div>
 
@@ -340,6 +368,71 @@ export function AdminDashboard() {
                 <p className="text-zinc-600 text-[12px] text-center py-8">No bookings yet</p>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Recent Commercial Orders & Invoices */}
+        <div className="bg-[#232323] border border-white/[0.06] rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4 text-emerald-400" />
+              <h3 className="text-[14px] font-semibold text-white">Recent Commercial Orders</h3>
+            </div>
+            <span className="text-[11px] text-zinc-500 font-mono">
+              {stats.totalOrders ?? recentOrders.length} total orders placed
+            </span>
+          </div>
+          <div className="divide-y divide-white/[0.04]">
+            {recentOrders.map((o: any) => (
+              <div
+                key={o.id}
+                className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono font-bold text-emerald-400">
+                      {o.orderNumber}
+                    </span>
+                    <span className="text-zinc-500 text-[11px]">•</span>
+                    <p className="text-[12.5px] font-medium text-zinc-200 truncate">
+                      {o.customerName} {o.companyName ? `(${o.companyName})` : ""}
+                    </p>
+                    {o.vatBin && (
+                      <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.05] px-1.5 py-0.5 rounded border border-white/[0.08]">
+                        BIN: {o.vatBin}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-zinc-500 truncate mt-0.5">
+                    {o.shippingAddress}, {o.city} • Pay: {o.paymentMethod}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <p className="text-[13px] font-semibold font-mono text-white tabular-nums">
+                      ৳{(o.total || 0).toLocaleString()}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 uppercase">{o.paymentStatus || "UNPAID"}</p>
+                  </div>
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                      (o.status || "pending").toLowerCase() === "pending"
+                        ? "bg-amber-500/15 text-amber-400"
+                        : (o.status || "").toLowerCase() === "confirmed"
+                          ? "bg-emerald-500/15 text-emerald-400"
+                          : (o.status || "").toLowerCase() === "processing"
+                            ? "bg-sky-500/15 text-sky-400"
+                            : "bg-zinc-500/15 text-zinc-400"
+                    }`}
+                  >
+                    {o.status || "PENDING"}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {recentOrders.length === 0 && (
+              <p className="text-zinc-600 text-[12px] text-center py-8">No commercial orders placed yet</p>
+            )}
           </div>
         </div>
 

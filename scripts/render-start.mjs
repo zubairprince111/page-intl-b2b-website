@@ -170,7 +170,7 @@ async function prepareDatabase() {
       userCount = 0;
     }
   } finally {
-    await sql.end({ timeout: 3 }).catch(() => { });
+    await sql.end({ timeout: 3 }).catch(() => {});
   }
 
   const localMigrationCount = countLocalMigrationFiles();

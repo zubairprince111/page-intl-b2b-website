@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "./index";
 import {
   users,
@@ -121,7 +121,7 @@ export async function initAndSeedDatabase() {
     await db.insert(users).values(acc).onConflictDoNothing();
   }
 
-  // 3. Seed Machinery & Tools Catalog
+  // 3. Seed Machinery & Tools Catalog (idempotent: only inserts missing, never deletes custom admin products)
   for (const p of products) {
     const specsTuples = normalizeSpecsToTuples(p.specs);
     const presentation = getDefaultProductPresentation({
@@ -145,17 +145,21 @@ export async function initAndSeedDatabase() {
         isEquipment: Boolean(p.isEquipment),
         requiresQuote: Boolean(p.requiresQuote),
         priceBdt: p.price || 0,
+        costPriceBdt:
+          p.costPrice || (p.price > 0 ? Math.round(((p.price || 0) * 0.72) / 500) * 500 : 0),
         inStock: p.stock !== "Out of stock",
+        warehouseQty: p.warehouseQty ?? 10,
+        reorderLevel: p.reorderLevel ?? 2,
         badge: p.badge || null,
         description: p.description || p.name,
         specs: specsTuples,
-        highlights: presentation.highlights,
+        highlights: p.highlights || presentation.highlights,
         variantOptions: presentation.variantOptions,
         guarantees: presentation.guarantees,
         dispatchHub: presentation.dispatchHub,
         priceLabel: presentation.priceLabel,
         features: p.features || [],
-        images: [p.image],
+        images: p.images || [p.image],
         fits: p.fits || [],
       })
       .onConflictDoNothing();
@@ -388,11 +392,13 @@ export async function initAndSeedDatabase() {
     id: "item-ord-1001-1",
     orderId: "ord-1001",
     productId: firstProd ? `prod-${firstProd.slug}` : null,
-    productSlug: firstProd ? firstProd.slug : "heavy-duty-2-post-lift-4t",
-    productName: firstProd ? firstProd.name : "Heavy-Duty 2-Post Electro-Hydraulic Lift 4.0T",
-    unitPrice: firstProd?.price || 285000,
+    productSlug: firstProd ? firstProd.slug : "launch-x-431-pad9-link",
+    productName: firstProd
+      ? firstProd.name
+      : "LAUNCH X-431 PAD9 LINK Flagship Intelligent Diagnostic System",
+    unitPrice: firstProd?.price || 495000,
     quantity: 1,
-    subtotal: firstProd?.price || 285000,
+    subtotal: firstProd?.price || 495000,
   };
 
   await db.insert(orderItems).values(sampleOrderItem).onConflictDoNothing();
@@ -428,6 +434,13 @@ export async function initAndSeedDatabase() {
   for (const u of sampleUpdates) {
     await db.insert(updates).values(u).onConflictDoNothing();
   }
+
+  console.log("[db:seed] Synchronizing & persisting all product media into database...");
+  const { syncExistingMediaCore } = await import("../lib/media.server");
+  const mediaSyncResult = await syncExistingMediaCore();
+  console.log(
+    `[db:seed] Media sync complete: ${mediaSyncResult.addedCount} added, ${mediaSyncResult.updatedCount || 0} updated with database storage.`,
+  );
 
   console.log("[db:seed] Complete! All tables seeded idempotently.");
 }

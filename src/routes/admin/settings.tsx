@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useSettings, useUpdateSettings } from "@/lib/data-client";
 import {
@@ -19,6 +19,9 @@ import {
 import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/admin/settings")({
+  beforeLoad: () => {
+    throw redirect({ to: "/admin" });
+  },
   component: AdminSettings,
   head: () => ({
     meta: [{ title: "Settings — PAGE Admin" }],

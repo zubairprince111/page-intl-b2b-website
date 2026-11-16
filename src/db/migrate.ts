@@ -30,7 +30,7 @@ const normalizeForCompare = (p: string) =>
 const thisMigrateFile = normalizeForCompare(fileURLToPath(import.meta.url));
 const isMigrateScriptFile = /^migrate\.(ts|mjs|js)$/i.test(path.basename(thisMigrateFile));
 const isDirectExecution =
-isMigrateScriptFile &&
+  isMigrateScriptFile &&
   (process.argv.some((arg) => normalizeForCompare(arg) === thisMigrateFile) ||
     Boolean(process.env["npm_lifecycle_script"]?.includes("migrate.ts")));
 

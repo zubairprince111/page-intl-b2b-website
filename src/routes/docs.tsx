@@ -27,4 +27,3 @@ export const Route = createFileRoute("/docs")({
 export function DocsPage() {
   return <ProjectReportView />;
 }
-

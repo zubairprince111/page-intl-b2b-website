@@ -103,6 +103,22 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Visual Scale Architecture:
+     - Public Storefront: Renders at the spacious 125% visual scale on desktop, laptop,
+       and tablet displays (>= 768px), matching the optimal presentation.
+     - Admin Dashboard (/admin): Remains at the standard 100% scale (zoom: 1) for
+       dense data tables, metrics panels, inventory matrices, and layout stability.
+     - Smartphones (< 768px): Maintain 100% native mobile viewport scale. */
+  @media screen and (min-width: 768px) {
+    html {
+      zoom: 1.25;
+    }
+    html[data-admin-route="true"],
+    html:has([data-admin-scope]) {
+      zoom: 1 !important;
+    }
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);

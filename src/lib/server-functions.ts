@@ -62,6 +62,17 @@ export const updateQuoteServerFn = createServerFn({ method: "POST" })
       status?: string | undefined;
       reply?: string | undefined;
       quotedPrice?: number | undefined;
+      notes?: string | undefined;
+      itemsJson?:
+        | { productSlug: string; productName: string; qty: number; unitPrice?: number }[]
+        | undefined;
+      companyName?: string | undefined;
+      contactName?: string | undefined;
+      phone?: string | undefined;
+      email?: string | undefined;
+      qty?: number | undefined;
+      productName?: string | undefined;
+      productSlug?: string | undefined;
     }) => data,
   )
   .handler(async ({ data }) => {
@@ -96,7 +107,16 @@ export const listBookingsServerFn = createServerFn({ method: "GET" })
 
 export const updateBookingServerFn = createServerFn({ method: "POST" })
   .validator(
-    (data: { id: string; status?: string | undefined; adminNotes?: string | undefined }) => data,
+    (data: {
+      id: string;
+      status?: string | undefined;
+      adminNotes?: string | undefined;
+      notes?: string | undefined;
+      bookingDate?: string | undefined;
+      timeSlot?: string | undefined;
+      centerName?: string | undefined;
+      serviceType?: string | undefined;
+    }) => data,
   )
   .handler(async ({ data }) => {
     const { updateBookingCore } = await import("./data.server");
@@ -361,3 +381,74 @@ export const getAdminDatabaseTableRowsServerFn = createServerFn({ method: "GET" 
     const { getAdminDatabaseTableRowsCore } = await import("./admin-database.server");
     return await getAdminDatabaseTableRowsCore(data);
   });
+
+// =============================================================================
+// 11. REVIEWS & TESTIMONIALS RPC FUNCTIONS
+// =============================================================================
+
+export const listReviewsServerFn = createServerFn({ method: "GET" })
+  .validator((data?: { onlyPublished?: boolean | undefined }) => data)
+  .handler(async ({ data }) => {
+    const { listReviewsCore } = await import("./data.server");
+    return await listReviewsCore(Boolean(data?.onlyPublished));
+  });
+
+export const listAdminReviewsServerFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { listAdminReviewsCore } = await import("./data.server");
+  return await listAdminReviewsCore();
+});
+
+export const submitPublicReviewServerFn = createServerFn({ method: "POST" })
+  .validator(
+    (data: {
+      name: string;
+      role?: string | undefined;
+      workshop: string;
+      equipment?: string | undefined;
+      comment: string;
+      title?: string | undefined;
+      rating?: number | undefined;
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { submitPublicReviewCore } = await import("./data.server");
+    return await submitPublicReviewCore(data);
+  });
+
+export const saveReviewAdminServerFn = createServerFn({ method: "POST" })
+  .validator(
+    (data: {
+      id?: string | undefined;
+      name: string;
+      role: string;
+      workshop: string;
+      equipment: string;
+      comment: string;
+      title?: string | undefined;
+      rating?: number | undefined;
+      isPublished?: boolean | undefined;
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { saveReviewAdminCore } = await import("./data.server");
+    return await saveReviewAdminCore(data);
+  });
+
+export const toggleReviewPublishAdminServerFn = createServerFn({ method: "POST" })
+  .validator((data: { id: string; isPublished: boolean }) => data)
+  .handler(async ({ data }) => {
+    const { toggleReviewPublishAdminCore } = await import("./data.server");
+    return await toggleReviewPublishAdminCore(data);
+  });
+
+export const deleteReviewAdminServerFn = createServerFn({ method: "POST" })
+  .validator((data: { id: string }) => data)
+  .handler(async ({ data }) => {
+    const { deleteReviewAdminCore } = await import("./data.server");
+    return await deleteReviewAdminCore(data.id);
+  });
+
+export const seedDefaultReviewsServerFn = createServerFn({ method: "POST" }).handler(async () => {
+  const { seedDefaultReviewsCore } = await import("./data.server");
+  return await seedDefaultReviewsCore();
+});

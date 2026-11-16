@@ -7,6 +7,7 @@ import {
   requestPasswordResetServerFn,
   resetPasswordWithTokenServerFn,
   changePasswordServerFn,
+  updateProfileServerFn,
   type SanitizedUser,
 } from "./auth-functions";
 
@@ -95,6 +96,25 @@ export function useChangePassword() {
   return useMutation({
     mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
       return await changePasswordServerFn({ data });
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      name?: string | undefined;
+      phone?: string | undefined;
+      companyName?: string | undefined;
+      businessType?: string | undefined;
+      city?: string | undefined;
+    }) => {
+      return await updateProfileServerFn({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["userDashboardData"] });
     },
   });
 }

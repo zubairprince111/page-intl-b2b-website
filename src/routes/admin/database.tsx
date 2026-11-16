@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { useAdminDatabaseOverview, useAdminDatabaseTableRows } from "@/lib/data-client";
 import {
@@ -15,6 +15,9 @@ import {
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/admin/database")({
+  beforeLoad: () => {
+    throw redirect({ to: "/admin" });
+  },
   component: AdminDatabasePage,
   head: () => ({
     meta: [{ title: "Database Tables Inspector — PAGE Admin" }],

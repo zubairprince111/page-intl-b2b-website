@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, Plus, Wrench, Zap, ZoomIn } from "lucide-react";
 import { type Product } from "@/lib/data";
@@ -10,6 +10,12 @@ export function ProductCard({ p, onQuote }: { p: Product; onQuote?: (p: Product)
   const { add, lines } = useCart();
   const [justAdded, setJustAdded] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState(p.image);
+
+  useEffect(() => {
+    setImgSrc(p.image);
+  }, [p.image]);
+
   const out = p.stock === "Out of stock";
   const inCart = lines.some((l) => l.slug === p.slug);
   const galleryImages = useMemo(
@@ -39,11 +45,17 @@ export function ProductCard({ p, onQuote }: { p: Product; onQuote?: (p: Product)
         <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800/80">
           <Link to="/shop/$slug" params={{ slug: p.slug }} className="block h-full w-full">
             <img
-              src={p.image}
+              src={imgSrc}
               alt={p.name}
               loading="lazy"
               width={816}
               height={816}
+              onError={() => {
+                if (!imgSrc.includes("retry=")) {
+                  const sep = imgSrc.includes("?") ? "&" : "?";
+                  setImgSrc(`${imgSrc}${sep}retry=${Date.now()}`);
+                }
+              }}
               className="h-full w-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
             />
           </Link>

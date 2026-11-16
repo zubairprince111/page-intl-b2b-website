@@ -100,6 +100,7 @@ export function BookConsultation() {
   const [done, setDone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedBookingNum, setConfirmedBookingNum] = useState("");
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const createBookingMutation = useCreateBooking();
   const [sel, setSel] = useState<string[]>(search.service ? [search.service] : ["lift-demo"]);
 
@@ -617,12 +618,22 @@ export function BookConsultation() {
               </div>
             )}
 
+            {/* Booking error display */}
+            {bookingError && (
+              <div className="mt-4 rounded border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
+                {bookingError}
+              </div>
+            )}
+
             {/* Navigation buttons */}
             <div className="mt-8 flex items-center justify-between border-t border-border pt-4">
               <button
                 type="button"
                 disabled={step === 0}
-                onClick={() => setStep(step - 1)}
+                onClick={() => {
+                  setBookingError(null);
+                  setStep(step - 1);
+                }}
                 className="btn btn-outline h-10 px-5 text-xs font-bold uppercase disabled:opacity-30"
               >
                 Previous
@@ -632,7 +643,10 @@ export function BookConsultation() {
                 <button
                   type="button"
                   disabled={!canNext}
-                  onClick={() => setStep(step + 1)}
+                  onClick={() => {
+                    setBookingError(null);
+                    setStep(step + 1);
+                  }}
                   className="btn btn-primary h-10 px-6 text-xs font-bold uppercase tracking-wider disabled:opacity-40"
                 >
                   Continue to Step {step + 2}
@@ -643,6 +657,7 @@ export function BookConsultation() {
                   disabled={!canNext || isSubmitting}
                   onClick={async () => {
                     setIsSubmitting(true);
+                    setBookingError(null);
                     try {
                       const bookingDate =
                         day !== null
@@ -665,6 +680,11 @@ export function BookConsultation() {
                           locationType === "hub"
                             ? c?.name || "PAGE Equipment Hub"
                             : `On-site: ${onsiteAddress || biz.businessName}`,
+                        businessType: biz.businessType,
+                        bays: biz.bays,
+                        equipmentInterest: biz.equipmentInterest || undefined,
+                        locationType,
+                        onsiteAddress: locationType === "onsite" ? onsiteAddress : undefined,
                         notes: info.notes,
                       });
 
@@ -672,9 +692,12 @@ export function BookConsultation() {
                         setConfirmedBookingNum(res.bookingNumber);
                       }
                       setDone(true);
-                    } catch (err) {
+                    } catch (err: any) {
                       console.error("Booking error:", err);
-                      setDone(true);
+                      setBookingError(
+                        err?.message ||
+                          "Unable to confirm appointment. Please check your contact information and try again.",
+                      );
                     } finally {
                       setIsSubmitting(false);
                     }

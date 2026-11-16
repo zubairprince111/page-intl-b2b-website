@@ -704,7 +704,7 @@ export const DATABASE_TABLES: DatabaseTableSpec[] = [
     primaryKey: "id (text)",
     foreignKeys: "—",
     purpose:
-      "Master catalog: unique slug, sku, name, brand, category, subcategory, JSONB mobility[], is_equipment, requires_quote, price_bdt (server-only), warehouse_qty, reorder_level, specs/highlights, variant_options, guarantees, dispatch_hub, price_label, features[], images[], fits[].",
+      "Master catalog: unique slug, sku, name, brand, category, subcategory, JSONB mobility[], is_equipment, requires_quote, price_bdt (selling price), cost_price_bdt (purchase / bought price), warehouse_qty, reorder_level, specs/highlights, variant_options, guarantees, dispatch_hub, price_label, features[], images[], fits[].",
   },
   {
     index: 4,

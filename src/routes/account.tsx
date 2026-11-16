@@ -16,8 +16,11 @@ import {
   CheckCircle2,
   AlertCircle,
   ExternalLink,
+  Edit3,
+  Save,
+  X,
 } from "lucide-react";
-import { useCurrentUser, useLogout, useChangePassword } from "@/lib/auth-client";
+import { useCurrentUser, useLogout, useChangePassword, useUpdateProfile } from "@/lib/auth-client";
 import { getUserDashboardDataServerFn } from "@/lib/user-functions";
 import { taka } from "@/lib/data";
 
@@ -38,11 +41,59 @@ function AccountPage() {
     "overview" | "quotes" | "orders" | "bookings" | "security"
   >("overview");
 
+  // Profile Edit State
+  const updateProfileMutation = useUpdateProfile();
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: "",
+    phone: "",
+    companyName: "",
+    businessType: "Workshop / Garage",
+    city: "Dhaka",
+  });
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+
   // Change Password Form State
   const [currPassword, setCurrPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [pwSuccess, setPwSuccess] = useState<string | null>(null);
   const [pwError, setPwError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name || "",
+        phone: user.phone || "",
+        companyName: user.companyName || "",
+        businessType: user.businessType || "Workshop / Garage",
+        city: user.city || "Dhaka",
+      });
+    }
+  }, [user]);
+
+  async function handleProfileSave(e: React.FormEvent) {
+    e.preventDefault();
+    setProfileSuccess(null);
+    setProfileError(null);
+    try {
+      const res = await updateProfileMutation.mutateAsync({
+        name: profileForm.name,
+        phone: profileForm.phone,
+        companyName: profileForm.companyName,
+        businessType: profileForm.businessType,
+        city: profileForm.city,
+      });
+      if (res.success) {
+        setProfileSuccess("Workshop profile updated successfully.");
+        setIsEditingProfile(false);
+      } else {
+        setProfileError("Could not update profile.");
+      }
+    } catch (err: any) {
+      setProfileError(err?.message || "Failed to update profile.");
+    }
+  }
 
   useEffect(() => {
     if (!userLoading && !user) {
@@ -218,68 +269,190 @@ function AccountPage() {
 
             {/* Profile Information Card */}
             <div className="bg-white rounded-2xl border border-zinc-200 p-6 sm:p-7 shadow-xs">
-              <h2 className="text-sm font-black font-display uppercase tracking-wider text-zinc-950 mb-4">
-                Workshop Profile Details
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
-                    Managing Engineer / Proprietor
-                  </span>
-                  <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
-                    <User className="h-4 w-4 text-zinc-400" />
-                    <span>{user.name}</span>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
-                    Email Address
-                  </span>
-                  <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
-                    <Mail className="h-4 w-4 text-zinc-400" />
-                    <span>{user.email}</span>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
-                    Direct Contact Phone
-                  </span>
-                  <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
-                    <Phone className="h-4 w-4 text-zinc-400" />
-                    <span>{user.phone}</span>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
-                    Business Entity
-                  </span>
-                  <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
-                    <Building2 className="h-4 w-4 text-zinc-400" />
-                    <span>{user.companyName}</span>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
-                    Operating City
-                  </span>
-                  <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4 text-zinc-400" />
-                    <span>{user.city}</span>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
-                    Member Since
-                  </span>
-                  <p className="text-sm font-semibold text-zinc-900">
-                    {new Date(user.createdAt).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-black font-display uppercase tracking-wider text-zinc-950">
+                  Workshop Profile Details
+                </h2>
+                {!isEditingProfile ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingProfile(true);
+                      setProfileSuccess(null);
+                      setProfileError(null);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 text-xs font-semibold text-zinc-700 hover:text-zinc-900 transition-colors cursor-pointer"
+                  >
+                    <Edit3 className="h-3.5 w-3.5" />
+                    <span>Edit Profile</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingProfile(false)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 hover:border-zinc-300 text-xs font-semibold text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    <span>Cancel</span>
+                  </button>
+                )}
               </div>
+
+              {profileSuccess && (
+                <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>{profileSuccess}</span>
+                </div>
+              )}
+
+              {profileError && (
+                <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium">
+                  <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+                  <span>{profileError}</span>
+                </div>
+              )}
+
+              {isEditingProfile ? (
+                <form onSubmit={handleProfileSave} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        Managing Engineer Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full h-10 px-3 rounded-lg border border-zinc-300 text-xs focus:ring-2 focus:ring-red-600/20 focus:border-red-600"
+                        value={profileForm.name}
+                        onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        Contact Phone / WhatsApp *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        className="w-full h-10 px-3 rounded-lg border border-zinc-300 text-xs focus:ring-2 focus:ring-red-600/20 focus:border-red-600 font-mono"
+                        value={profileForm.phone}
+                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        Company / Workshop Entity *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full h-10 px-3 rounded-lg border border-zinc-300 text-xs focus:ring-2 focus:ring-red-600/20 focus:border-red-600"
+                        value={profileForm.companyName}
+                        onChange={(e) => setProfileForm({ ...profileForm, companyName: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        Business Operation Type
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full h-10 px-3 rounded-lg border border-zinc-300 text-xs focus:ring-2 focus:ring-red-600/20 focus:border-red-600"
+                        value={profileForm.businessType}
+                        onChange={(e) => setProfileForm({ ...profileForm, businessType: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        City / Operational District
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full h-10 px-3 rounded-lg border border-zinc-300 text-xs focus:ring-2 focus:ring-red-600/20 focus:border-red-600"
+                        value={profileForm.city}
+                        onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="pt-2 flex items-center justify-end gap-2 border-t border-zinc-100">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingProfile(false)}
+                      className="px-4 py-2 rounded-lg border border-zinc-200 text-xs font-semibold text-zinc-600 hover:text-zinc-900 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={updateProfileMutation.isPending}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider cursor-pointer shadow-xs disabled:opacity-50"
+                    >
+                      <Save className="h-3.5 w-3.5" />
+                      <span>{updateProfileMutation.isPending ? "Saving..." : "Save Profile Details"}</span>
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
+                      Managing Engineer / Proprietor
+                    </span>
+                    <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
+                      <User className="h-4 w-4 text-zinc-400" />
+                      <span>{user.name}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
+                      Email Address
+                    </span>
+                    <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
+                      <Mail className="h-4 w-4 text-zinc-400" />
+                      <span>{user.email}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
+                      Direct Contact Phone
+                    </span>
+                    <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
+                      <Phone className="h-4 w-4 text-zinc-400" />
+                      <span>{user.phone}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
+                      Business Entity
+                    </span>
+                    <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
+                      <Building2 className="h-4 w-4 text-zinc-400" />
+                      <span>{user.companyName}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
+                      Operating City
+                    </span>
+                    <p className="text-sm font-semibold text-zinc-900 flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 text-zinc-400" />
+                      <span>{user.city}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block mb-1">
+                      Member Since
+                    </span>
+                    <p className="text-sm font-semibold text-zinc-900">
+                      {new Date(user.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

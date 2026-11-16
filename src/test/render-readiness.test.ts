@@ -54,7 +54,9 @@ describe("Render Free Tier Readiness", () => {
   });
 
   afterAll(async () => {
-    fs.rmSync(tmpRoot, { recursive: true, force: true });
+    if (tmpRoot) {
+      fs.rmSync(tmpRoot, { recursive: true, force: true });
+    }
     await (rawClient as PGlite).close();
   });
 

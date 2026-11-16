@@ -11,7 +11,7 @@ import {
   Clock,
   X,
 } from "lucide-react";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { MobilityScrollStack } from "@/components/site/MobilityScrollStack";
 import { BrandPartners } from "@/components/site/BrandPartners";
@@ -29,6 +29,7 @@ import {
 import { ProductCard } from "@/components/site/ProductCard";
 import { QuoteModal } from "@/components/site/QuoteModal";
 import { getPublishedReviews, addPublishedReview, type Review } from "@/lib/reviews";
+import { useReviews, useSubmitPublicReview } from "@/lib/data-client";
 import { images, products, type Product } from "@/lib/data";
 
 export const Route = createFileRoute("/")({
@@ -155,12 +156,14 @@ function Home() {
   // Active product for quotation modal
   const [activeQuoteProduct, setActiveQuoteProduct] = useState<Product | null>(null);
 
-  // Published reviews state (live dynamic)
-  const [publishedReviews, setPublishedReviews] = useState<Review[]>(() => getPublishedReviews());
+  // Published reviews state (live dynamic backed by PostgreSQL with local fallback)
+  const { data: dbReviews } = useReviews(true);
+  const submitReviewMutation = useSubmitPublicReview();
+  const [localReviews, setLocalReviews] = useState<Review[]>(() => getPublishedReviews());
 
   useEffect(() => {
     const handleReviewsUpdate = () => {
-      setPublishedReviews(getPublishedReviews());
+      setLocalReviews(getPublishedReviews());
     };
     window.addEventListener("reviews_updated", handleReviewsUpdate);
     window.addEventListener("storage", handleReviewsUpdate);
@@ -169,6 +172,11 @@ function Home() {
       window.removeEventListener("storage", handleReviewsUpdate);
     };
   }, []);
+
+  const publishedReviews = useMemo(() => {
+    if (dbReviews && dbReviews.length > 0) return dbReviews;
+    return localReviews;
+  }, [dbReviews, localReviews]);
 
   // Review modal state
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -180,20 +188,29 @@ function Home() {
   const [revEquipment, setRevEquipment] = useState("");
   const [revComment, setRevComment] = useState("");
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!revName || !revWorkshop || !revComment) return;
 
-    addPublishedReview({
+    const reviewPayload = {
       name: revName.trim(),
       role: revRole.trim() || "Workshop Managing Director",
       workshop: revWorkshop.trim(),
       equipment: revEquipment.trim() || "Commercial Workshop Equipment",
       comment: revComment.trim(),
+      rating: revRating,
       title: revEquipment.trim()
         ? `Review on ${revEquipment.trim()}`
         : "Verified Workshop Experience",
-    });
+    };
+
+    try {
+      await submitReviewMutation.mutateAsync(reviewPayload);
+    } catch (err) {
+      console.warn("Could not save review to database, falling back to local storage:", err);
+    }
+
+    addPublishedReview(reviewPayload);
 
     setReviewSubmitted(true);
     setRevName("");
@@ -210,10 +227,10 @@ function Home() {
 
   // 4 Featured High-Impact Products
   const featuredItems: Product[] = [
-    products.find((p) => p.slug === "heavy-duty-2-post-lift-4t") ?? products[0]!,
-    products.find((p) => p.slug === "pro-tyre-changer-assist-arm") ?? products[1]!,
-    products.find((p) => p.slug === "digital-wheel-balancer-laser") ?? products[2]!,
-    products.find((p) => p.slug === "rotary-screw-air-compressor-10hp") ?? products[3]!,
+    products.find((p) => p.slug === "launch-x-431-pad9-link") ?? products[0]!,
+    products.find((p) => p.slug === "launch-evb624-battery-balancer") ?? products[1]!,
+    products.find((p) => p.slug === "launch-twc-921-tire-changer") ?? products[2]!,
+    products.find((p) => p.slug === "launch-x-939-adas-wheel-aligner") ?? products[3]!,
   ].filter((p): p is Product => Boolean(p));
 
   return (
@@ -442,17 +459,17 @@ function Home() {
       <section className="relative w-full flex flex-col items-center justify-center bg-black text-white text-center overflow-hidden border-t border-zinc-900 py-10 sm:py-14 md:py-18 select-none">
         {/* Ambient atmospheric backdrop */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="h-[30vw] w-[45vw] max-w-[600px] max-h-[260px] rounded-full bg-primary/10 blur-[120px]" />
+          <div className="h-[28vw] w-[44vw] max-w-[600px] max-h-[260px] rounded-full bg-primary/12 blur-[120px]" />
         </div>
 
-        <div className="relative z-10 w-full flex items-center justify-center overflow-hidden">
-          <h2 className="font-display font-black tracking-tighter leading-none text-white uppercase whitespace-nowrap text-[14.7vw] select-none text-center">
+        <div className="relative z-10 w-full flex items-center justify-center px-2 sm:px-3 md:px-4">
+          <h2 className="font-display font-black tracking-tight sm:tracking-tighter leading-none text-white uppercase whitespace-nowrap select-none text-center text-[13.3vw]">
             THINK NEXT<span className="text-primary">.</span>
           </h2>
         </div>
       </section>
 
-      {/* Review Submission Modal Dialog (Sent to Admin Panel) */}
+      {/* Review Submission Modal Dialog (Storefront Community Reviews) */}
       {isReviewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl animate-in zoom-in-95 duration-200">

@@ -246,12 +246,12 @@ export function ProductPage() {
   // Vehicle compatibility match status
   const isVehicleCompatible = vehicle
     ? p.fits.some(
-      (f) =>
-        f.toLowerCase().includes(vehicle.model.toLowerCase()) ||
-        f.toLowerCase().includes(vehicle.make.toLowerCase()) ||
-        f.toLowerCase().includes("universal") ||
-        f.toLowerCase().includes("most"),
-    )
+        (f) =>
+          f.toLowerCase().includes(vehicle.model.toLowerCase()) ||
+          f.toLowerCase().includes(vehicle.make.toLowerCase()) ||
+          f.toLowerCase().includes("universal") ||
+          f.toLowerCase().includes("most"),
+      )
     : false;
 
   return (
@@ -337,6 +337,13 @@ export function ProductPage() {
                   alt={p.name}
                   width={700}
                   height={700}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.src.includes("retry=")) {
+                      const sep = target.src.includes("?") ? "&" : "?";
+                      target.src = `${target.src}${sep}retry=${Date.now()}`;
+                    }
+                  }}
                   style={
                     isInlineZooming
                       ? {
@@ -370,10 +377,11 @@ export function ProductPage() {
                       key={item.id}
                       type="button"
                       onClick={() => setActiveImageIndex(idx)}
-                      className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer ${isActive
-                        ? "border-primary ring-2 ring-primary/20 shadow-xs"
-                        : "border-zinc-200 hover:border-zinc-400"
-                        }`}
+                      className={`aspect-square rounded-xl border overflow-hidden flex items-center justify-center transition-all bg-white cursor-pointer ${
+                        isActive
+                          ? "border-primary ring-2 ring-primary/20 shadow-xs"
+                          : "border-zinc-200 hover:border-zinc-400"
+                      }`}
                     >
                       <img
                         src={item.img}
@@ -412,12 +420,14 @@ export function ProductPage() {
                 </div>
                 <span className="text-zinc-300">|</span>
                 <span
-                  className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs ${out ? "text-destructive" : low ? "text-amber-600" : "text-emerald-600"
-                    }`}
+                  className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs ${
+                    out ? "text-destructive" : low ? "text-amber-600" : "text-emerald-600"
+                  }`}
                 >
                   <span
-                    className={`h-2 w-2 rounded-full ${out ? "bg-destructive" : low ? "bg-amber-500" : "bg-emerald-500"
-                      }`}
+                    className={`h-2 w-2 rounded-full ${
+                      out ? "bg-destructive" : low ? "bg-amber-500" : "bg-emerald-500"
+                    }`}
                   />
                   {p.stock}
                 </span>
@@ -492,10 +502,11 @@ export function ProductPage() {
                                 [group.name]: opt,
                               }))
                             }
-                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${activeChoice === opt
-                              ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
-                              : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400"
-                              }`}
+                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
+                              activeChoice === opt
+                                ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
+                                : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400"
+                            }`}
                           >
                             {opt}
                           </button>
@@ -538,10 +549,11 @@ export function ProductPage() {
                   type="button"
                   disabled={out}
                   onClick={() => add(p.slug, qty)}
-                  className={`flex-1 h-12 text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-xs transition-all cursor-pointer ${inCart
-                    ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                    : "bg-primary text-white hover:bg-primary/90 shadow-sm active:scale-[0.99]"
-                    }`}
+                  className={`flex-1 h-12 text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 rounded-xl shadow-xs transition-all cursor-pointer ${
+                    inCart
+                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                      : "bg-primary text-white hover:bg-primary/90 shadow-sm active:scale-[0.99]"
+                  }`}
                 >
                   {inCart ? (
                     <>
@@ -573,12 +585,13 @@ export function ProductPage() {
             {/* Configurable Warranty, Dispatch & Certification Badges */}
             {effectiveGuarantees.length > 0 && (
               <div
-                className={`pt-3 border-t border-zinc-200/80 grid gap-2 text-[11px] sm:text-xs text-zinc-600 font-medium text-center ${effectiveGuarantees.length === 1
-                  ? "grid-cols-1"
-                  : effectiveGuarantees.length === 2
-                    ? "grid-cols-2"
-                    : "grid-cols-3"
-                  }`}
+                className={`pt-3 border-t border-zinc-200/80 grid gap-2 text-[11px] sm:text-xs text-zinc-600 font-medium text-center ${
+                  effectiveGuarantees.length === 1
+                    ? "grid-cols-1"
+                    : effectiveGuarantees.length === 2
+                      ? "grid-cols-2"
+                      : "grid-cols-3"
+                }`}
               >
                 {effectiveGuarantees.map((badge, idx) => (
                   <div
@@ -632,8 +645,9 @@ export function ProductPage() {
                         {k}
                       </td>
                       <td
-                        className={`py-3.5 px-5 sm:px-6 font-medium ${isMono ? "font-mono text-zinc-950" : "text-zinc-950"
-                          }`}
+                        className={`py-3.5 px-5 sm:px-6 font-medium ${
+                          isMono ? "font-mono text-zinc-950" : "text-zinc-950"
+                        }`}
                       >
                         {v}
                       </td>
@@ -683,7 +697,7 @@ export function ProductPage() {
                     ))}
                   </ul>
                 </div>
-              ) : p.slug === "heavy-duty-2-post-lift-4t" ? (
+              ) : p.slug === "launch-x-431-pad9-link" ? (
                 <div className="pt-5 border-t border-zinc-100">
                   <h3 className="font-bold text-zinc-950 text-sm uppercase tracking-wider mb-3">
                     Key Engineering Advantages
@@ -716,7 +730,8 @@ export function ProductPage() {
                     </li>
                     <li>
                       Available for B2B wholesale pricing, VAT commercial invoicing, and{" "}
-                      {effectiveHub ? `dispatch from ${effectiveHub}` : "nationwide fleet delivery"}.
+                      {effectiveHub ? `dispatch from ${effectiveHub}` : "nationwide fleet delivery"}
+                      .
                     </li>
                   </ul>
                 </div>

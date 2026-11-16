@@ -44,8 +44,10 @@ import {
   generateQuotationEmailHtml,
   copyQuotationHtmlToClipboard,
 } from "@/components/admin/QuotationEmailModal";
+import { requireAdminBeforeLoad } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/quotes")({
+  beforeLoad: requireAdminBeforeLoad,
   component: AdminQuotes,
   head: () => ({
     meta: [{ title: "Quotations Management — PAGE Admin" }],
@@ -542,8 +544,8 @@ function AdminQuotes() {
                   className={`bg-[#18181b] border border-white/[0.07] ${borderLeftAccent} rounded-2xl overflow-hidden hover:border-white/[0.12] transition-all shadow-sm`}
                 >
                   {/* Top Bar / Summary Row */}
-                  <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:gap-8">
+                    <div className="flex items-start gap-3.5 min-w-0 flex-1 pr-4 lg:pr-8">
                       <div className="h-10 w-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-300 shrink-0">
                         {isMulti ? (
                           <Package className="h-5 w-5 text-purple-400" />
@@ -552,7 +554,7 @@ function AdminQuotes() {
                         )}
                       </div>
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
                             {q.companyName}
@@ -569,14 +571,19 @@ function AdminQuotes() {
                           ) : null}
                         </div>
 
-                        <div className="mt-1 flex items-center gap-3 text-xs text-zinc-400 flex-wrap">
-                          <span className="text-zinc-300 font-medium">{q.productName}</span>
-                          <span className="text-zinc-600">•</span>
-                          <span className="font-mono text-zinc-400">Qty: {q.qty} units</span>
+                        <div className="mt-1.5 flex items-center gap-3 text-xs text-zinc-400 flex-wrap">
+                          <span
+                            className="text-zinc-300 font-medium truncate max-w-md xl:max-w-lg"
+                            title={q.productName}
+                          >
+                            {q.productName}
+                          </span>
+                          <span className="text-zinc-600 shrink-0">•</span>
+                          <span className="font-mono text-zinc-400 shrink-0">Qty: {q.qty} units</span>
                           {q.quotedPrice ? (
                             <>
-                              <span className="text-zinc-600">•</span>
-                              <span className="font-mono font-bold text-emerald-400">
+                              <span className="text-zinc-600 shrink-0">•</span>
+                              <span className="font-mono font-bold text-emerald-400 shrink-0">
                                 Quoted: {taka(q.quotedPrice * (q.qty || 1))}
                               </span>
                             </>
@@ -585,14 +592,15 @@ function AdminQuotes() {
                       </div>
                     </div>
 
-                    {/* Quick Direct Actions Strip */}
-                    <div className="flex items-center justify-between md:justify-end gap-2.5 pt-2 md:pt-0 border-t md:border-t-0 border-white/[0.04] shrink-0">
-                      <div className="flex items-center gap-1.5">
-                        {q.phone && (
+                    {/* Quick Direct Actions Strip — Generous Gap & Fixed Column Alignment */}
+                    <div className="flex items-center justify-between lg:justify-end gap-3 sm:gap-4 shrink-0 lg:ml-auto">
+                      {/* Fixed 108px Contact Button Slot */}
+                      <div className="flex items-center gap-1.5 w-[108px] shrink-0 justify-start">
+                        {q.phone ? (
                           <>
                             <a
                               href={`tel:${q.phone}`}
-                              className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-white/[0.06] flex items-center justify-center transition-colors"
+                              className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-300 border border-white/[0.06] flex items-center justify-center transition-colors shrink-0"
                               title={`Call ${q.phone}`}
                             >
                               <Phone className="h-3.5 w-3.5" />
@@ -601,37 +609,57 @@ function AdminQuotes() {
                               href={formatWhatsAppLink(q.phone)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-400 border border-white/[0.06] flex items-center justify-center transition-colors"
+                              className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-emerald-500/20 text-zinc-400 hover:text-emerald-400 border border-white/[0.06] flex items-center justify-center transition-colors shrink-0"
                               title="Message on WhatsApp"
                             >
                               <MessageCircle className="h-3.5 w-3.5" />
                             </a>
+                          </>
+                        ) : (
+                          <>
+                            <span
+                              className="h-8 w-8 rounded-lg bg-white/[0.02] border border-white/[0.03] text-zinc-600 flex items-center justify-center opacity-30 cursor-not-allowed shrink-0"
+                              title="No phone number provided"
+                            >
+                              <Phone className="h-3.5 w-3.5" />
+                            </span>
+                            <span
+                              className="h-8 w-8 rounded-lg bg-white/[0.02] border border-white/[0.03] text-zinc-600 flex items-center justify-center opacity-30 cursor-not-allowed shrink-0"
+                              title="No phone number provided"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                            </span>
                           </>
                         )}
                         <a
                           href={`mailto:${q.email}?subject=${encodeURIComponent(
                             `[PAGE Commercial Quotation] Ref #${(q.quoteNumber || q.id).toUpperCase()}`,
                           )}`}
-                          className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-sky-500/20 text-zinc-400 hover:text-sky-300 border border-white/[0.06] flex items-center justify-center transition-colors"
+                          className="h-8 w-8 rounded-lg bg-white/[0.04] hover:bg-sky-500/20 text-zinc-400 hover:text-sky-300 border border-white/[0.06] flex items-center justify-center transition-colors shrink-0"
                           title={`Email ${q.email}`}
                         >
                           <Mail className="h-3.5 w-3.5" />
                         </a>
                       </div>
 
-                      <div className="text-right pl-2">
-                        <span className="text-[11px] font-mono text-zinc-400 block">
+                      {/* Fixed 120px Timestamp & Contact Name Slot */}
+                      <div className="w-[120px] shrink-0 text-right">
+                        <span className="text-[11px] font-mono text-zinc-400 block truncate">
                           {formatRelativeTime(q.createdAt)}
                         </span>
-                        <span className="text-[10px] text-zinc-500 truncate block max-w-[120px]">
+                        <span
+                          className="text-[10px] text-zinc-500 truncate block"
+                          title={q.contactName}
+                        >
                           {q.contactName}
                         </span>
                       </div>
 
+                      {/* Fixed 140px Configure Button Slot */}
                       <button
                         type="button"
                         onClick={() => toggleExpand(q)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        className={`w-[140px] shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                           isExpanded
                             ? "bg-white/[0.1] text-white"
                             : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20"
