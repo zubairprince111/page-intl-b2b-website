@@ -18,7 +18,9 @@ import { checkRateLimit } from "./rate-limiter";
 import { sendTransactionalEmail, renderPasswordResetEmail } from "./email.server";
 
 export const SESSION_COOKIE_NAME = "page_session";
-const SESSION_MAX_AGE_SECONDS = 12 * 60 * 60; // 12 hours secure admin & customer session
+export const SESSION_MAX_AGE_SECONDS = 12 * 60 * 60; // 12 hours for regular customer portal sessions
+export const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60; // 1 hour hard maximum for administrative sessions
+export const ADMIN_IDLE_TIMEOUT_SECONDS = 15 * 60; // 15 minutes of inactivity before auto-lock
 
 export interface SanitizedUser {
   id: string;
@@ -139,6 +141,7 @@ export async function loginUserCore(data: {
   email: string;
   password: string;
   honeypot?: string | undefined;
+  rememberMe?: boolean | undefined;
 }) {
   const ip = getClientIp();
 
@@ -172,8 +175,22 @@ export async function loginUserCore(data: {
     return { success: false, error: "Invalid email or password." };
   }
 
+  const isAdmin = user.role === "admin";
+  const adminTtlSeconds =
+    Number(process.env["ADMIN_SESSION_MAX_AGE_SECONDS"]) || ADMIN_SESSION_MAX_AGE_SECONDS;
+  const sessionDurationSeconds = isAdmin ? adminTtlSeconds : SESSION_MAX_AGE_SECONDS;
+
   const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
+  const expiresAt = new Date(Date.now() + sessionDurationSeconds * 1000);
+
+  // Invalidate any old sessions for this user if logging in as admin to prevent session accumulation
+  if (isAdmin) {
+    try {
+      await db.delete(sessions).where(eq(sessions.userId, user.id));
+    } catch {
+      // non-blocking
+    }
+  }
 
   await db.insert(sessions).values({
     id: `sess-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
@@ -184,12 +201,16 @@ export async function loginUserCore(data: {
 
   await db.update(users).set({ lastLogin: new Date() }).where(eq(users.id, user.id));
 
+  // For administrators: default to browser session cookie (cleared when browser is closed)
+  // unless explicitly requested via rememberMe. Customers retain standard 12-hour session.
+  const shouldPersistCookie = !isAdmin || Boolean(data.rememberMe);
+
   setCookie(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env["NODE_ENV"] === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
+    ...(shouldPersistCookie ? { maxAge: sessionDurationSeconds } : {}),
   });
 
   try {
@@ -197,11 +218,11 @@ export async function loginUserCore(data: {
       id: `audit-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`,
       actorId: user.id,
       actorEmail: user.email,
-      action: "user.login",
+      action: isAdmin ? "admin.login" : "user.login",
       entityType: "user",
       entityId: user.id,
       ipAddress: ip,
-      metadata: { role: user.role },
+      metadata: { role: user.role, rememberMe: Boolean(data.rememberMe), sessionDurationSeconds },
     });
   } catch {
     // Non-blocking

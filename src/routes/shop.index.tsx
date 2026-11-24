@@ -92,6 +92,20 @@ export const Route = createFileRoute("/shop/")({
         content: "Commercial automotive B2B catalog with 4W, 2W, 3W & EV mobility platforms.",
       },
     ],
+    links: [
+      {
+        rel: "preload",
+        as: "image",
+        href: "/1013-poster.webp",
+        type: "image/webp",
+      },
+      {
+        rel: "preload",
+        as: "video",
+        href: "/1013.mp4",
+        type: "video/mp4",
+      },
+    ],
   }),
   component: Shop,
 });
@@ -701,6 +715,8 @@ export function Shop() {
               loop
               muted
               playsInline
+              preload="auto"
+              poster={shopVideoUrl === "/1013.mp4" ? "/1013-poster.webp" : undefined}
               disablePictureInPicture
               disableRemotePlayback
               className="w-full h-full object-cover object-center pointer-events-none"

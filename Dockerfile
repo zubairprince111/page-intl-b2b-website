@@ -7,7 +7,7 @@ FROM node:22-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Stage 2: Build Application
 FROM node:22-alpine AS builder
@@ -18,7 +18,7 @@ COPY . .
 
 ENV NODE_ENV=production
 ENV NITRO_PRESET=node-server
-RUN npm run build
+RUN mkdir -p public/src/assets && cp -R src/assets/. public/src/assets/ && npm run build
 
 # Stage 3: Production Runtime
 FROM node:22-alpine AS runner
@@ -26,6 +26,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8080
+ENV NITRO_PORT=8080
 
 # Install PostgreSQL client tools & curl for healthcheck
 RUN apk add --no-cache curl postgresql-client
@@ -44,6 +45,7 @@ COPY --from=builder --chown=node:node /app/src/db ./src/db
 COPY --from=builder --chown=node:node /app/src/lib ./src/lib
 COPY --from=builder --chown=node:node /app/src/assets ./src/assets
 COPY --from=builder --chown=node:node /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder --chown=node:node /app/vite.docker-db.config.ts ./vite.config.ts
 COPY --from=builder --chown=node:node /app/docker-entrypoint.sh ./docker-entrypoint.sh
 
 RUN sed -i 's/\r$//' ./docker-entrypoint.sh && chmod +x ./docker-entrypoint.sh
@@ -53,7 +55,7 @@ USER node
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=20s --timeout=5s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=20s --timeout=5s --start-period=3m --retries=3 \
   CMD curl -f http://localhost:${PORT:-8080}/api/health || exit 1
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

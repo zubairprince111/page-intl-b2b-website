@@ -6,8 +6,14 @@
 
 # In local / testing, serves on :80; in production, set APP_DOMAIN=yourdomain.com
 {$APP_DOMAIN::80} {
-    # Modern compression
-    encode zstd gzip
+    # Modern compression (exclude pre-compressed media to avoid CPU overhead and streaming latency)
+    encode {
+        zstd
+        gzip
+        match {
+            not path *.mp4 *.webm *.png *.jpg *.jpeg *.webp *.gif
+        }
+    }
 
     # Reverse proxy to the application container
     reverse_proxy app:8080 {
@@ -24,6 +30,14 @@
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "camera=(), microphone=(), geolocation=()"
         -Server
+    }
+
+    # High-performance caching for static media (videos, posters, images)
+    @mediaAssets {
+        path *.mp4 *.webm *.webp *.png *.jpg *.jpeg *.svg *.ico
+    }
+    header @mediaAssets {
+        Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
     }
 
     # Long cache for content-hashed Vite bundle assets; uploaded assets use node ETag revalidation

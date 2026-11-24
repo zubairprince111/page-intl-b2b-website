@@ -19,6 +19,7 @@ const LoginSchema = z.object({
   email: z.string().email("Please provide a valid email address").trim().toLowerCase(),
   password: z.string().min(1, "Password is required"),
   honeypot: z.string().optional(),
+  rememberMe: z.boolean().optional(),
 });
 
 export const loginServerFn = createServerFn({ method: "POST" })

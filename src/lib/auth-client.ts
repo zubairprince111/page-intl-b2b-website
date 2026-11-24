@@ -27,7 +27,12 @@ export function useCurrentUser() {
 export function useLogin() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (credentials: { email: string; password: string; honeypot?: string }) => {
+    mutationFn: async (credentials: {
+      email: string;
+      password: string;
+      honeypot?: string;
+      rememberMe?: boolean;
+    }) => {
       const res = await loginServerFn({ data: credentials });
       return res;
     },

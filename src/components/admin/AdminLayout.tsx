@@ -47,6 +47,34 @@ export function AdminLayout({
   const logoutMutation = useLogout();
   const { data: stats } = useAdminStats();
 
+  // 15-Minute Inactivity Auto-Lock / Logout for Administrative Security
+  const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+  const [lastActivity, setLastActivity] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    function resetTimer() {
+      setLastActivity(Date.now());
+    }
+
+    const events = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"];
+    events.forEach((event) => {
+      window.addEventListener(event, resetTimer, { passive: true });
+    });
+
+    const intervalId = setInterval(() => {
+      if (Date.now() - lastActivity > IDLE_TIMEOUT_MS) {
+        handleSignOut("idle_timeout");
+      }
+    }, 15000);
+
+    return () => {
+      events.forEach((event) => {
+        window.removeEventListener(event, resetTimer);
+      });
+      clearInterval(intervalId);
+    };
+  }, [lastActivity]);
+
   useEffect(() => {
     if (!isLoading) {
       if (!user || user.role !== "admin") {
@@ -55,9 +83,18 @@ export function AdminLayout({
     }
   }, [user, isLoading, navigate]);
 
-  async function handleSignOut() {
-    await logoutMutation.mutateAsync();
-    navigate({ to: "/admin/login" });
+  async function handleSignOut(reason = "manual") {
+    try {
+      await logoutMutation.mutateAsync();
+    } catch {
+      // non-blocking
+    }
+    const target = reason === "idle_timeout" ? "/admin/login?reason=idle_timeout" : "/admin/login?reason=logged_out";
+    if (typeof window !== "undefined") {
+      window.location.href = target;
+    } else {
+      navigate({ to: "/admin/login" });
+    }
   }
 
   if (isLoading || !user || user.role !== "admin") {
@@ -233,7 +270,7 @@ export function AdminLayout({
 
           <button
             type="button"
-            onClick={handleSignOut}
+            onClick={() => handleSignOut("manual")}
             className={`
               w-full flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[12px] font-medium text-red-400/90 hover:text-red-300 hover:bg-red-500/10 transition-colors
               ${collapsed ? "justify-center px-0" : ""}
@@ -269,9 +306,29 @@ export function AdminLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2.5 ml-auto">
+            {/* Auto-lock & Security Indicator */}
+            <div
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/[0.03] border border-white/[0.06] text-[11px] text-zinc-400 font-mono"
+              title="Protected administrative session. Automatically terminates after 15 minutes of inactivity."
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Auto-locks in 15m</span>
+            </div>
+
+            {/* Quick Lock / Sign Out button */}
+            <button
+              type="button"
+              onClick={() => handleSignOut("manual")}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[11px] font-medium transition-colors cursor-pointer"
+              title="Lock Admin Session & Sign Out"
+            >
+              <LogOut className="h-3 w-3" />
+              <span className="hidden sm:inline">Lock Session</span>
+            </button>
+
             {/* User avatar & popover */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-white/[0.06]">
+            <div className="flex items-center gap-2 pl-2 border-l border-white/[0.06]">
               <div className="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[10px] font-bold text-white shadow-xs">
                 {initials}
               </div>

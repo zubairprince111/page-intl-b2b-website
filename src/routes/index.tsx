@@ -90,6 +90,20 @@ export const Route = createFileRoute("/")({
         }),
       },
     ],
+    links: [
+      {
+        rel: "preload",
+        as: "image",
+        href: "/1015-poster.webp",
+        type: "image/webp",
+      },
+      {
+        rel: "preload",
+        as: "video",
+        href: "/1015.mp4",
+        type: "video/mp4",
+      },
+    ],
   }),
   component: Home,
 });
@@ -122,6 +136,13 @@ const HeroVideo = memo(function HeroVideo() {
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden bg-black">
+      <img
+        src="/1015-poster.webp"
+        alt="Automotive Garage Equipment"
+        fetchPriority="high"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover object-center opacity-90 brightness-100 pointer-events-none"
+      />
       <video
         ref={videoRef}
         autoPlay
@@ -129,13 +150,14 @@ const HeroVideo = memo(function HeroVideo() {
         muted
         playsInline
         preload="auto"
+        poster="/1015-poster.webp"
         disablePictureInPicture
         disableRemotePlayback
-        className="h-full w-full object-cover object-center opacity-90 brightness-100 pointer-events-none transform-gpu will-change-transform"
+        className="relative z-10 h-full w-full object-cover object-center opacity-90 brightness-100 pointer-events-none transform-gpu will-change-transform"
       >
         <source src="/1015.mp4" type="video/mp4" />
       </video>
-      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+      <div className="absolute inset-0 z-20 bg-black/20 pointer-events-none" />
     </div>
   );
 });
