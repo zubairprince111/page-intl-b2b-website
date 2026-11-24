@@ -14,6 +14,10 @@ import {
   orderItems,
   settings,
   updates,
+  passwordResetTokens,
+  emailVerificationTokens,
+  emailLog,
+  auditLog,
 } from "../src/db";
 
 async function backup() {
@@ -39,6 +43,10 @@ async function backup() {
     orderItemsData,
     settingsData,
     updatesData,
+    passwordResetTokensData,
+    emailVerificationTokensData,
+    emailLogData,
+    auditLogData,
   ] = await Promise.all([
     db.select().from(users),
     db.select().from(sessions),
@@ -63,6 +71,10 @@ async function backup() {
     db.select().from(orderItems),
     db.select().from(settings),
     db.select().from(updates),
+    db.select().from(passwordResetTokens),
+    db.select().from(emailVerificationTokens),
+    db.select().from(emailLog),
+    db.select().from(auditLog),
   ]);
 
   const payload = {
@@ -81,6 +93,10 @@ async function backup() {
       orderItems: orderItemsData.length,
       settings: settingsData.length,
       updates: updatesData.length,
+      passwordResetTokens: passwordResetTokensData.length,
+      emailVerificationTokens: emailVerificationTokensData.length,
+      emailLog: emailLogData.length,
+      auditLog: auditLogData.length,
     },
     tables: {
       users: usersData,
@@ -95,6 +111,10 @@ async function backup() {
       orderItems: orderItemsData,
       settings: settingsData,
       updates: updatesData,
+      passwordResetTokens: passwordResetTokensData,
+      emailVerificationTokens: emailVerificationTokensData,
+      emailLog: emailLogData,
+      auditLog: auditLogData,
     },
   };
 

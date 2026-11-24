@@ -14,6 +14,10 @@ import {
   orderItems,
   settings,
   updates,
+  passwordResetTokens,
+  emailVerificationTokens,
+  emailLog,
+  auditLog,
 } from "../src/db";
 import { runMigrations } from "../src/db/migrate";
 
@@ -77,6 +81,10 @@ async function restore() {
     orderItems: orderItemsData = [],
     settings: settingsData = [],
     updates: updatesData = [],
+    passwordResetTokens: passwordResetTokensData = [],
+    emailVerificationTokens: emailVerificationTokensData = [],
+    emailLog: emailLogData = [],
+    auditLog: auditLogData = [],
   } = backup.tables;
 
   console.log("[db:restore] Restoring tables in dependency order...");
@@ -173,6 +181,38 @@ async function restore() {
   for (const row of sessionsData) {
     await db
       .insert(sessions)
+      .values(parseDates(row) as any)
+      .onConflictDoNothing();
+  }
+
+  // 13. Password Reset Tokens
+  for (const row of passwordResetTokensData) {
+    await db
+      .insert(passwordResetTokens)
+      .values(parseDates(row) as any)
+      .onConflictDoNothing();
+  }
+
+  // 14. Email Verification Tokens
+  for (const row of emailVerificationTokensData) {
+    await db
+      .insert(emailVerificationTokens)
+      .values(parseDates(row) as any)
+      .onConflictDoNothing();
+  }
+
+  // 15. Email Log
+  for (const row of emailLogData) {
+    await db
+      .insert(emailLog)
+      .values(parseDates(row) as any)
+      .onConflictDoNothing();
+  }
+
+  // 16. Audit Log
+  for (const row of auditLogData) {
+    await db
+      .insert(auditLog)
       .values(parseDates(row) as any)
       .onConflictDoNothing();
   }

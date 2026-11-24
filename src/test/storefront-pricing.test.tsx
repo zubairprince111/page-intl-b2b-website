@@ -60,7 +60,9 @@ vi.mock("@/lib/cart", () => ({
 }));
 
 import { ProductCard } from "@/components/site/ProductCard";
-import { ProductPage, Route } from "@/routes/shop.$slug";
+import { Route } from "@/routes/shop.$slug";
+
+const ProductPage = Route.options.component!;
 
 afterEach(() => {
   cleanup();

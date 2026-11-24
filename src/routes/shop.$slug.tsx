@@ -103,7 +103,7 @@ export const Route = createFileRoute("/shop/$slug")({
   component: ProductPage,
 });
 
-export function ProductPage() {
+function ProductPage() {
   const { p: initialProduct, initialCatalog } = Route.useLoaderData();
   const { data: liveProduct } = useProductBySlug(initialProduct.slug, initialProduct);
   const { data: liveCatalog } = useCatalogProducts(initialCatalog);
