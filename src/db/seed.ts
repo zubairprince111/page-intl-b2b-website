@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, notInArray } from "drizzle-orm";
 import { db } from "./index";
 import {
   users,
@@ -25,24 +25,16 @@ export async function initAndSeedDatabase() {
 
   console.log("[db:seed] Seeding initial data...");
 
-  // 1. Seed or Verify Administrator Account
-  const adminEmail = (process.env["ADMIN_EMAIL"] || "admin@pageintl.com").toLowerCase().trim();
-  const existingAdmin = await db
-    .select({ id: users.id, email: users.email })
-    .from(users)
-    .where(eq(users.email, adminEmail))
-    .limit(1);
+  // 1. Seed or Update Administrator Account
+  const adminEmail = (process.env["ADMIN_EMAIL"] || "admin@page-asia.com").toLowerCase().trim();
+  const adminId = "usr-admin-01";
+  const adminPassword = process.env["ADMIN_PASSWORD"] || "apeia2!#pdofi%kdf";
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 12);
 
-  if (existingAdmin.length > 0) {
-    console.log(
-      `[db:seed] Admin account already exists for ${adminEmail} (credentials preserved).`,
-    );
-  } else {
-    const adminPassword = process.env["ADMIN_PASSWORD"] || "PageAdmin2026!Secure";
-    const adminPasswordHash = await bcrypt.hash(adminPassword, 12);
-
-    await db.insert(users).values({
-      id: "usr-admin-01",
+  await db
+    .insert(users)
+    .values({
+      id: adminId,
       name: "PAGE Platform Administrator",
       email: adminEmail,
       phone: "+880 1711-000000",
@@ -55,10 +47,20 @@ export async function initAndSeedDatabase() {
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: users.id,
+      set: {
+        email: adminEmail,
+        passwordHash: adminPasswordHash,
+        role: "admin",
+        isActive: true,
+        emailVerified: true,
+        updatedAt: new Date(),
+      },
     });
 
-    console.log(`[db:seed] Admin account configured for ${adminEmail}`);
-  }
+  console.log(`[db:seed] Admin account configured for ${adminEmail}`);
 
   // 2. Seed Verified Workshop Accounts
   const demoWorkshopPasswordHash = await bcrypt.hash("PAGE-Workshop-2026!", 12);
@@ -121,7 +123,12 @@ export async function initAndSeedDatabase() {
     await db.insert(users).values(acc).onConflictDoNothing();
   }
 
-  // 3. Seed Machinery & Tools Catalog (idempotent: only inserts missing, never deletes custom admin products)
+  // 3. Purge legacy fake products and seed Official Launch CN Catalog
+  const validSlugs = products.map((p) => p.slug);
+  if (validSlugs.length > 0) {
+    await db.delete(productsTable).where(notInArray(productsTable.slug, validSlugs));
+  }
+
   for (const p of products) {
     const specsTuples = normalizeSpecsToTuples(p.specs);
     const presentation = getDefaultProductPresentation({
@@ -299,68 +306,9 @@ export async function initAndSeedDatabase() {
     await db.insert(settings).values(s).onConflictDoNothing();
   }
 
-  // 7. Seed Sample RFQ Quotes
-  const sampleQuotes = [
-    {
-      id: "quote-1001",
-      quoteNumber: "RFQ-2026-1001",
-      userId: "usr-01",
-      companyName: "AutoFix Multi-Brand Workshop",
-      contactName: "Engr. Tanvir Ahmed",
-      phone: "+880 1711-234567",
-      email: "tanvir@autofixbd.com",
-      productSlug: "two-post-lift-4t",
-      productName: "4.0 Ton Clear-Floor Two-Post Hydraulic Lift",
-      qty: 2,
-      businessType: "Workshop / Garage",
-      city: "Dhaka",
-      notes: "Need turnkey bay installation and 3-phase power line layout guidance.",
-      status: "PENDING",
-    },
-    {
-      id: "quote-1002",
-      quoteNumber: "RFQ-2026-1002",
-      userId: "usr-02",
-      companyName: "Dhaka Tyre & Alignment Hub",
-      contactName: "Rashidul Hassan Khan",
-      phone: "+880 1819-345678",
-      email: "rashid@dhakatyre.com",
-      productSlug: "3d-wheel-aligner",
-      productName: "High-Definition 3D Optical Wheel Alignment System",
-      qty: 1,
-      businessType: "Tyre Service Center",
-      city: "Dhaka",
-      notes: "Please quote with delivery to Mohakhali depot.",
-      status: "CONTACTED",
-    },
-  ];
+  // 7. RFQ Quotes: starts clean in production (populated by live customer RFQ submissions)
 
-  for (const q of sampleQuotes) {
-    await db.insert(quotes).values(q).onConflictDoNothing();
-  }
-
-  // 8. Seed Sample Bay Consultation Bookings
-  const sampleBookings = [
-    {
-      id: "book-1001",
-      bookingNumber: "BKG-2026-1001",
-      userId: "usr-01",
-      companyName: "AutoFix Multi-Brand Workshop",
-      contactName: "Engr. Tanvir Ahmed",
-      phone: "+880 1711-234567",
-      email: "tanvir@autofixbd.com",
-      serviceType: "Turnkey Workshop Bay Planning",
-      bookingDate: "2026-11-20",
-      timeSlot: "11:00 AM - 01:00 PM",
-      city: "Dhaka (Tejgaon)",
-      notes: "Bay architecture walkthrough for new 4-bay expansion.",
-      status: "CONFIRMED",
-    },
-  ];
-
-  for (const b of sampleBookings) {
-    await db.insert(bookings).values(b).onConflictDoNothing();
-  }
+  // 8. Consultation Bookings: starts clean in production (populated by live customer bookings)
 
   // 9. Seed Sample Orders and Line Items
   const sampleOrder = {

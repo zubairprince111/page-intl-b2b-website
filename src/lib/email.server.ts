@@ -6,7 +6,7 @@ import { ensureServerEnvLoaded } from "./env.server";
 ensureServerEnvLoaded();
 
 const DEFAULT_RESEND_FROM = "PAGE International <onboarding@resend.dev>";
-const DEFAULT_SMTP_FROM = "PAGE International <no-reply@pageinternational.com>";
+const DEFAULT_SMTP_FROM = "PAGE International <auth.pageintl@gmail.com>";
 
 const PLACEHOLDER_VALUE_PATTERNS = [
   /^replace[-_]?with/i,

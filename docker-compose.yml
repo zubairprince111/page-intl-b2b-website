@@ -40,7 +40,7 @@ services:
       NODE_ENV: production
       PORT: 8080
       NITRO_PORT: 8080
-      DATABASE_URL: postgresql://${POSTGRES_USER:-page_admin}:${POSTGRES_PASSWORD:-replace_with_strong_password}@postgres:5432/${POSTGRES_DB:-page_international}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-page_admin}:${POSTGRES_PASSWORD:-replace_with_strong_password}@postgres:5432/${POSTGRES_DB:-page_international}}
       AUTH_SECRET: ${AUTH_SECRET:-replace_with_random_secret}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       APP_URL: ${APP_URL:-http://localhost:8080}

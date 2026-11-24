@@ -479,9 +479,9 @@ export const guides = [
   },
 ];
 
-export const products: Product[] = [...launchProducts, ...atsElgiProducts];
+export const products: Product[] = [...launchProducts];
 
-export const brands = ["LAUNCH", "ATS ELGI"];
+export const brands = ["LAUNCH"];
 
 export const b2bSolutions = [
   {
