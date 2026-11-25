@@ -1,4 +1,4 @@
-import type { Product } from "./data";
+import { getProductCategories, type Product } from "./data";
 
 export interface IndexedProduct {
   product: Product;
@@ -184,8 +184,10 @@ export function buildProductSearchIndex(catalog: readonly Product[]): IndexedPro
     const skuCompact = skuLower.replace(/[^a-z0-9]/g, "");
     const brandLower = product.brand.toLowerCase();
     const brandWords = extractSearchTokens(product.brand);
-    const categoryLower = product.category.toLowerCase();
-    const categoryWords = extractSearchTokens(product.category);
+    const allCategories = getProductCategories(product);
+    const categoryText = [product.category, ...allCategories].join(" ");
+    const categoryLower = categoryText.toLowerCase();
+    const categoryWords = extractSearchTokens(categoryText);
     const subcategoryWords = extractSearchTokens(product.subcategory || "");
     const mobilityWords = extractSearchTokens((product.mobility || []).join(" "));
 

@@ -29,13 +29,13 @@ interface FooterLink {
 
 const navSections: Array<{ title: string; links: FooterLink[] }> = [
   {
-    title: "Equipment & Tools",
+    title: "Products",
     links: [
-      { label: "Intelligent Diagnostics", to: "/shop", search: { cat: "Diagnostic Equipment" } },
-      { label: "Garage Lifts & Machinery", to: "/shop", search: { cat: "Garage Equipment" } },
-      { label: "Tyre & Wheel Service", to: "/shop", search: { cat: "Tyre & Wheel" } },
-      { label: "EV Workshop Solutions", to: "/shop", search: { mobility: "EV" } },
-      { label: "Battery Analyzers & Tools", to: "/shop", search: { cat: "EV Equipment" } },
+      { label: "Vehicle Washing System", to: "/shop", search: { cat: "Vehicle Washing System" } },
+      { label: "Lifting Equipment", to: "/shop", search: { cat: "Lifting Equipment" } },
+      { label: "Wheel Service Equipment", to: "/shop", search: { cat: "Wheel Service Equipment" } },
+      { label: "Diagnostic Equipment", to: "/shop", search: { cat: "Diagnostic Equipment" } },
+      { label: "EV Equipment & Battery", to: "/shop", search: { cat: "EV Equipment" } },
     ],
   },
   {

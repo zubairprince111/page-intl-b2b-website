@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { brands, products } from "@/lib/data";
+import {
+  brands,
+  categories,
+  getProductCategories,
+  matchesProductCategory,
+  products,
+} from "@/lib/data";
 import { atsElgiProducts } from "@/lib/ats-elgi-products";
 import { buildProductSearchIndex, searchIndexedProducts } from "@/lib/shop-search";
 
@@ -101,5 +107,38 @@ describe("ATS ELGI Full Lift Catalog & Workable Filters", () => {
       expect(fs.existsSync(fullPath), `Missing LAUNCH lift image ${fullPath}`).toBe(true);
       expect(lift.specs.length).toBeGreaterThanOrEqual(8);
     }
+  });
+
+  it("assigns every product to one or more screenshot-style categories and supports multi-category filtering", () => {
+    for (const cat of categories) {
+      const matching = products.filter((p) => matchesProductCategory(p, cat));
+      expect(matching.length, `Category "${cat}" should have matching products`).toBeGreaterThan(0);
+    }
+
+    for (const p of products) {
+      const prodCats = getProductCategories(p);
+      expect(prodCats.length, `Product ${p.slug} must belong to at least 1 category`).toBeGreaterThanOrEqual(1);
+    }
+
+    // Verify multi-category membership examples
+    const evBatLift = products.find((p) => p.slug === "ats-elgi-ev-battery-lift")!;
+    expect(getProductCategories(evBatLift)).toEqual(
+      expect.arrayContaining(["Lifting Equipment", "EV Equipment", "Battery Management"]),
+    );
+
+    const washHoist = products.find((p) => p.slug === "ats-elgi-washing-hoist-4-wheeler-rail-type")!;
+    expect(getProductCategories(washHoist)).toEqual(
+      expect.arrayContaining(["Vehicle Washing System", "Lifting Equipment"]),
+    );
+
+    const alignLift = products.find((p) => p.slug === "launch-tlt440w")!;
+    expect(getProductCategories(alignLift)).toEqual(
+      expect.arrayContaining(["Lifting Equipment", "Wheel Service Equipment"]),
+    );
+
+    const pad9 = products.find((p) => p.slug === "launch-x-431-pad9-link")!;
+    expect(getProductCategories(pad9)).toEqual(
+      expect.arrayContaining(["Diagnostic Equipment", "ADAS & Calibration Equipment", "EV Equipment"]),
+    );
   });
 });

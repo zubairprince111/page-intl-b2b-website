@@ -75,6 +75,7 @@ export type Product = {
   name: string;
   brand: string;
   category: string;
+  categories?: string[] | undefined;
   subcategory?: string | undefined;
   mobility: MobilityType[];
   price: number;
@@ -103,11 +104,176 @@ export type Product = {
 };
 
 export const categories = [
+  "Vehicle Washing System",
+  "Lifting Equipment",
+  "Wheel Service Equipment",
   "Diagnostic Equipment",
+  "ADAS & Calibration Equipment",
+  "Key Programming & IMMO",
   "EV Equipment",
-  "Tyre & Wheel",
-  "Garage Equipment",
+  "Battery Management",
+  "Special Equipments & Tooling",
 ];
+
+/**
+ * Analyzes a product's details (name, slug, primary category, subcategory, specs, and description)
+ * and returns all applicable categories it belongs to. A single product can belong to multiple categories.
+ */
+export function getProductCategories(p: Product): string[] {
+  const matched = new Set<string>();
+  const sub = (p.subcategory || "").toLowerCase();
+  const nameSlug = `${p.name} ${p.slug}`.toLowerCase();
+  const fullText = `${p.name} ${p.slug} ${p.subcategory || ""} ${p.description || ""}`.toLowerCase();
+
+  if (Array.isArray(p.categories)) {
+    for (const c of p.categories) {
+      if (c) matched.add(c);
+    }
+  }
+
+  // 1. Vehicle Washing System
+  if (
+    sub === "washing & detailing lifts" ||
+    /\b(washing|smartwash|wash hoist|wash lift)\b/i.test(nameSlug)
+  ) {
+    matched.add("Vehicle Washing System");
+  }
+
+  // 2. Lifting Equipment
+  if (
+    sub === "vehicle lifts & hoists" ||
+    sub === "washing & detailing lifts" ||
+    sub === "ev battery & powertrain lifts" ||
+    /\b(lift|hoist|tlt\d|scissor|two[- ]post|4[- ]post|single[- ]column|mobile[- ]column)\b/i.test(
+      nameSlug,
+    )
+  ) {
+    matched.add("Lifting Equipment");
+  }
+
+  // 3. Wheel Service Equipment (Aligners, Tyre Changers, Wheel Balancers, TPMS, Alignment Lifts)
+  if (
+    p.category === "Tyre & Wheel" ||
+    p.category === "Wheel Service Equipment" ||
+    sub.includes("wheel") ||
+    sub.includes("tire") ||
+    sub.includes("tpms") ||
+    sub === "alignment tools" ||
+    /wheel align|tire changer|tyre changer|wheel balanc|\btpms\b|\btsgun\b|\bltr-\d|tread|four-wheel alignment/i.test(
+      fullText,
+    )
+  ) {
+    matched.add("Wheel Service Equipment");
+  }
+
+  // 4. Diagnostic Equipment
+  if (
+    p.category === "Diagnostic Equipment" ||
+    sub.includes("diagnostic") ||
+    sub.includes("scanner") ||
+    sub.includes("obd") ||
+    sub.includes("vci") ||
+    /\b(diagnostic|scanner|x-431|crp|creader|smartlink|obd|code reader)\b/i.test(nameSlug)
+  ) {
+    matched.add("Diagnostic Equipment");
+  }
+
+  // 5. ADAS & Calibration Equipment
+  if (
+    sub === "adas calibration systems" ||
+    /\badas\b/i.test(nameSlug) ||
+    p.slug === "launch-x-431-pad9-link" ||
+    p.slug === "launch-x-431-pad7-elite"
+  ) {
+    matched.add("ADAS & Calibration Equipment");
+  }
+
+  // 6. Key Programming & IMMO
+  if (
+    sub === "key programming & immo" ||
+    /\b(immo|x-prog|key program|smart key)\b/i.test(nameSlug)
+  ) {
+    matched.add("Key Programming & IMMO");
+  }
+
+  // 7. EV Equipment
+  if (
+    p.category === "EV Equipment" ||
+    sub.includes("ev ") ||
+    /\b(ev max|evb\d|evc\d|ev battery|1000v|vde|new energy|ltr-05)\b/i.test(nameSlug) ||
+    p.slug === "launch-x-431-pad9-link" ||
+    p.slug === "launch-x-431-pad7-elite" ||
+    p.slug === "ats-elgi-3w-single-column-lift" ||
+    p.slug === "ats-elgi-3w-two-post-hydraulic-lift" ||
+    p.slug === "ats-elgi-smartwash-duo"
+  ) {
+    matched.add("EV Equipment");
+  }
+
+  // 8. Battery Management
+  if (
+    sub === "battery equalizers" ||
+    sub === "battery analyzers" ||
+    /\b(battery|bst-?\d|evb\d|evc\d|cell equaliz)\b/i.test(nameSlug)
+  ) {
+    matched.add("Battery Management");
+  }
+
+  // 9. Special Equipments & Tooling
+  if (
+    sub === "mechanic tool carts" ||
+    sub === "workshop trolleys" ||
+    sub === "inspection cameras" ||
+    sub === "ev high voltage tools" ||
+    sub === "diagnostic modules & vcis" ||
+    /\b(trolley|tool cart|videoscope|vsp-600|scopebox|sensorbox|o2-2|s2-2|1000v|vde|insulated tool)\b/i.test(
+      nameSlug,
+    )
+  ) {
+    matched.add("Special Equipments & Tooling");
+  }
+
+  if (matched.size === 0 && p.category) {
+    matched.add(p.category);
+  }
+
+  // Order according to official categories list first, then any custom categories
+  const ordered: string[] = [];
+  for (const officialCat of categories) {
+    if (matched.has(officialCat)) {
+      ordered.push(officialCat);
+      matched.delete(officialCat);
+    }
+  }
+  for (const extra of matched) {
+    ordered.push(extra);
+  }
+  return ordered;
+}
+
+/**
+ * Checks whether a product belongs to a selected category (including multi-category membership
+ * and backward-compatible aliases for legacy category links).
+ */
+export function matchesProductCategory(p: Product, selectedCat: string | undefined): boolean {
+  if (!selectedCat || selectedCat === "All") return true;
+  const prodCats = getProductCategories(p);
+  if (prodCats.includes(selectedCat) || p.category === selectedCat) return true;
+
+  // Legacy URL parameter aliases
+  if (selectedCat === "Garage Equipment") {
+    return (
+      p.category === "Garage Equipment" ||
+      prodCats.includes("Lifting Equipment") ||
+      prodCats.includes("Vehicle Washing System") ||
+      prodCats.includes("Special Equipments & Tooling")
+    );
+  }
+  if (selectedCat === "Tyre & Wheel") {
+    return p.category === "Tyre & Wheel" || prodCats.includes("Wheel Service Equipment");
+  }
+  return false;
+}
 
 export const mobilitySegments = [
   {

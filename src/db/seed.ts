@@ -369,37 +369,8 @@ export async function initAndSeedDatabase() {
 
   await db.insert(orderItems).values(sampleOrderItem).onConflictDoNothing();
 
-  // 10. Seed Technical Updates / Articles
-  const sampleUpdates = [
-    {
-      id: "upd-01",
-      title: "EV High-Voltage Workshop Safety Protocols (1,000V VDE Certification)",
-      slug: "ev-high-voltage-workshop-safety-protocols",
-      excerpt:
-        "Essential safety equipment, insulated hand toolsets, and emergency battery discharge bays for Bangladeshi workshops servicing electric vehicles.",
-      content:
-        "As electric vehicles and hybrid fleets gain significant momentum across Dhaka and Chittagong, commercial garages must adapt infrastructure to safely handle high-voltage traction batteries (400V - 800V DC). Key safeguards include CAT III/IV 1000V insulated hand tools, rescue hooks, insulated floor matting, and digital insulation resistance testers.",
-      category: "EV Infrastructure",
-      isPublished: true,
-      publishedAt: new Date(),
-    },
-    {
-      id: "upd-02",
-      title: "Pneumatic vs Electric Motorcycle Lifts: Engineering Efficiency for 2W Service Bays",
-      slug: "pneumatic-vs-electric-motorcycle-lifts",
-      excerpt:
-        "Comparing cycle times, maintenance overhead, and payload safety for high-turnover motorcycle service stations.",
-      content:
-        "High-density 2-wheeler workshops in Bangladesh handle up to 60 bikes daily. Pneumatic foot-pedal lifts provide instant cycle speeds, minimal electrical downtime, and foot-clear operator ergonomics, making them the standard choice for rapid turnaround service lanes.",
-      category: "Workshop Engineering",
-      isPublished: true,
-      publishedAt: new Date(),
-    },
-  ];
-
-  for (const u of sampleUpdates) {
-    await db.insert(updates).values(u).onConflictDoNothing();
-  }
+  // 10. Technical Updates / Articles: purge legacy fake seeded rows; starts clean until published by admin
+  await db.delete(updates).where(inArray(updates.id, ["upd-01", "upd-02"]));
 
   console.log("[db:seed] Synchronizing & persisting all product media into database...");
   const { syncExistingMediaCore } = await import("../lib/media.server");

@@ -15,7 +15,11 @@ if [ -n "$DATABASE_URL" ]; then
   echo "PostgreSQL is connected and healthy."
 fi
 
-# 2. Run Database Migrations & Idempotent Initial Seed
+# 2. Sync bundled static uploads into mounted volume & run Database Migrations + Seed
+if [ -d "/app/.output/public/uploads" ]; then
+  mkdir -p /app/public/uploads
+  cp -r /app/.output/public/uploads/. /app/public/uploads/ 2>/dev/null || true
+fi
 echo "Synchronizing database schema & initial seed data..."
 npm run db:seed
 

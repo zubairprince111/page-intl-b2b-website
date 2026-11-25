@@ -26,7 +26,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { brands, categories, products, type MobilityType, type Product } from "@/lib/data";
+import {
+  brands,
+  categories,
+  getProductCategories,
+  matchesProductCategory,
+  products,
+  type MobilityType,
+  type Product,
+} from "@/lib/data";
 import { useCart } from "@/lib/cart";
 import {
   getShopBannerVideoPublicServerFn,
@@ -76,20 +84,20 @@ export const Route = createFileRoute("/shop/")({
   head: () => ({
     meta: [
       {
-        title: "B2B Automotive Equipment & Parts Shop — PAGE International",
+        title: "B2B Automotive Products & Equipment — PAGE International",
       },
       {
         name: "description",
         content:
-          "Buy vehicle lifts, diagnostic tools, 4W, 2W, 3W and EV equipment, brake parts, batteries, synthetic oils and workshop machinery with verified compatibility.",
+          "Browse vehicle washing systems, lifting equipment, wheel service equipment, diagnostic tools, ADAS calibration, key programming, EV equipment, and battery management.",
       },
       {
         property: "og:title",
-        content: "Shop Automotive Equipment & Parts — PAGE International",
+        content: "Automotive Products & Equipment — PAGE International",
       },
       {
         property: "og:description",
-        content: "Commercial automotive B2B catalog with 4W, 2W, 3W & EV mobility platforms.",
+        content: "Commercial automotive B2B products organized category-wise across 4W, 2W, 3W & EV platforms.",
       },
     ],
     links: [
@@ -244,7 +252,9 @@ export function Shop() {
   const availableCategories = useMemo(() => {
     const set = new Set<string>(categories);
     for (const p of allProducts) {
-      if (p.category) set.add(p.category);
+      for (const c of getProductCategories(p)) {
+        if (c) set.add(c);
+      }
     }
     return Array.from(set);
   }, [allProducts]);
@@ -271,7 +281,7 @@ export function Shop() {
       if (searchMobility && searchMobility !== "All") {
         if (!p.mobility.includes(searchMobility as MobilityType)) return false;
       }
-      if (cat && p.category !== cat) return false;
+      if (cat && !matchesProductCategory(p, cat)) return false;
       if (selectedBrand && p.brand !== selectedBrand) return false;
       if (inStock && p.stock === "Out of stock") return false;
       if (searchType === "equipment" && !p.isEquipment) return false;
@@ -969,7 +979,7 @@ export function Shop() {
           </aside>
 
           {/* ======================================================== */}
-          {/* RIGHT: PRODUCT RESULTS & TOP CONTROLS                    */}
+          {/* RIGHT: PRODUCT RESULTS & CATEGORY-WISE DISPLAY           */}
           {/* ======================================================== */}
           <div>
             {/* Active Filter Chips Bar (Only shown when active filters exist) */}

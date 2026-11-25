@@ -8,20 +8,11 @@ import {
   CheckCircle2,
   ExternalLink,
   Radio,
+  Newspaper,
 } from "lucide-react";
 import { useUpdates } from "@/lib/data-client";
 import { cn } from "@/lib/utils";
-
-// Real image assets
 import evWorkshopBayImg from "@/assets/ev-workshop-bay.jpg";
-import scannerImg from "@/assets/p-scanner.jpg";
-import motoLiftImg from "@/assets/p-moto-lift.jpg";
-import tyreChangerImg from "@/assets/p-tyre-changer.jpg";
-import wheelBalancerImg from "@/assets/p-wheel-balancer.jpg";
-import compressorImg from "@/assets/p-compressor.jpg";
-import consultationImg from "@/assets/consultation-engineer.jpg";
-import heroWorkshopImg from "@/assets/hero-workshop.jpg";
-import targetSectorsWorkshopImg from "@/assets/target-sectors-workshop.jpg";
 
 export const Route = createFileRoute("/updates")({
   head: () => ({
@@ -32,7 +23,7 @@ export const Route = createFileRoute("/updates")({
       {
         name: "description",
         content:
-          "Official Instagram-style live operational feed: Inbound container arrivals, client workshop installations, high-voltage EV diagnostic trials, and engineering bulletins across Bangladesh.",
+          "Official live operational feed: Inbound container arrivals, client workshop installations, high-voltage EV diagnostic trials, and engineering bulletins across Bangladesh.",
       },
       {
         property: "og:title",
@@ -60,86 +51,8 @@ export interface InstagramPost {
   pinned?: boolean | undefined;
 }
 
-// Curated high-resolution default field dispatches
-const CURATED_FIELD_POSTS: InstagramPost[] = [
-  {
-    id: "post-1",
-    slug: "container-arrival-chittagong-port-hydraulic-lifts",
-    title: "Inbound Container Arrival: 16 Units of 4.0T Hydraulic Lifts",
-    location: "Chittagong Container Terminal (CCT), Port of Chittagong",
-    date: "2026-11-08",
-    images: [heroWorkshopImg, targetSectorsWorkshopImg],
-    summary:
-      "16 certified 4.0T electro-hydraulic two-post lifts cleared through Chittagong Port for Dhaka & Sylhet hubs.",
-    caption:
-      "40ft High-Cube container cleared through Chittagong customs carrying 16 units of our certified 4.0T electro-hydraulic two-post lifts. Pre-ordered bays for Dhaka & Sylhet service hubs are moving onto transport trailers today. All hydraulic cylinders pressure-tested at 210 bar before dispatch.",
-    pinned: true,
-  },
-  {
-    id: "post-2",
-    slug: "turnkey-ev-diagnostic-bay-commissioning-tejgaon",
-    title: "Turnkey Commissioning: High-Voltage EV Diagnostic Bay",
-    location: "Tejgaon Industrial Area, Dhaka",
-    date: "2026-11-06",
-    images: [evWorkshopBayImg, scannerImg],
-    summary:
-      "Dedicated 1,000V VDE insulated EV diagnostic workstation handed over and calibrated in Tejgaon.",
-    caption:
-      "Live commissioning of the first dedicated EV diagnostic bay in Tejgaon. Complete 1,000V VDE insulated setup, CAT IV battery state-of-health analyzer, and digital cell balance workstation handed over to AutoFix Engineering team. Calibration completed with zero earth-leakage variance.",
-    pinned: true,
-  },
-  {
-    id: "post-3",
-    slug: "rapid-2w-pneumatic-motorcycle-lift-installation-mirpur",
-    title: "Rapid 2-Wheeler Service Bays: Pneumatic Motorcycle Scissor Lifts",
-    location: "Mirpur Sector 10, Dhaka",
-    date: "2026-11-04",
-    images: [motoLiftImg, targetSectorsWorkshopImg],
-    summary:
-      "Four pneumatic foot-pedal motorcycle lifts commissioned in Mirpur with 14-second full-height lift cycles.",
-    caption:
-      "Four pneumatic foot-pedal motorcycle lifts installed and commissioned for Speed Motors Mirpur. Cycle time to full 1.0m height: 14 seconds flat. Floor-mounted safety drops ensure technicians work at eye-level with zero back strain across 60+ daily bike turnarounds.",
-  },
-  {
-    id: "post-4",
-    slug: "3d-wheel-alignment-dynamic-balancer-sylhet",
-    title: "Precision Calibration: Dynamic Wheel Balancer & 3D Laser Alignment",
-    location: "Agrabad Commercial Area, Chittagong",
-    date: "2026-11-02",
-    images: [wheelBalancerImg, tyreChangerImg],
-    summary:
-      "Laser-guided wheel balancing and robotic-arm tyre changing line commissioned in Agrabad, Chittagong.",
-    caption:
-      'Precision dynamic wheel balancing line operational at Dhaka Tyre Chittagong branch. Direct laser pointer indicates exact clip-on and stick-on lead weight positioning down to 1 gram accuracy. Tyre changer features robotic helper arm for 22" low-profile alloy wheel mounting.',
-  },
-  {
-    id: "post-5",
-    slug: "centralized-10bar-screw-compressor-gazipur",
-    title: "Continuous Air Power: 15HP Rotary Screw Compressor Installation",
-    location: "Gazipur Industrial Corridor, Dhaka",
-    date: "2026-10-29",
-    images: [compressorImg, consultationImg],
-    summary:
-      "10-bar compressed air distribution with integrated dryer installed across 8 service bays in Gazipur.",
-    caption:
-      "Continuous 10-bar compressed air line installed for 8 simultaneous pneumatic bays at GreenFleet Logistics Gazipur hub. Integrated refrigerated air dryer and particulate coalescing filters prevent moisture buildup inside air impact wrenches and tire inflators.",
-  },
-  {
-    id: "post-6",
-    slug: "cat-iv-high-voltage-safety-standards-bulletin",
-    title: "Technical Field Bulletin: 1,000V VDE Safety Compliance for EV Garages",
-    location: "PAGE National Technical Training Academy, Dhaka",
-    date: "2026-10-25",
-    images: [scannerImg, evWorkshopBayImg],
-    summary:
-      "Zero-voltage verification checklist and CAT III/IV isolation protocol for hybrid and EV service teams.",
-    caption:
-      "Field bulletin for automotive technicians handling hybrid & EV high-voltage safety interlocks. Always verify zero voltage across DC bus capacitors with certified CAT III 1000V / CAT IV 600V probes before detaching orange shielding harnesses. Download our 12-point EV inspection checklist.",
-  },
-];
-
 export function UpdatesFeedPage() {
-  const { data: rawUpdates = [] } = useUpdates(true);
+  const { data: rawUpdates = [], isLoading } = useUpdates(true);
 
   // State management
   const [slideIndices, setSlideIndices] = useState<Record<string, number>>({});
@@ -153,9 +66,9 @@ export function UpdatesFeedPage() {
     });
   };
 
-  // Merge Database Updates with Curated Field Posts
+  // Map Database Updates only (no fake seeded mock posts)
   const allPosts = useMemo<InstagramPost[]>(() => {
-    const dbPosts: InstagramPost[] = rawUpdates.map((u) => ({
+    return rawUpdates.map((u) => ({
       id: u.id,
       slug: u.slug || `upd-${u.id}`,
       title: u.title,
@@ -168,11 +81,6 @@ export function UpdatesFeedPage() {
       caption: u.content || u.excerpt || "",
       pinned: false,
     }));
-
-    // Deduplicate against curated posts
-    const dbSlugs = new Set(dbPosts.map((p) => p.slug));
-    const uniqueCurated = CURATED_FIELD_POSTS.filter((p) => !dbSlugs.has(p.slug));
-    return [...dbPosts, ...uniqueCurated];
   }, [rawUpdates]);
 
   return (
@@ -264,8 +172,22 @@ export function UpdatesFeedPage() {
 
       {/* MAIN TWO-COLUMN RESPONSIVE FEED CONTAINER (1 col on mobile, 2 cols on desktop) */}
       <main className="container-page max-w-6xl mx-auto py-8 sm:py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          {allPosts.map((post) => {
+        {!isLoading && allPosts.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border/80 bg-card/60 py-20 px-6 text-center max-w-xl mx-auto">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+              <Newspaper className="h-5 w-5" />
+            </div>
+            <h2 className="font-display text-base sm:text-lg font-bold text-foreground">
+              No updates to show
+            </h2>
+            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground">
+              There are currently no published field updates or dispatches. Check back soon for new
+              shipment arrivals and workshop commissioning updates.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {allPosts.map((post) => {
             const activeIdx = slideIndices[post.id] ?? 0;
             const currentImg = post.images[activeIdx] || post.images[0];
 
@@ -381,7 +303,8 @@ export function UpdatesFeedPage() {
               </article>
             );
           })}
-        </div>
+          </div>
+        )}
       </main>
 
       {/* DISPATCH PHOTO PREVIEW MODAL */}

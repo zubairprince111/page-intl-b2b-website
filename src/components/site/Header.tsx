@@ -7,35 +7,17 @@ import {
   Linkedin,
   Menu,
   ShoppingBag,
-  Wrench,
   X,
-  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
+import { categories } from "@/lib/data";
 
-const shopLinks = [
-  {
-    to: "/shop",
-    label: "Products",
-    desc: "Complete catalog of parts, tools & workshop machinery",
-    icon: ShoppingBag,
-  },
-  {
-    to: "/shop",
-    search: { cat: "Garage Equipment" },
-    label: "Garage Equipment",
-    desc: "Lifts, tyre changers, wheel balancers & compressors",
-    icon: Wrench,
-  },
-  {
-    to: "/shop",
-    search: { mobility: "EV" },
-    label: "EV",
-    desc: "Electric vehicle tools, battery analyzers & safety kits",
-    icon: Zap,
-  },
-] as const;
+const productCategoryLinks = categories.map((cat) => ({
+  to: "/shop" as const,
+  search: { cat },
+  label: cat,
+}));
 
 const navLinks = [
   { to: "/updates", label: "Updates" },
@@ -129,7 +111,7 @@ export function Header() {
 
           {/* Primary Navigation Links (Desktop) */}
           <nav aria-label="Primary" className="hidden items-center gap-4 xl:gap-6 lg:flex">
-            {/* Shop Dropdown Button & Submenu */}
+            {/* Products Dropdown Button & Category Submenu (Screenshot Style) */}
             <div
               className="relative"
               onMouseEnter={() => setShopDropdownOpen(true)}
@@ -148,7 +130,7 @@ export function Header() {
                     : ""
                 }`}
               >
-                <span>Shop</span>
+                <span>Products</span>
                 <ChevronDown
                   className={`h-3.5 w-3.5 transition-transform duration-200 ${
                     shopDropdownOpen ? "rotate-180" : ""
@@ -156,36 +138,30 @@ export function Header() {
                 />
               </Link>
 
-              {/* Dropdown Menu */}
+              {/* Dropdown Menu — Divided Category List (Matches Client Screenshot) */}
               {shopDropdownOpen && (
-                <div className="absolute left-0 top-full pt-2 z-50 min-w-[280px] animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="rounded-xl border border-zinc-200/90 bg-white/95 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-black/5 text-zinc-900">
-                    <div className="px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider uppercase text-zinc-600">
-                      Product Categories
-                    </div>
-                    <div className="space-y-1">
-                      {shopLinks.map((item) => (
-                        <Link
-                          key={item.label}
-                          to={item.to}
-                          search={"search" in item ? item.search : {}}
-                          onClick={() => setShopDropdownOpen(false)}
-                          className="group flex items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-zinc-100"
-                        >
-                          <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-                            <item.icon className="h-4 w-4" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-bold uppercase tracking-wider text-zinc-900 group-hover:text-primary transition-colors">
-                              {item.label}
-                            </div>
-                            <div className="text-[11px] text-zinc-600 line-clamp-1">
-                              {item.desc}
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
+                <div className="absolute left-0 top-full pt-2 z-50 w-[290px] animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="overflow-hidden rounded-md border border-zinc-800 bg-zinc-900/98 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10 text-white divide-y divide-zinc-800/90">
+                    <Link
+                      to="/shop"
+                      onClick={() => setShopDropdownOpen(false)}
+                      className="flex items-center justify-between px-4 py-3 text-[11.5px] font-bold uppercase tracking-wider text-primary bg-zinc-950/60 hover:bg-primary hover:text-white transition-colors"
+                    >
+                      <span>All Products</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                    {productCategoryLinks.map((item) => (
+                      <Link
+                        key={item.label}
+                        to={item.to}
+                        search={item.search}
+                        onClick={() => setShopDropdownOpen(false)}
+                        className="flex items-center justify-between px-4 py-3 text-[11.5px] font-semibold uppercase tracking-wider text-zinc-100 hover:bg-zinc-800/90 hover:text-primary transition-colors"
+                      >
+                        <span>{item.label}</span>
+                        <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
@@ -252,7 +228,7 @@ export function Header() {
             <div className="container-page py-4 space-y-4">
               {/* Primary Navigation Links */}
               <nav aria-label="Mobile Navigation" className="divide-y divide-zinc-100">
-                {/* Shop / Products Section */}
+                {/* Products Section */}
                 <div className="py-1">
                   <div className="flex items-center justify-between">
                     <Link
@@ -264,12 +240,12 @@ export function Header() {
                           : "text-zinc-900 hover:text-primary"
                       }`}
                     >
-                      Shop
+                      Products
                     </Link>
                     <button
                       type="button"
                       onClick={() => setMobileShopOpen((v) => !v)}
-                      aria-label="Toggle shop categories"
+                      aria-label="Toggle product categories"
                       className="p-3 text-zinc-400 hover:text-zinc-900 transition-colors"
                     >
                       <ChevronDown
@@ -281,33 +257,27 @@ export function Header() {
                   </div>
 
                   {mobileShopOpen && (
-                    <div className="pl-3 pb-2 space-y-0.5 border-l-2 border-primary/20 ml-1 mt-1 animate-in fade-in duration-150">
+                    <div className="pl-3 pb-2 space-y-0.5 border-l-2 border-primary/20 ml-1 mt-1 animate-in fade-in duration-150 divide-y divide-zinc-100">
                       <Link
                         to="/shop"
                         onClick={() => setOpen(false)}
-                        className="flex items-center justify-between py-2 px-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-zinc-600 hover:text-primary hover:bg-zinc-50 transition-colors"
+                        className="flex items-center justify-between py-2.5 px-2.5 text-xs font-bold uppercase tracking-wider text-primary hover:bg-zinc-50 transition-colors"
                       >
-                        <span>All Products & Machinery</span>
-                        <ChevronRight className="h-3.5 w-3.5 text-zinc-300" />
+                        <span>All Products</span>
+                        <ChevronRight className="h-3.5 w-3.5" />
                       </Link>
-                      <Link
-                        to="/shop"
-                        search={{ cat: "Garage Equipment" }}
-                        onClick={() => setOpen(false)}
-                        className="flex items-center justify-between py-2 px-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-zinc-600 hover:text-primary hover:bg-zinc-50 transition-colors"
-                      >
-                        <span>Garage Equipment</span>
-                        <ChevronRight className="h-3.5 w-3.5 text-zinc-300" />
-                      </Link>
-                      <Link
-                        to="/shop"
-                        search={{ mobility: "EV" }}
-                        onClick={() => setOpen(false)}
-                        className="flex items-center justify-between py-2 px-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-zinc-600 hover:text-primary hover:bg-zinc-50 transition-colors"
-                      >
-                        <span>EV Platform & Tools</span>
-                        <ChevronRight className="h-3.5 w-3.5 text-zinc-300" />
-                      </Link>
+                      {productCategoryLinks.map((item) => (
+                        <Link
+                          key={item.label}
+                          to={item.to}
+                          search={item.search}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center justify-between py-2.5 px-2.5 text-xs font-bold uppercase tracking-wider text-zinc-700 hover:text-primary hover:bg-zinc-50 transition-colors"
+                        >
+                          <span>{item.label}</span>
+                          <ChevronRight className="h-3.5 w-3.5 text-zinc-300" />
+                        </Link>
+                      ))}
                     </div>
                   )}
                 </div>
