@@ -169,7 +169,25 @@ export async function initAndSeedDatabase() {
         images: p.images || [p.image],
         fits: p.fits || [],
       })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: productsTable.id,
+        set: {
+          name: p.name,
+          brand: p.brand,
+          category: p.category,
+          subcategory: p.subcategory || null,
+          mobility: p.mobility || ["4-Wheeler"],
+          isEquipment: Boolean(p.isEquipment),
+          requiresQuote: Boolean(p.requiresQuote),
+          badge: p.badge || null,
+          description: p.description || p.name,
+          specs: specsTuples,
+          highlights: p.highlights || presentation.highlights,
+          features: p.features || [],
+          images: p.images || [p.image],
+          fits: p.fits || [],
+        },
+      });
 
     // Backfill newly added catalog metadata columns on legacy pre-seeded rows without overwriting custom admin edits
     await db

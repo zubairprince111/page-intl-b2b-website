@@ -18,6 +18,11 @@ import evWorkshopBay from "@/assets/ev-workshop-bay.jpg";
 import commercial3wHub from "@/assets/commercial-3w-hub.jpg";
 import supportHero from "@/assets/support-hero.jpg";
 import solutionsHero from "@/assets/solutions-hero.jpg";
+import solutionsWorkshopUpgrade from "@/assets/solutions-workshop-upgrade.jpg";
+import solutionsEvWorkshop from "@/assets/solutions-ev-workshop.jpg";
+import solutionsServiceCenter from "@/assets/solutions-service-center.jpg";
+import solutionsCommercialFleet from "@/assets/solutions-commercial-fleet.jpg";
+import solutionsDistributorSupply from "@/assets/solutions-distributor-supply.jpg";
 import {
   deriveProductStockStatus,
   getDefaultProductPresentation,
@@ -52,6 +57,11 @@ export const images = {
   commercial3wHub,
   supportHero,
   solutionsHero,
+  solutionsWorkshopUpgrade,
+  solutionsEvWorkshop,
+  solutionsServiceCenter,
+  solutionsCommercialFleet,
+  solutionsDistributorSupply,
   scanner,
   brakepads,
   battery,
@@ -479,9 +489,9 @@ export const guides = [
   },
 ];
 
-export const products: Product[] = [...launchProducts];
+export const products: Product[] = [...launchProducts, ...atsElgiProducts];
 
-export const brands = ["LAUNCH"];
+export const brands = ["LAUNCH", "ATS ELGI"];
 
 export const b2bSolutions = [
   {
@@ -652,6 +662,11 @@ const STATIC_ASSET_BY_BASENAME: Record<string, string> = {
   "commercial-3w-hub.jpg": commercial3wHub,
   "support-hero.jpg": supportHero,
   "solutions-hero.jpg": solutionsHero,
+  "solutions-workshop-upgrade.jpg": solutionsWorkshopUpgrade,
+  "solutions-ev-workshop.jpg": solutionsEvWorkshop,
+  "solutions-service-center.jpg": solutionsServiceCenter,
+  "solutions-commercial-fleet.jpg": solutionsCommercialFleet,
+  "solutions-distributor-supply.jpg": solutionsDistributorSupply,
 };
 
 /**

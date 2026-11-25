@@ -3359,4 +3359,2802 @@ export const launchProducts: Product[] = [
     isEquipment: true,
     requiresQuote: true,
   },
+  {
+    "slug": "launch-tlt840waf",
+    "name": "LAUNCH TLT840WAF – Ultra-thin Big Scissor Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 395000,
+    "costPrice": 296000,
+    "oldPrice": 435000,
+    "rating": 4.9,
+    "reviews": 18,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH Scissor Lift",
+    "image": "/uploads/products/launch/launch-tlt840waf.jpg",
+    "images": [
+      "/uploads/products/launch/launch-tlt840waf.jpg"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT840WAF",
+    "description": "The TLT840WAF Big Scissor Lift takes space-saving style to save most workspace for diagnostic business. The hidden scissor structure is ultra-thin and the rated load reaches 4000kg. Many physical installations and settings ensure effective and efficient operations to be safe and reliable. It has very good horizontal adjustment ability for precisely adjusting horizontal accuracy, super fittable for the four-wheel alignment detection.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT840WAF"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "160mm"
+      ],
+      [
+        "Runway Length",
+        "4500mm"
+      ],
+      [
+        "Runway Width",
+        "680mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≤60s"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ],
+      [
+        "Motor Voltage",
+        "AC 400V or 230V ±5% 50Hz"
+      ],
+      [
+        "Drive Method",
+        "Electro-hydraulic"
+      ],
+      [
+        "Hydraulic Oil Type",
+        "18L (self-purchase) #32 in winter; #46 in summer"
+      ],
+      [
+        "Air Pressure",
+        "6~8kg/cm²"
+      ],
+      [
+        "Working Temperature",
+        "5~40℃"
+      ],
+      [
+        "Net Weight",
+        "2500kg"
+      ]
+    ],
+    "features": [
+      "Hidden scissor structure and the rated load reaches 4000kg.",
+      "Space-saving style to maximize the workspace for diagnostic business.",
+      "Separate control box in a low voltage controlling way is safer and better for operation.",
+      "Hydraulic volume keeps the pace with the cylinder and the platform runs synchronously and smoothly.",
+      "Double security design with the hydraulic lock and the mechanical double teeth safety claw keeps safe and reliable.",
+      "Automatic lowering design and the safety claw achieve reverse positioning by the locking operation."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "Scissor Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt840wa",
+    "name": "LAUNCH TLT840WA – Big Scissor Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 395000,
+    "costPrice": 296000,
+    "oldPrice": 435000,
+    "rating": 4.9,
+    "reviews": 19,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH Scissor Lift",
+    "image": "/uploads/products/launch/launch-tlt840wa.jpg",
+    "images": [
+      "/uploads/products/launch/launch-tlt840wa.jpg"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT840WA",
+    "description": "The TLT840WA Big Scissor Lift takes space-saving style to save most workspace for diagnostic business. The rated load reaches 4000kg. Many physical installations and settings ensure effective and efficient operations to be safe and reliable. It has very good horizontal adjustment ability for precisely adjusting horizontal accuracy, super fittable for the four-wheel alignment detection.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT840WA"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "330mm"
+      ],
+      [
+        "Runway Length",
+        "4300mm"
+      ],
+      [
+        "Runway Width",
+        "605mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≤60s"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ],
+      [
+        "Motor Voltage",
+        "AC 400V or 230V ±5% 50Hz"
+      ],
+      [
+        "Drive Method",
+        "Electro-hydraulic"
+      ],
+      [
+        "Hydraulic Oil Type",
+        "18L (self-purchase) #32 in winter; #46 in summer"
+      ],
+      [
+        "Air Pressure",
+        "6~8kg/cm²"
+      ],
+      [
+        "Working Temperature",
+        "5~40℃"
+      ],
+      [
+        "Net Weight",
+        "2000kg"
+      ]
+    ],
+    "features": [
+      "Hidden scissor structure and the rated load reaches 4000kg.",
+      "Space-saving style to maximize the workspace for diagnostic business.",
+      "Separate control box in a low voltage controlling way is safer and better for operation.",
+      "Hydraulic volume keeps the pace with the cylinder and the platform runs synchronously and smoothly.",
+      "Double security design with the hydraulic lock and the mechanical double teeth safety claw keeps safe and reliable.",
+      "Automatic lowering design and the safety claw achieve reverse positioning by the locking operation."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "Scissor Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt635af",
+    "name": "LAUNCH TLT635AF – Ultra-thin Small Scissor Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 395000,
+    "costPrice": 296000,
+    "oldPrice": 435000,
+    "rating": 4.9,
+    "reviews": 20,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH Scissor Lift",
+    "image": "/uploads/products/launch/launch-tlt635af.jpg",
+    "images": [
+      "/uploads/products/launch/launch-tlt635af.jpg"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT635AF",
+    "description": "It takes space-saving style to save most workspace for diagnostic business. The hidden scissor structure is ultra-thin and there is no need for digging a pit. Many physical installations and settings ensure effective and efficient operations to be safe and reliable.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT635AF"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "1900mm"
+      ],
+      [
+        "Initial Height",
+        "105mm"
+      ],
+      [
+        "Runway Length",
+        "1495~2035mm"
+      ],
+      [
+        "Runway Width",
+        "616mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≤60s"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ],
+      [
+        "Motor Voltage",
+        "AC 400V or 230V ±5% 50Hz"
+      ],
+      [
+        "Drive Method",
+        "Electro-hydraulic"
+      ],
+      [
+        "Hydraulic Oil Type",
+        "18L (self-purchase) #32 in winter; #46 in summer"
+      ],
+      [
+        "Air Pressure",
+        "6~8kg/cm²"
+      ],
+      [
+        "Working Temperature",
+        "5~40℃"
+      ],
+      [
+        "Net Weight",
+        "860kg"
+      ]
+    ],
+    "features": [
+      "Hidden scissor ultra-thin structure and the rated load reaches 3500kg.",
+      "Separate control box in a low voltage controlling way is safer and better for operation.",
+      "Hydraulic volume keeps the pace with the cylinder and the platform runs synchronously and smoothly.",
+      "Double security design with the hydraulic lock and the mechanical tooth safety claw keeps safe and reliable.",
+      "Protection mechanism device for hydraulic failure, overload safety valve protection and pipe explosion-proof protection; the equipment will not fall quickly when the oil pipe bursts.",
+      "Italy, Germany, Japan and other high-quality hydraulic components and electrical components are our standard configurations."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "Scissor Lift"
+      ],
+      [
+        "Max Height",
+        "1900mm"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt635a",
+    "name": "LAUNCH TLT635A – Small Scissor Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 395000,
+    "costPrice": 296000,
+    "oldPrice": 435000,
+    "rating": 4.9,
+    "reviews": 21,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH Scissor Lift",
+    "image": "/uploads/products/launch/launch-tlt635a.jpg",
+    "images": [
+      "/uploads/products/launch/launch-tlt635a.jpg"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT635A",
+    "description": "It takes space-saving style to save most workspace for diagnostic business. Many physical installations and settings ensure effective and efficient operations to be safe and reliable.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT635A"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "2100mm"
+      ],
+      [
+        "Initial Height",
+        "320mm"
+      ],
+      [
+        "Runway Length",
+        "1550~1750mm"
+      ],
+      [
+        "Runway Width",
+        "550mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≤60s"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ],
+      [
+        "Motor Voltage",
+        "AC 400V or 230V ±5% 50Hz"
+      ],
+      [
+        "Drive Method",
+        "Electro-hydraulic"
+      ],
+      [
+        "Hydraulic Oil Type",
+        "18L (self-purchase) #32 in winter, #46 in summer"
+      ],
+      [
+        "Air Pressure",
+        "6~8kg/cm²"
+      ],
+      [
+        "Working Temperature",
+        "5~40℃"
+      ],
+      [
+        "Net Weight",
+        "720kg"
+      ]
+    ],
+    "features": [
+      "Hidden scissor structure and the rated load reaches 3500kg.",
+      "The length of the platform is adjustable to apply to more vehicles.",
+      "Separate control box in a low voltage controlling way is safer and better for operation.",
+      "Hydraulic volume keeps the pace with the cylinder and the platform runs synchronously and smoothly.",
+      "Double security design with the hydraulic lock and the mechanical double teeth safety claw keeps safe and reliable.",
+      "Protection mechanism device for hydraulic failure, overload safety valve protection and pipe explosion-proof protection; the equipment will not fall quickly when the oil pipe bursts."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "Scissor Lift"
+      ],
+      [
+        "Max Height",
+        "2100mm"
+      ],
+      [
+        "Motor Power",
+        "2.2KW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt830wa",
+    "name": "LAUNCH TLT830WA – Big Scissor Lift With Secondary Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 395000,
+    "costPrice": 296000,
+    "oldPrice": 435000,
+    "rating": 4.9,
+    "reviews": 22,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH Scissor Lift",
+    "image": "/uploads/products/launch/launch-tlt830wa.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt830wa.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT830WA",
+    "description": "The 3000KG load capacity big scissor lift TLT830WA equipped with the front wheel turntable positions, rear wheel side sliding plate and scissor type secondary lifting. It’s suitable for the four-wheel alignment. As the first priority, safety has been considered from design to manufacture. TLT830WA is equipped with hydraulic interlocking, anti-explosion and travel limit safety device. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT830WA"
+      ],
+      [
+        "Rated Load",
+        "3000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Secondary Lifting Height",
+        "450mm"
+      ],
+      [
+        "Initial Height",
+        "340mm"
+      ],
+      [
+        "Lifting Time",
+        "≤60s"
+      ],
+      [
+        "Secondary Lifting Time",
+        "≤30s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s"
+      ],
+      [
+        "Secondary Lowering Time",
+        "≥12s"
+      ],
+      [
+        "Runway Width",
+        "605mm"
+      ],
+      [
+        "Runway Length",
+        "4500mm"
+      ],
+      [
+        "Secondary Runway Length",
+        "1400mm"
+      ],
+      [
+        "Side Slip Plate Length",
+        "1660mm"
+      ],
+      [
+        "Advised Distance Between Runways",
+        "780mm"
+      ],
+      [
+        "Safety Method",
+        "Mechanical lock +pneumatic release"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380v or Single phase/220V"
+      ]
+    ],
+    "features": [
+      "TLT840WAF Ultra-thin Big Scissor Lift",
+      "TLT630A Small Scissor Lift",
+      "TLT632AF Ultra-thin Small Scissor Lift",
+      "In-ground and on-ground installation are optional.",
+      "Double scissors lift, with the front wheel turntable positions, rear wheel side sliding plate and scissor type secondary lifting, suitable for the four-wheel alignment.",
+      "Hydraulic interlocking and Anti-explosion safety device makes it stable and reliable operation."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3000kg"
+      ],
+      [
+        "Lift Type",
+        "Scissor Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt630a",
+    "name": "LAUNCH TLT630A – Small Scissor Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 395000,
+    "costPrice": 296000,
+    "oldPrice": 435000,
+    "rating": 4.9,
+    "reviews": 23,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH Scissor Lift",
+    "image": "/uploads/products/launch/launch-tlt630a.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt630a.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT630A",
+    "description": "The 3000KG load capacity small scissor lift TLT630A equipped with anti-explosion and travel limit safety device. All moving points adopt automatic lubricating oil-free bearing for ensuring long lifespan. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT630A"
+      ],
+      [
+        "Rated Load",
+        "3000kg"
+      ],
+      [
+        "Lifting Height",
+        "1950mm"
+      ],
+      [
+        "Initial Height",
+        "330mm"
+      ],
+      [
+        "Lifting Time",
+        "≤60s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s"
+      ],
+      [
+        "Runway Width",
+        "520mm"
+      ],
+      [
+        "Runway Length",
+        "1580～1900mm"
+      ],
+      [
+        "Distance Between Two Runways",
+        "800mm"
+      ],
+      [
+        "Overall Width",
+        "1840mm"
+      ],
+      [
+        "Safety Method",
+        "Mechanical safety lock + pneumatic release"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380v or Single phase/220V"
+      ]
+    ],
+    "features": [
+      "TLT830WA Big Scissor Lift With Secondary Lift",
+      "TLT840WAF Ultra-thin Big Scissor Lift",
+      "TLT632AF Ultra-thin Small Scissor Lift",
+      "Standard 3t small double scissor lift .",
+      "In-ground installation type ,without occupying space.",
+      "It&#39;s convenient for demounting tyres and repairing chassis with synchronous hydraulic cylinders assembly."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3000kg"
+      ],
+      [
+        "Lift Type",
+        "Scissor Lift"
+      ],
+      [
+        "Max Height",
+        "1950mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt632af",
+    "name": "LAUNCH TLT632AF – Ultra-thin Small Scissor Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 395000,
+    "costPrice": 296000,
+    "oldPrice": 435000,
+    "rating": 4.9,
+    "reviews": 24,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH Scissor Lift",
+    "image": "/uploads/products/launch/launch-tlt632af.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt632af.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT632AF",
+    "description": "The 3200KG load capacity ultra-thin small scissor lift TLT630AF initial height less than 110mm. Its bilateral hydraulic synchronizing system ensures high synchronization performance, and all moving points adopt automatic lubricating oil-free bearing for ensuring long lifespan. As the first priority, safety has been considered from design to manufacture. TLT630AF is equipped with hydraulic interlocking, anti-explosion and travel limit safety device. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT632AF"
+      ],
+      [
+        "Rated Load",
+        "3200kg"
+      ],
+      [
+        "Lifting Height",
+        "1990mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤60s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s"
+      ],
+      [
+        "Runway Width",
+        "620mm"
+      ],
+      [
+        "Runway Length",
+        "1475～2060mm"
+      ],
+      [
+        "Distance Between Two Runways",
+        "800mm"
+      ],
+      [
+        "Overall Width",
+        "2040mm"
+      ],
+      [
+        "Safety Method",
+        "Mechanical safety lock + pneumatic release"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380v or Single phase/220V"
+      ]
+    ],
+    "features": [
+      "Ultra-tin 3.2t small scissor vehicle lift.",
+      "The platform is extendable.",
+      "Ultra-thin structure design is applicable for on-ground arrangement ,technical cooperation with Italy ,four hydraulic cylinders design ,convenient for demounting tyres and repairing chassis.",
+      "Hydraulic interlocking and Anti-explosion safety device makes it stable and reliable operation.",
+      "Bilateral hydraulic synchronizing system ensures high synchronization performance.",
+      "Travel limit safety device ,protects machine from being damaged."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3200kg"
+      ],
+      [
+        "Lift Type",
+        "Scissor Lift"
+      ],
+      [
+        "Max Height",
+        "1990mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt455w",
+    "name": "LAUNCH TLT455W – Wheel alignment 4 post lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 465000,
+    "costPrice": 349000,
+    "oldPrice": 512000,
+    "rating": 4.9,
+    "reviews": 25,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 4-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt455w.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt455w.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT455W",
+    "description": "TLT455W guarantees a stable and smooth lifting and lowering. Two-layer concealed plate structure provides excellent synchronizing performance with the horizontal precision of 1mm. As the first priority, safety has been considered from design to manufacture. TLT455W is equipped with electric controlled lifting, cable rupture safety system and lowering and cylinder travel limit switch. It is CE certificated. With rolling jack by a small scissor hydraulic lift and front wheel turn plates, it has better support on wheel alignment.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT455W"
+      ],
+      [
+        "Rated Load",
+        "5500kg"
+      ],
+      [
+        "Lifting Height",
+        "1900mm"
+      ],
+      [
+        "Initial Height",
+        "250mm"
+      ],
+      [
+        "Lifting Time",
+        "≤70s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Max. Drive-on Width",
+        "3045mm"
+      ],
+      [
+        "Platform Length",
+        "5600mm"
+      ],
+      [
+        "Platform Width",
+        "550mm"
+      ],
+      [
+        "Overall Width",
+        "3445mm"
+      ],
+      [
+        "Overall Height",
+        "2172mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380v or Single phase/220V"
+      ],
+      [
+        "Platform Length",
+        "915~1450mm"
+      ],
+      [
+        "Platform Width",
+        "215mm"
+      ],
+      [
+        "Lifting Time",
+        "≤45s"
+      ],
+      [
+        "Rated Load",
+        "2700kg"
+      ],
+      [
+        "Lifting Height",
+        "450mm"
+      ],
+      [
+        "Working Noise",
+        "≤70dB（A）"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ],
+      [
+        "Working Air Pressure",
+        "0.5~0.7 MPa"
+      ]
+    ],
+    "features": [
+      "TLT440W Wheel Alignment 4 Post Lift",
+      "TLT440 Hydraulic 4 Post Lift",
+      "Two-layer concealed plate structure, excellent synchronizing performance with the horizontal precision of 1mm.",
+      "Front wheel turn plate&#39;s position is adjustable and rear wheel sliding plate is extended for various vehicle type.",
+      "Deployed with rolling jack with small scissor hydraulic lifting and lowering, can be moved back and forth and easy to adjustment tire.",
+      "Positioning level&#39;s accuracy is adjustable, distance between platforms is adjustable, wheel base in certain scope is adjustable ."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "5500kg"
+      ],
+      [
+        "Lift Type",
+        "4-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1900mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt440w",
+    "name": "LAUNCH TLT440W – Wheel Alignment 4 Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 465000,
+    "costPrice": 349000,
+    "oldPrice": 512000,
+    "rating": 4.9,
+    "reviews": 26,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 4-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt440w.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt440w.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT440W",
+    "description": "With hydraulic cylinder and steel cable synchronization, the 4000KG load capacity four post lift TLT440W guarantees a stable and smooth lifting and lowering. Two-layer concealed plate structure provides excellent synchronizing performance with the horizontal precision of 1mm. As the first priority, safety has been considered from design to manufacture. TLT440W is equipped with electric controlled lifting, cable rupture safety system and lowering and cylinder travel limit switch. It is CE certificated. With rolling jack by a small scissor hydraulic lift and front wheel turn plates, it has better support on wheel alignment.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT440W"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "220mm"
+      ],
+      [
+        "Lifting Time",
+        "≤60s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Max Drive-on Width",
+        "3045mm"
+      ],
+      [
+        "Platform Length",
+        "4240mm"
+      ],
+      [
+        "Platform Width",
+        "500mm"
+      ],
+      [
+        "Overall Width",
+        "3445mm"
+      ],
+      [
+        "Overall Height",
+        "2172mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380v or Single phase/220V"
+      ],
+      [
+        "Platform Length",
+        "915~1450mm"
+      ],
+      [
+        "Platform Width",
+        "215mm"
+      ],
+      [
+        "Lifting Time",
+        "≤45s"
+      ],
+      [
+        "Lowering Time",
+        "≥10s, ≤20s"
+      ],
+      [
+        "Lifting Load",
+        "2000kg"
+      ],
+      [
+        "Lifting Height",
+        "450mm"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ],
+      [
+        "Working Air Pressure",
+        "0.5~0.7MPa"
+      ]
+    ],
+    "features": [
+      "TLT455W Wheel alignment 4 post lift",
+      "TLT440 Hydraulic 4 Post Lift",
+      "Two-layer concealed plate structure, excellent synchronizing performance with the horizontal precision of 1mm.",
+      "Front wheel turn plate&#39;s position is adjustable and rear wheel sliding plate is extended for various vehicle type.",
+      "Deployed with rolling jack with small scissor hydraulic lifting and lowering. can be moved back and forth and easy to adjustment tire.",
+      "Positioning level&#39;s accuracy is adjustable, distance between platforms is adjustable, wheel base in certain scope is adjustable ."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "4-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt440",
+    "name": "LAUNCH TLT440 – Hydraulic 4 Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 465000,
+    "costPrice": 349000,
+    "oldPrice": 512000,
+    "rating": 4.9,
+    "reviews": 27,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 4-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt440.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt440.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "4-Wheel Alignment & Diagnostic Bays"
+    ],
+    "sku": "LAUNCH-TLT440",
+    "description": "With hydraulic cylinder and steel cable synchronization, the 4000KG load capacity four post lift TLT440 guarantees a stable and smooth lifting and lowering. Two-layer concealed plate structure provides excellent synchronizing performance with the horizontal precision of 1mm. As the first priority, safety has been considered from design to manufacture. TLT440 is equipped with electric controlled lifting, cable rupture safety system and lowering and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT440"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "170mm"
+      ],
+      [
+        "Lifting Time",
+        "≤60s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Max. Drive-on Width",
+        "3045mm"
+      ],
+      [
+        "Platform Length",
+        "4240mm"
+      ],
+      [
+        "Platform Width",
+        "500mm"
+      ],
+      [
+        "Overall Width",
+        "3445mm"
+      ],
+      [
+        "Overall Height",
+        "2172mm"
+      ],
+      [
+        "Motor Power",
+        "2. 2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380v or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ],
+      [
+        "Working Air Pressure",
+        "0.5~0.7MPa"
+      ]
+    ],
+    "features": [
+      "TLT455W Wheel alignment 4 post lift",
+      "TLT440W Wheel Alignment 4 Post Lift",
+      "Two-layer concealed plate structure, excellent synchronizing performance with the horizontal precision of 1mm.",
+      "Driven by hydraulic cylinder and steel cable synchronization makes stable lifting and lowering.",
+      "Full-range mechanical safety protection by using the safety latches, manual lowering operation.",
+      "Cylinder travel limit device effectively protects cylinder and extends its lifespan."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "4-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2. 2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt250at",
+    "name": "LAUNCH TLT250AT – Double Hydraulic Two-post Lift With 5T Capacity",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 28,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt250at.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt250at.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT250AT",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 5000KG load capacity two post lift TLT250AT guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT250AT is equipped with single-side manual safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT250AT"
+      ],
+      [
+        "Rated Load",
+        "5000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width for Symmetric Installation",
+        "3050mm"
+      ],
+      [
+        "Overall Width for Symmetric Installation",
+        "4110mm"
+      ],
+      [
+        "Passing Width for Asymmetric Installation",
+        "2888mm"
+      ],
+      [
+        "Overall Width for Asymmetric Installation",
+        "4130mm"
+      ],
+      [
+        "Overall Height",
+        "4810mm"
+      ],
+      [
+        "Motor Power",
+        "3.0kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380vor Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "20MPa"
+      ]
+    ],
+    "features": [
+      "TLT245AT Double hydraulic two post lift with 4.5T capacity",
+      "TLT240SC Practical Double Hydraulic Two Post Lift",
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT235SCA(U) Luxurious One-piece Column Clear-floor Two Post Lift",
+      "This machine is applicable for the lifting of various large SUVs, business travel cars and other super wide and high special vehicles.",
+      "Single-side manual lowering device ,safe and easy operation."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "5000kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "3.0kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt245at",
+    "name": "LAUNCH TLT245AT – Double hydraulic two post lift with 4.5T capacity",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 29,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt245at.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt245at.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT245AT",
+    "description": "The LAUNCH TLT245AT is a heavy-duty double hydraulic two post lift with 4.5t capacity with 4.5-ton (4,500 kg) rated load capacity, dual hydraulic cylinders, high-strength chain drive, 24V low-voltage control box, and CE-certified mechanical safety locks for professional automotive workshops.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT245AT"
+      ],
+      [
+        "Rated Load Capacity",
+        "4,500 kg (4.5 Ton)"
+      ],
+      [
+        "Lifting Height",
+        "1,950 mm"
+      ],
+      [
+        "Min. Pad Height",
+        "110 mm"
+      ],
+      [
+        "Drive Mode",
+        "Double Hydraulic Cylinder & High-Strength Chain Drive"
+      ],
+      [
+        "Safety Unlocking",
+        "Single-Side Manual / Automatic Safety Unlocking"
+      ],
+      [
+        "Control Voltage",
+        "24V Low-Voltage Safe Control Box"
+      ],
+      [
+        "Limit Protection",
+        "Cylinder Travel Limit Switch & Overhead Cut-Off Bar"
+      ],
+      [
+        "Motor Power",
+        "2.2 kW Electro-Hydraulic Power Unit"
+      ],
+      [
+        "Certification",
+        "CE Certified Commercial Garage Lift"
+      ]
+    ],
+    "features": [
+      "TLT250AT Double Hydraulic Two-post Lift With 5T Capacity",
+      "TLT240SC Practical Double Hydraulic Two Post Lift",
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "● This machine is applicable for the lifting of various large SUVs, business travel cars and other super wide and high special vehicles.",
+      "● Single-side manual lowering device ,safe and easy operation.",
+      "● Width between two columns reaches 3350mm,overall height reaches 4810mm ."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4,500 kg (4.5 Ton)"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1,950 mm"
+      ],
+      [
+        "Motor Power",
+        "2.2 kW Electro-Hydraulic Power Unit"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt240sc",
+    "name": "LAUNCH TLT240SC – Practical Double Hydraulic Two Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 30,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt240sc.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt240sc.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT240SC",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 4000KG load capacity two post lift TLT240SC guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT240SC is equipped with bilateral manual safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT240SC"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width",
+        "2486mm"
+      ],
+      [
+        "Overall Width",
+        "3370mm"
+      ],
+      [
+        "Overall Height",
+        "2860mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT250AT Double Hydraulic Two-post Lift With 5T Capacity",
+      "TLT245AT Double hydraulic two post lift with 4.5T capacity",
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "Bilateral manual safety unlocking system.",
+      "The cable and oil pipe are fully concealed; with decent and elegant appearance.",
+      "Double hydraulic cylinder and high strength chain drive makes stable and smooth lifting and lowering."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt240sca",
+    "name": "LAUNCH TLT240SCA – Affordable Double Hydraulic Two Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 31,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt240sca.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt240sca.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT240SCA",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 4000KG load capacity two post lift TLT240SCA guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT240SCA is equipped with fully automatic safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT240SCA"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width for Symmetric Installation",
+        "2486mm"
+      ],
+      [
+        "Overall Width for Symmetric Installation",
+        "3420mm"
+      ],
+      [
+        "Passing Width for Asymmetric Installation",
+        "2415mm"
+      ],
+      [
+        "Overall Width for Asymmetric Installation",
+        "3563mm"
+      ],
+      [
+        "Overall Height",
+        "3840mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kw"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT250AT Double Hydraulic Two-post Lift With 5T Capacity",
+      "TLT245AT Double hydraulic two post lift with 4.5T capacity",
+      "TLT240SC Practical Double Hydraulic Two Post Lift",
+      "Fully automatic unlocking safety device is adopted for operating only with UP/DOWN button.",
+      "The cable and oil pipe are fully concealed; with decent and elegant appearance.",
+      "Double hydraulic cylinder and high strength chain drive makes stable and smooth lifting and lowering."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kw"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt240sba",
+    "name": "LAUNCH TLT240SBA – Cost-effective Double Hydraulic Two Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 32,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt240sba.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt240sba.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT240SBA",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 4000KG load capacity two post lift TLT240SBA guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT240SBA is equipped with fully automatic safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT240SBA"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width",
+        "2486mm"
+      ],
+      [
+        "Overall Width",
+        "3370mm"
+      ],
+      [
+        "Overall Height",
+        "2860mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT240SB Economical Double Hydraulic Two Post Lift With 4T Capacity",
+      "Fully automatic unlocking safety device is adopted for operating only with UP/DOWN button.",
+      "The cable and oil pipe are fully concealed; with decent and elegant appearance.",
+      "Double hydraulic cylinder and high strength chain drive makes stable and smooth lifting and lowering.",
+      "Wire rope equalization system forces synchronous movement of two carriages and effectively prevents vehicle form tilting."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt240sb",
+    "name": "LAUNCH TLT240SB – Economical Double Hydraulic Two Post Lift With 4T Capacity",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 18,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt240sb.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt240sb.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT240SB",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 4000KG load capacity two post lift TLT240SB guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT240SB is equipped with bilateral manual safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT240SB"
+      ],
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width",
+        "2486mm"
+      ],
+      [
+        "Overall Width",
+        "3370mm"
+      ],
+      [
+        "Overall Height",
+        "2860mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT235SC(U) Economical Two Post Lift For Small & Medium-sized Vehicles",
+      "TLT235SB Economical Double Hydraulic Two Post Lift",
+      "Bilateral manual safety unlocking system.",
+      "The cable and oil pipe are fully concealed; with decent and elegant appearance.",
+      "Double hydraulic cylinder and high strength chain drive makes stable and smooth lifting and lowering."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "4000kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt235sc-u",
+    "name": "LAUNCH TLT235SC(U) – Economical Two Post Lift For Small & Medium-sized Vehicles",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 19,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt235sc-u.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt235sc-u.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT235SCU",
+    "description": "This machine is applicable for the lifting of various small and medium-sized vehicles with total weight below 4.0t/3.5t/ in garage and workshop.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT235SC(U)"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width for Symmetric Installation",
+        "2424mm"
+      ],
+      [
+        "Overall Width for Symmetric Installation",
+        "3392mm"
+      ],
+      [
+        "Passing Width for Asymmetric Installation",
+        "2378mm"
+      ],
+      [
+        "Overall Width for Asymmetric Installation",
+        "3544mm"
+      ],
+      [
+        "Overall Height",
+        "3840mm"
+      ],
+      [
+        "Motor Power",
+        "2. 2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT240SBA Cost-effective Double Hydraulic Two Post Lift",
+      "TLT240SB Economical Double Hydraulic Two Post Lift With 4T Capacity",
+      "TLT235SCA(U) Luxurious One-piece Column Clear-floor Two Post Lift",
+      "TLT235SB Economical Double Hydraulic Two Post Lift",
+      "One-piece column design, with decent and elegant appearance and convenient for installation.",
+      "Fully automatic unlocking safety device is adopted for operating only with UP/ DOWN button."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2. 2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt235sca-u",
+    "name": "LAUNCH TLT235SCA(U) – Luxurious One-piece Column Clear-floor Two Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 20,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt235sca-u.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt235sca-u.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT235SCAU",
+    "description": "Luxurious one-piece column clear-floor two post lift",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT235SCA(U)"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width for Symmetric Installation",
+        "2424mm"
+      ],
+      [
+        "Overall Width for Symmetric Installation",
+        "3392mm"
+      ],
+      [
+        "Passing Width for Asymmetric Installation",
+        "2378mm"
+      ],
+      [
+        "Overall Width for Asymmetric Installation",
+        "3544mm"
+      ],
+      [
+        "Overall Height",
+        "3840mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT240SC Practical Double Hydraulic Two Post Lift",
+      "TLT240SBA Cost-effective Double Hydraulic Two Post Lift",
+      "TLT240SB Economical Double Hydraulic Two Post Lift With 4T Capacity",
+      "TLT235SC(U) Economical Two Post Lift For Small & Medium-sized Vehicles",
+      "TLT235SB Economical Double Hydraulic Two Post Lift",
+      "One-piece column design, with decent and elegant appearance and convenient for installation."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt235sb",
+    "name": "LAUNCH TLT235SB – Economical Double Hydraulic Two Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 21,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt235sb.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt235sb.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT235SB",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 3500KG load capacity two post lift TLT235SB guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT235SB is equipped with bilateral manual safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT235SB"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width",
+        "2486mm"
+      ],
+      [
+        "Overall Width",
+        "3370mm"
+      ],
+      [
+        "Overall Height",
+        "2860mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kw"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT240SBA Cost-effective Double Hydraulic Two Post Lift",
+      "TLT240SB Economical Double Hydraulic Two Post Lift With 4T Capacity",
+      "TLT235SC(U) Economical Two Post Lift For Small & Medium-sized Vehicles",
+      "TLT235SCA(U) Luxurious One-piece Column Clear-floor Two Post Lift",
+      "Bilateral manual safety unlocking system."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kw"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt235sba",
+    "name": "LAUNCH TLT235SBA – Double Hydraulic Two Post Lift With 3.5T Capacity",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 22,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt235sba.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt235sba.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT235SBA",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 3500KG load capacity two post lift TLT235SBA guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT235SBA is equipped with fully automatic safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT235SBA"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width",
+        "2486mm"
+      ],
+      [
+        "Overall Width",
+        "3370mm"
+      ],
+      [
+        "Overall Height",
+        "2860mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT250AT Double Hydraulic Two-post Lift With 5T Capacity",
+      "TLT240SC Practical Double Hydraulic Two Post Lift",
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT240SBA Cost-effective Double Hydraulic Two Post Lift",
+      "Fully automatic unlocking safety device is adopted for operating only with UP/DOWN button.",
+      "The cable and oil pipe are fully concealed; with decent and elegant appearance."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt235sba-e",
+    "name": "LAUNCH TLT235SBA(E) – Two-post Lift For Small And Medium-sized Vehicles",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 23,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt235sba-e.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt235sba-e.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT235SBAE",
+    "description": "This machine is applicable for the lifting of various small and medium-sized vehicles with total weight below 3.5t/4.0t in garage and workshop.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT235SBA(E)"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width",
+        "2486mm"
+      ],
+      [
+        "Overall Width",
+        "3400mm"
+      ],
+      [
+        "Overall Height",
+        "2900mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT245AT Double hydraulic two post lift with 4.5T capacity",
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT240SBA Cost-effective Double Hydraulic Two Post Lift",
+      "TLT240SB Economical Double Hydraulic Two Post Lift With 4T Capacity",
+      "Fully automatic unlocking safety device is adopted for operating only with UP/DOWN button.",
+      "Sunken arm design, with minimum lifting height of 110mm."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt260at",
+    "name": "LAUNCH TLT260AT – Hydraulic Two Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 24,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt260at.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt260at.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT260AT",
+    "description": "Packed with industry leading technology, the new released two-post lift -- TLT260AT combines the top-notch materials, outstanding lifting performance and 6000KG large capacities. All these features make TLT260AT a fantastic purchase for automotive repair shops and services.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT260AT"
+      ],
+      [
+        "Working Temperature",
+        "-5℃~40℃"
+      ],
+      [
+        "Relative Humidity",
+        "Temperature 30℃, Relatvie Humidity 80%"
+      ],
+      [
+        "Transport/Storage Temerature",
+        "-25℃~55℃"
+      ],
+      [
+        "Height Above Sea Level",
+        "No more than 2000m"
+      ],
+      [
+        "ARM",
+        "3350mm"
+      ],
+      [
+        "Motor Power",
+        "3kw"
+      ],
+      [
+        "Motor (optional) Voltage",
+        "According to client&#39;s requirement"
+      ],
+      [
+        "Single Phase",
+        "220V/50Hz, 220V/60Hz"
+      ],
+      [
+        "Three Phase",
+        "380V/50Hz"
+      ],
+      [
+        "Working Noise",
+        "75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "24MPa"
+      ],
+      [
+        "Rated Load",
+        "6000kg"
+      ],
+      [
+        "Lifting Height",
+        "1920mm"
+      ],
+      [
+        "Rising Time",
+        "65s"
+      ],
+      [
+        "Descending Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "NET Weight",
+        "1160kg"
+      ],
+      [
+        "Passing Width",
+        "3050mm / 2888mm"
+      ],
+      [
+        "Machine Width",
+        "4110mm / 4130mm"
+      ],
+      [
+        "Machine Height",
+        "4810mm"
+      ]
+    ],
+    "features": [
+      "TLT245AT Double hydraulic two post lift with 4.5T capacity",
+      "TLT240SC Practical Double Hydraulic Two Post Lift",
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT235SCA(U) Luxurious One-piece Column Clear-floor Two Post Lift",
+      "Easy to operate, fully automatic to rise, fall and manual lock.",
+      "Safe to use by setting top limit switch, to prevent overhead collision."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "6000kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1920mm"
+      ],
+      [
+        "Motor Power",
+        "3kw"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  },
+  {
+    "slug": "launch-tlt235sc",
+    "name": "LAUNCH TLT235SC – Double Hydraulic Two Post Lift",
+    "brand": "LAUNCH",
+    "category": "Garage Equipment",
+    "subcategory": "Vehicle Lifts & Hoists",
+    "mobility": [
+      "4-Wheeler",
+      "EV"
+    ],
+    "price": 285000,
+    "costPrice": 214000,
+    "oldPrice": 314000,
+    "rating": 4.9,
+    "reviews": 25,
+    "stock": "In stock",
+    "warehouseQty": 5,
+    "reorderLevel": 1,
+    "badge": "LAUNCH 2-Post Lift",
+    "image": "/uploads/products/launch/launch-tlt235sc.png",
+    "images": [
+      "/uploads/products/launch/launch-tlt235sc.png"
+    ],
+    "fits": [
+      "Passenger Sedans, Coupes & Hatchbacks",
+      "SUVs, Crossovers & 4x4 Vehicles",
+      "Electric Vehicles (EVs) & Hybrids",
+      "General Mechanical & Undercarriage Repair Bays"
+    ],
+    "sku": "LAUNCH-TLT235SC",
+    "description": "With double hydraulic cylinders and high strength chain drive, the 3500KG load capacity two post lift TLT235SC guarantees a stable and smooth lifting and lowering. Its patented slider bracket design improves the replacing efficiency. As the first priority, safety has been considered from design to manufacture. TLT235SC is equipped with bilateral manual safety unlocking system, 24V low voltage control box and cylinder travel limit switch. It is CE certificated.",
+    "specs": [
+      [
+        "Model Reference",
+        "LAUNCH TLT235SC"
+      ],
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lifting Height",
+        "1850mm"
+      ],
+      [
+        "Initial Height",
+        "110mm"
+      ],
+      [
+        "Lifting Time",
+        "≤50s"
+      ],
+      [
+        "Lowering Time",
+        "≥20s, ≤40s"
+      ],
+      [
+        "Passing Width",
+        "2436mm"
+      ],
+      [
+        "Overall Width",
+        "3400mm"
+      ],
+      [
+        "Overall Height",
+        "3840mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ],
+      [
+        "Motor Voltage",
+        "3 phase/380V or Single phase/220V"
+      ],
+      [
+        "Working Noise",
+        "≤75dB(A)"
+      ],
+      [
+        "Working Oil Pressure",
+        "16MPa"
+      ]
+    ],
+    "features": [
+      "TLT245AT Double hydraulic two post lift with 4.5T capacity",
+      "TLT240SC Practical Double Hydraulic Two Post Lift",
+      "TLT240SCA Affordable Double Hydraulic Two Post Lift",
+      "TLT235SC(U) Economical Two Post Lift For Small & Medium-sized Vehicles",
+      "Bilateral manual safety unlocking system.",
+      "The cable and oil pipe are fully concealed; with decent and elegant appearance."
+    ],
+    "highlights": [
+      [
+        "Rated Load",
+        "3500kg"
+      ],
+      [
+        "Lift Type",
+        "2-Post Lift"
+      ],
+      [
+        "Max Height",
+        "1850mm"
+      ],
+      [
+        "Motor Power",
+        "2.2kW"
+      ]
+    ],
+    "isEquipment": true,
+    "requiresQuote": true
+  }
 ];
